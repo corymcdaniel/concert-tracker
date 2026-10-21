@@ -24,6 +24,11 @@ Each show is one act on one night:
 
 Acts sharing a date + venue + city are shown as one night, in list order (headliner first).
 
+**Upcoming shows:** add a show with a future date and it's pinned under **Up next** at the top of the log, soonest first.
+Upcoming shows (including tonight's) are left out of every count: header totals, the Stats tab, the year headers and
+the "seen N times" counts in the artist and venue pop-ups. The day after the show, it moves into its year in the log and
+starts counting. There is no separate flag; the date alone decides, so nothing needs updating after the show.
+
 Artist and venue details live in `info.json`, keyed by artist name and by `venue|city`:
 
 ```json
