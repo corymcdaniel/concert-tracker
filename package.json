@@ -1,0 +1,16 @@
+{
+  "name": "show-log",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev",
+    "build:identity": "esbuild scripts/identity-entry.js --bundle --format=esm --platform=browser --minify --outfile=vendor/identity.js"
+  },
+  "dependencies": {
+    "@netlify/blobs": "11.1.3",
+    "@netlify/identity": "2.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.0"
+  }
+}
