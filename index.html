@@ -140,7 +140,20 @@ table.rep button:hover{color:var(--music);text-decoration:underline}
 .acts li.first button{font-weight:800}
 body.readonly .edit-only{display:none}
 .notes{font-size:13px;color:var(--muted);font-style:italic}
-.add-act{justify-self:start;font-family:var(--mono);font-size:11px;padding:3px 8px;color:var(--muted);border-style:dashed}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+.add-act{font-family:var(--mono);font-size:11px;padding:3px 8px;color:var(--muted);border-style:dashed}
+/* billing order sheet */
+.bill-for{font-size:14px;margin:-6px 0 4px}
+.bill{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:bill}
+.bill li{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--paper);counter-increment:bill}
+.bill li::before{content:counter(bill);font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center}
+.bill .name{font-family:var(--display);font-weight:600;font-size:20px;line-height:1.1;overflow-wrap:anywhere}
+.bill li:first-child{border-color:var(--ink)}
+.bill li:first-child .name{font-weight:800}
+.bill .ctl{display:flex;gap:4px;align-items:center}
+.bill .ctl button{padding:3px 8px;font-size:13px}
+.bill .star{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--upcoming)}
+@media (prefers-reduced-motion:no-preference){.bill li.moved{animation:rise .2s var(--ease)}}
 .stub.is-up{outline:2px solid var(--upcoming);outline-offset:-2px}
 @media (max-width:480px){.stub{grid-template-columns:78px 1fr}.stub .date .d{font-size:32px}.acts button{font-size:19px}}
 .empty{padding:28px;text-align:center;color:var(--muted);border:2px dashed var(--line);border-radius:8px}
@@ -509,6 +522,8 @@ function stub(n){
   const k = nightKey(n);
   let seen = 'reveal';
   if (revealed.has(k)) seen = 'in';
+  let billBtn = '';
+  if (n.acts.length > 1) billBtn = `<button class="add-act" type="button" data-bill="${n.acts[0].id}">Edit bill</button>`;
   return `<article class="stub ${up?'is-up':''} ${seen}" data-k="${esc(k)}">
       <div class="date">${n.date ? `<span class="m">${MONTHS[+M-1]}</span><span class="d">${+D}</span><span class="y">${Y}</span>` : `<span class="m">Date</span><span class="d">?</span>`}</div>
       <div class="body">
@@ -517,7 +532,7 @@ function stub(n){
           ${isToday?'<span class="tag up">Tonight</span>':up?'<span class="tag up">Upcoming</span>':''}</div>
         <ul class="acts">${n.acts.map((a,i)=>`<li class="${i===0?'first':''}"><button type="button" data-artist="${esc(a.artist)}" data-id="${a.id}" title="About ${esc(a.artist)}">${esc(a.artist)}</button></li>`).join('')}</ul>
         ${notes.length?`<div class="notes">${notes.map(esc).join(' · ')}</div>`:''}
-        <button class="add-act edit-only" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button>
+        <div class="tools edit-only"><button class="add-act" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button>${billBtn}</div>
       </div></article>`;
 }
 // Stubs fade up the first time they scroll into view; ones already seen render in place,
@@ -755,6 +770,51 @@ function openAdd(base){
     commit(`Added ${names.length} act${names.length>1?'s':''}`, {method:'POST', url:API, body:{rows, after}});
   });
 }
+// Reorder one night's acts: first = headliner
+function openBill(id){
+  const night = nights(shows).find(n => n.acts.some(a => a.id === id)); if (!night) return;
+  let order = night.acts.map(a => a.id), moved = null;
+  const name = x => shows.find(s => s.id === x).artist;
+  const draw = () => {
+    $('#billList').innerHTML = order.map((x, i) => {
+      let ctl = '<span class="star">★ Headliner</span>';
+      if (i > 0) {
+        let down = '';
+        if (i < order.length - 1) down = `<button type="button" data-move="${i}" data-by="1" aria-label="Move ${esc(name(x))} down">↓</button>`;
+        ctl = `<button type="button" data-move="${i}" data-by="-1" aria-label="Move ${esc(name(x))} up">↑</button>${down}<button type="button" data-top="${i}">Make headliner</button>`;
+      }
+      let cls = '';
+      if (x === moved) cls = 'moved';
+      return `<li class="${cls}"><span class="name">${esc(name(x))}</span><span class="ctl">${ctl}</span></li>`;
+    }).join('');
+  };
+  let when = 'Undated';
+  if (night.date) when = fmt(night.date);
+  openSheet(`<h3>Edit bill</h3><form id="frm">
+    <p class="hint bill-for">${esc(night.venue || 'Unknown venue')} · ${esc(when)}</p>
+    <ol class="bill" id="billList"></ol>
+    <div class="foot"><button type="button" id="billReverse">Reverse order</button></div>
+    <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button></div></form>`);
+  draw();
+  $('#billList').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const i = +(b.dataset.move ?? b.dataset.top);
+    moved = order[i];
+    if (b.dataset.top !== undefined) order = [order[i], ...order.filter((_, j) => j !== i)];
+    else { const j = i + +b.dataset.by; [order[i], order[j]] = [order[j], order[i]]; }
+    draw();
+  });
+  $('#billReverse').onclick = () => { order.reverse(); moved = order[0]; draw(); };
+  $('#frm').addEventListener('submit', e => { e.preventDefault();
+    if (order.join() === night.acts.map(a => a.id).join()) { closeSheet(); return; }
+    // the night keeps its place in the list: its acts go back where the first one was, in the new order
+    const at = shows.findIndex(s => order.includes(s.id));
+    const acts = order.map(x => shows.find(s => s.id === x));
+    shows = shows.filter(s => !order.includes(s.id));
+    shows.splice(at, 0, ...acts);
+    commit(`${acts[0].artist} is the headliner`, {method:'POST', url:`${API}/order`, body:{ids:order}});
+  });
+}
 function openData(){
   const json = JSON.stringify(shows, null, 1);
   // With the database, History replaces "reset" (which would drop everything added since the seed)
@@ -804,7 +864,8 @@ function changeDiff(c){
   if (c.table === 'shows') {
     const out = Object.keys(SHOW_LABELS).filter(k => fmtVal(c.before[k]) !== fmtVal(c.after[k]))
       .map(k => [SHOW_LABELS[k], fmtVal(c.before[k]), fmtVal(c.after[k])]);
-    if (!out.length && c.before.sort_order !== c.after.sort_order) out.push(['Billing order', 'moved', '']);
+    if (!out.length && c.after.sort_order < c.before.sort_order) out.push(['Billing order', 'moved up', '']);
+    if (!out.length && c.after.sort_order > c.before.sort_order) out.push(['Billing order', 'moved down', '']);
     return out;
   }
   const b = c.before.info, a = c.after.info;
@@ -815,9 +876,9 @@ function changeDiff(c){
 function changeItem(c){
   const when = new Date(c.at).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'});
   const diff = changeDiff(c).map(([f, from, to]) => {
-    let arrow = '';
-    if (to) arrow = ` <span class="arrow">→</span> <ins>${esc(to)}</ins>`;
-    return `<li><span class="f">${esc(f)}</span><span><del>${esc(from)}</del>${arrow}</span></li>`;
+    let val = esc(from);
+    if (to) val = `<del>${esc(from)}</del> <span class="arrow">→</span> <ins>${esc(to)}</ins>`;
+    return `<li><span class="f">${esc(f)}</span><span>${val}</span></li>`;
   }).join('');
   let action = `<button type="button" data-undo="${c.id}">Undo</button>`;
   if (c.undone) action = '<span class="tag">Undone</span>';
@@ -995,6 +1056,7 @@ document.addEventListener('click', e => {
   if (t.dataset.edit) { closeInfo(); if (canEdit()) openEdit(t.dataset.edit); else { const a=shows.find(s=>s.id===t.dataset.edit); if(a){ $('#q').value=a.artist; filt.q=a.artist; filterList(); } } }
   else if (t.id==='btnAuth') { if (user) { idn.logout().finally(()=>{ user=null; applyAuth(); toast('Signed out'); }); } else openLogin(); }
   else if (t.dataset.addto) openAdd(shows.find(s=>s.id===t.dataset.addto));
+  else if (t.dataset.bill) openBill(t.dataset.bill);
   else if ('close' in t.dataset) closeSheet();
   else if (t.dataset.q !== undefined){ closeInfo(); $('#q').value = t.dataset.q; filt.q = t.dataset.q; setView('log'); filterList(); window.scrollTo({top:0}); }
   else if (t.dataset.view){ setView(t.dataset.view); }

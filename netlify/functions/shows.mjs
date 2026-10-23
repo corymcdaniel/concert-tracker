@@ -4,6 +4,8 @@
 // PUT    /api/shows      -> editors: replace the whole list (Data panel import). Only real differences are logged.
 // PATCH  /api/shows/:id  -> editors: update one show
 // DELETE /api/shows/:id  -> editors: delete one show
+// POST   /api/shows/order -> editors: set one night's billing order { ids: [headliner, ...] }
+//                            ids must be every act of that night; the night keeps its place in the log
 import { requireEditor, json } from "../lib/auth.mjs";
 import { read, write, cleanShow, newId, Invalid, SHOW_FIELDS, SHOW_SELECT } from "../lib/db.mjs";
 
@@ -27,6 +29,26 @@ export default async (req, context) => {
   }
 
   try {
+    if (req.method === "POST" && id === "order") {
+      const ids = body?.ids;
+      if (!Array.isArray(ids) || !ids.length || new Set(ids).size !== ids.length) return bad("Expected { ids: [...] }");
+      const result = await write(user, async (c) => {
+        // Every act sharing the first act's night (same grouping as the page: date + venue + city, any case)
+        const { rows: night } = await c.query(
+          `SELECT n.id, n.sort_order FROM shows s JOIN shows n
+             ON n.date IS NOT DISTINCT FROM s.date AND lower(n.venue) = lower(s.venue) AND lower(n.city) = lower(s.city)
+           WHERE s.id = $1 ORDER BY n.sort_order FOR UPDATE OF n`, [ids[0]]);
+        const inNight = new Set(night.map((r) => r.id));
+        if (night.length !== ids.length || !ids.every((x) => inNight.has(x))) return null;
+        // Hand the night's existing sort_order values out in the new order
+        for (const [i, x] of ids.entries())
+          await c.query("UPDATE shows SET sort_order = $2 WHERE id = $1", [x, night[i].sort_order]);
+        return ids.length;
+      });
+      if (result === null) return bad("The list must be every act of one night. Reload and try again.");
+      return json({ ok: true });
+    }
+
     if (req.method === "POST" && !id) {
       if (!Array.isArray(body?.rows) || !body.rows.length) return bad("Expected { rows: [...] }");
       const rows = body.rows.map((r) => ({ id: String(r.id || newId()), ...cleanShow(r) }));
@@ -123,4 +145,4 @@ function sortOrders(rows, current) {
   return out;
 }
 
-export const config ={ path: ["/api/shows", "/api/shows/:id"] };
+export const config = { path: ["/api/shows", "/api/shows/:id"] };
