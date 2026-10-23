@@ -11,17 +11,17 @@
 /* Layout: a running ticket-stub ledger, grouped by year, with a stats strip up top and an edit sheet that slides in */
 :root{
   --bg:#e9ecf1; --paper:#fbfcfd; --ink:#16192b; --muted:#646a82; --line:#cdd2dd;
-  --music:#2a46e8; --comedy:#c4176b; --upcoming:#0f8a5f; --chip:#dfe3ec;
+  --music:#2a46e8; --comedy:#c4176b; --upcoming:#0f8a5f; --chip:#dfe3ec; --gold:#c99a06; --gold-ink:#7a5a00;
   --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0e1019; --paper:#171a27; --ink:#e7e9f2; --muted:#9097b1; --line:#2c3145;
-  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; color-scheme:dark}}
+  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; --gold:#f2c14e; --gold-ink:#f7d684; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0e1019; --paper:#171a27; --ink:#e7e9f2; --muted:#9097b1; --line:#2c3145;
-  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; color-scheme:dark}
+  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; --gold:#f2c14e; --gold-ink:#f7d684; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
 .wrap{max-width:980px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
@@ -121,7 +121,15 @@ table.rep button:hover{color:var(--music);text-decoration:underline}
 .list{display:grid;gap:10px}
 
 .stub{display:grid;grid-template-columns:104px 1fr;border-radius:8px;position:relative;overflow:hidden}
-.stub .date,.stub .body{background:var(--paper)}
+.stub .date,.stub .body{background-color:var(--stub-bg,var(--paper))}
+/* repeat sightings: gold foil that deepens each time you see an act again (rep-5 = 5th time or more) */
+.stub.rep-2{--stub-bg:color-mix(in oklab,var(--gold) 8%,var(--paper))}
+.stub.rep-3{--stub-bg:color-mix(in oklab,var(--gold) 15%,var(--paper))}
+.stub.rep-4{--stub-bg:color-mix(in oklab,var(--gold) 24%,var(--paper));--glow:0 0 0 1px color-mix(in oklab,var(--gold) 45%,transparent)}
+.stub.rep-5{--stub-bg:color-mix(in oklab,var(--gold) 34%,var(--paper));--glow:0 0 0 1px color-mix(in oklab,var(--gold) 70%,transparent),0 4px 18px color-mix(in oklab,var(--gold) 30%,transparent)}
+.stub.rep{box-shadow:var(--glow,none)}
+.stub.rep-5 .body{background-image:linear-gradient(115deg,transparent 35%,rgb(255 255 255 / .28) 48%,transparent 60%);background-size:260% 100%;background-position:100% 0;background-repeat:no-repeat}
+.nth{display:inline-block;margin-left:5px;vertical-align:3px;font-family:var(--mono);font-size:10.5px;line-height:1.5;padding:0 6px;border-radius:999px;color:var(--gold-ink);border:1px solid color-mix(in oklab,var(--gold) 60%,transparent);background:color-mix(in oklab,var(--gold) 14%,transparent)}
 .stub .date{padding:14px 12px;border-right:2px dashed var(--line);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;position:relative}
 .stub .date .m{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .stub .date .d{font-family:var(--display);font-size:40px;font-weight:800;line-height:.9;font-variant-numeric:tabular-nums}
@@ -265,8 +273,11 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 /* hover: stubs lift, and the ticket "tears" a little along the perforation */
 @media (prefers-reduced-motion:no-preference) and (hover:hover){
   .stub .body{transform-origin:left center;transition:transform .2s var(--ease)}
-  .stub:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgb(0 0 0 / .1)}
+  .stub:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgb(0 0 0 / .1),var(--glow,0 0 0 transparent)}
   .stub:hover .body{transform:translateX(3px) rotate(.4deg)}
+  /* the foil catches the light as you hover */
+  .stub.rep-5 .body{transition:transform .2s var(--ease),background-position .6s var(--ease)}
+  .stub.rep-5:hover .body{background-position:0 0}
 }
 @keyframes slide{from{transform:translateX(30px);opacity:.6}}
 @keyframes slide-out{to{transform:translateX(30px);opacity:0}}
@@ -524,13 +535,22 @@ function stub(n){
   if (revealed.has(k)) seen = 'in';
   let billBtn = '';
   if (n.acts.length > 1) billBtn = `<button class="add-act" type="button" data-bill="${n.acts[0].id}">Edit bill</button>`;
-  return `<article class="stub ${up?'is-up':''} ${seen}" data-k="${esc(k)}">
+  // Repeat sightings: the stub glows by its most-seen act; each repeat act gets a ×N badge
+  const best = Math.max(...n.acts.map(a => nthSeen.get(a.id) || 1));
+  let glow = '';
+  if (best > 1) glow = `rep rep-${Math.min(best, 5)}`;
+  const act = a => {
+    const nth = nthSeen.get(a.id) || 1;
+    if (nth < 2) return '';
+    return `<span class="nth" title="${ordinal(nth)} time seeing ${esc(a.artist)}">×${nth}</span>`;
+  };
+  return `<article class="stub ${up?'is-up':''} ${seen} ${glow}" data-k="${esc(k)}">
       <div class="date">${n.date ? `<span class="m">${MONTHS[+M-1]}</span><span class="d">${+D}</span><span class="y">${Y}</span>` : `<span class="m">Date</span><span class="d">?</span>`}</div>
       <div class="body">
         <div class="where"><strong>${n.venue?`<button type="button" class="vbtn" data-venue="${esc(n.venue+'|'+n.city)}">${esc(n.venue)}</button>`:'Unknown venue'}</strong><span>${esc(place(n))}</span>
           ${types.map(t=>`<span class="tag ${t.toLowerCase()}">${esc(t)}</span>`).join('')}
           ${isToday?'<span class="tag up">Tonight</span>':up?'<span class="tag up">Upcoming</span>':''}</div>
-        <ul class="acts">${n.acts.map((a,i)=>`<li class="${i===0?'first':''}"><button type="button" data-artist="${esc(a.artist)}" data-id="${a.id}" title="About ${esc(a.artist)}">${esc(a.artist)}</button></li>`).join('')}</ul>
+        <ul class="acts">${n.acts.map((a,i)=>`<li class="${i===0?'first':''}"><button type="button" data-artist="${esc(a.artist)}" data-id="${a.id}" title="About ${esc(a.artist)}">${esc(a.artist)}</button>${act(a)}</li>`).join('')}</ul>
         ${notes.length?`<div class="notes">${notes.map(esc).join(' · ')}</div>`:''}
         <div class="tools edit-only"><button class="add-act" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button>${billBtn}</div>
       </div></article>`;
@@ -554,7 +574,24 @@ function watchReveals(){
 // Filtering swaps the list in place: a quick cross-fade instead of every stub fading up
 function filterList(){ replay($('#list'), 'swap'); renderList(); }
 
+// act id -> which time you saw that artist (1 = first). Time order: undated shows first
+// (they're the oldest), then by date, then list order. Upcoming shows continue the count,
+// so an upcoming stub shows the sighting it will be.
+let nthSeen = new Map();
+const ordinal = n => { const s = ['th','st','nd','rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+function countSightings(){
+  const byTime = shows.map((s, i) => ({s, i})).sort((a, b) => (a.s.date || '').localeCompare(b.s.date || '') || a.i - b.i);
+  const tally = new Map();
+  nthSeen = new Map();
+  for (const {s} of byTime) {
+    const k = s.artist.trim().toLowerCase();
+    tally.set(k, (tally.get(k) || 0) + 1);
+    nthSeen.set(s.id, tally.get(k));
+  }
+}
+
 function renderList(){
+  countSightings();
   const all = nights(shows.filter(matches));
   if (!all.length){ $('#list').innerHTML = `<div class="empty">No shows match. Clear the search or add one with “+ Add show”.</div>`; return; }
   // upcoming nights are pinned on top, soonest first; the year groups only hold shows that have happened
