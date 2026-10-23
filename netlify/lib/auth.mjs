@@ -19,10 +19,3 @@ export async function requireEditor(req) {
 
 export const json = (body, init = {}) =>
   Response.json(body, { ...init, headers: { "cache-control": "no-store", ...(init.headers || {}) } });
-
-// One backup per day of whatever is being replaced.
-export async function backupAndSet(store, key, value) {
-  const prev = await store.get(key, { type: "json" });
-  if (prev) await store.setJSON(`backup-${key}-${new Date().toISOString().slice(0, 10)}`, prev);
-  await store.setJSON(key, value);
-}

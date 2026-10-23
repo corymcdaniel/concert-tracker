@@ -182,6 +182,25 @@ body.readonly .edit-only{display:none}
 .sheet .foot .spacer{flex:1}
 .confirm{background:var(--chip);border-radius:6px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
 textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px}
+/* history sheet */
+.history-for{font-size:14px;margin:-6px 0 4px}
+.history{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:10px}
+.history .change{border:1px solid var(--line);border-left:4px solid var(--music);border-radius:6px;padding:10px 12px;display:grid;gap:6px;transition:border-color .15s,transform .15s}
+.history .change:hover{border-color:var(--muted);transform:translateX(-2px)}
+.history .change.insert{border-left-color:var(--upcoming)}
+.history .change.delete{border-left-color:var(--comedy)}
+.history .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.history .verb{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.history .what{flex:1;min-width:0;font-size:14.5px;font-weight:600;overflow-wrap:anywhere}
+.history .head button{padding:2px 10px;font-size:13px}
+.history .tag{font-family:var(--mono);font-size:11px;background:var(--chip);border-radius:4px;padding:2px 8px;color:var(--muted)}
+.history .diff{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:13px}
+.history .diff li{display:grid;grid-template-columns:96px 1fr;gap:8px}
+.history .diff .f{font-family:var(--mono);font-size:11.5px;color:var(--muted);padding-top:1px}
+.history .diff del{color:var(--muted)}
+.history .diff ins{text-decoration:none;font-weight:600}
+.history .diff .arrow{color:var(--muted)}
+.history .meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:6px;z-index:30;font-size:14px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(30px);opacity:.6}}}
 </style>
@@ -196,6 +215,7 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
     <div class="actions">
       <span class="save-state" id="saveState"></span>
       <button id="btnAuth" type="button" hidden>Sign in</button>
+      <button id="btnHistory" type="button" data-history="" hidden>History</button>
       <button id="btnData" type="button">Data</button>
       <button id="btnAdd" class="primary edit-only" type="button">+ Add show</button>
     </div>
@@ -267,17 +287,27 @@ async function loadRaw(){
   shows = JSON.parse($('#seed').textContent); mode='local';
 }
 
-async function persist(){
-  if (mode !== 'netlify') { store.set(KEY, JSON.stringify(shows)); setState('Saved in this browser'); return; }
-  if (!user) { setState('Not saved: sign in to edit'); openLogin('Sign in to save your changes.'); return; }
+// Send one change to the database. Returns the response JSON, or null if it wasn't saved.
+async function api(method, url, body){
+  if (!user) { setState('Not saved: sign in to edit'); openLogin('Sign in to save your changes.'); return null; }
   setState('Saving…');
   try {
-    const r = await fetch(API, {method:'PUT', credentials:'same-origin', headers:{'content-type':'application/json'}, body:JSON.stringify(shows)});
-    if (r.status === 401) { setState('Not saved: session expired'); openLogin('Your session expired. Sign in again to save.'); return; }
-    if (r.status === 403) { setState('Not saved: this account can’t edit'); toast('This account doesn’t have edit access.'); return; }
+    const init = {method, credentials:'same-origin', headers:{'content-type':'application/json'}};
+    if (body !== undefined) init.body = JSON.stringify(body);
+    const r = await fetch(url, init);
+    if (r.status === 401) { setState('Not saved: session expired'); openLogin('Your session expired. Sign in again to save.'); return null; }
+    if (r.status === 403) { setState('Not saved: this account can’t edit'); toast('This account doesn’t have edit access.'); return null; }
+    if (r.status === 400 || r.status === 409) { setState('Not saved'); toast(await r.text()); return null; }
     if (!r.ok) throw new Error(r.status);
     setState('Saved');
-  } catch(e){ setState('Save failed. Check your connection and try again.'); }
+    return await r.json();
+  } catch(e){ setState('Save failed. Check your connection and try again.'); return null; }
+}
+// op = {method, url, body} for the database; local mode saves the whole list in this browser.
+// If the database refuses a change, reload so the page shows what's really saved.
+async function persist(op){
+  if (mode !== 'netlify') { store.set(KEY, JSON.stringify(shows)); setState('Saved in this browser'); return; }
+  if (await api(op.method, op.url, op.body) === null) { await loadRaw(); shows = shows.map(withPlace); render(); }
 }
 /* ---------- Netlify Identity ---------- */
 let idn = null, user = null;
@@ -286,6 +316,7 @@ function applyAuth(){
   document.body.classList.toggle('readonly', !canEdit());
   const b = $('#btnAuth'); if (!b) return;
   b.hidden = mode !== 'netlify';
+  $('#btnHistory').hidden = mode !== 'netlify' || !user;
   b.textContent = user ? 'Sign out' : 'Sign in';
   b.title = user ? `Signed in as ${user.email||user.name||''}` : '';
   if (mode==='netlify') setState(user ? (user.name||user.email||'Signed in') : 'View only');
@@ -569,14 +600,20 @@ function readForm(){
 }
 function openEdit(id){
   const s = shows.find(x=>x.id===id); if(!s) return;
+  let undoNote = "This can't be undone.", historyBtn = '';
+  if (mode === 'netlify') {
+    undoNote = 'You can undo this from History.';
+    historyBtn = `<button type="button" data-history="shows" data-key="${esc(id)}">History</button>`;
+  }
   openSheet(`<h3>Edit act</h3><form id="frm">${fields(s,false)}
-    <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button><span class="spacer"></span><button type="button" class="danger" id="del">Delete</button></div>
+    <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button><span class="spacer"></span>${historyBtn}<button type="button" class="danger" id="del">Delete</button></div>
     <div id="confirmBox"></div></form>`);
   $('#frm').addEventListener('submit', e => { e.preventDefault();
-    Object.assign(s, readForm(), {artist:$('#f-artist').value.trim()}); commit('Saved '+s.artist); });
+    Object.assign(s, readForm(), {artist:$('#f-artist').value.trim()});
+    commit('Saved '+s.artist, {method:'PATCH', url:`${API}/${encodeURIComponent(id)}`, body:s}); });
   $('#del').addEventListener('click', () => {
-    $('#confirmBox').innerHTML = `<div class="confirm">Delete ${esc(s.artist)}? This can't be undone. <button type="button" class="danger" id="delYes">Delete</button><button type="button" id="delNo">Keep</button></div>`;
-    $('#delYes').onclick = () => { shows = shows.filter(x=>x.id!==id); commit('Deleted '+s.artist); };
+    $('#confirmBox').innerHTML = `<div class="confirm">Delete ${esc(s.artist)}? ${undoNote} <button type="button" class="danger" id="delYes">Delete</button><button type="button" id="delNo">Keep</button></div>`;
+    $('#delYes').onclick = () => { shows = shows.filter(x=>x.id!==id); commit('Deleted '+s.artist, {method:'DELETE', url:`${API}/${encodeURIComponent(id)}`}); };
     $('#delNo').onclick = () => $('#confirmBox').innerHTML='';
   });
 }
@@ -589,19 +626,23 @@ function openAdd(base){
     if (!names.length) return;
     // insert after existing acts of the same night so billing order holds
     const rows = names.map(artist => ({id:newId(), artist, ...f}));
-    if (base){ const last = shows.map(x=>x.date===base.date&&x.venue===base.venue).lastIndexOf(true); shows.splice(last+1,0,...rows); }
+    let after = null;
+    if (base){ const last = shows.map(x=>x.date===base.date&&x.venue===base.venue).lastIndexOf(true); after = shows[last].id; shows.splice(last+1,0,...rows); }
     else shows.unshift(...rows);
-    commit(`Added ${names.length} act${names.length>1?'s':''}`);
+    commit(`Added ${names.length} act${names.length>1?'s':''}`, {method:'POST', url:API, body:{rows, after}});
   });
 }
 function openData(){
   const json = JSON.stringify(shows, null, 1);
+  // With the database, History replaces "reset" (which would drop everything added since the seed)
+  let resetBtn = '';
+  if (mode !== 'netlify') resetBtn = '<div class="foot edit-only"><button type="button" class="danger" id="reset">Reset to original list</button></div>';
   openSheet(`<h3>Data</h3><form id="frm">
     <p class="hint" style="font-size:14px">${mode==='netlify'?(user?'Edits save to your Netlify site.':'Sign in to edit. You can still copy the data.'):'Edits are kept in this browser. Copy the JSON to back it up or move it to shows.json.'}</p>
     <textarea id="f-json" class="json" spellcheck="false">${esc(json)}</textarea>
     <div class="foot"><button type="button" class="primary" id="copy">Copy JSON</button><button type="button" id="copyCsv">Copy CSV</button><button type="submit" class="edit-only">Replace with pasted JSON</button><span class="spacer"></span><button type="button" data-close>Close</button></div>
     <div id="confirmBox"></div>
-    <div class="foot edit-only"><button type="button" class="danger" id="reset">Reset to original list</button></div></form>`);
+    ${resetBtn}</form>`);
   const copy = (txt,label) => { navigator.clipboard?.writeText(txt).then(()=>toast(label+' copied'), ()=>{ $('#f-json').value=txt; $('#f-json').select(); toast('Selected. Press Ctrl/⌘+C'); }) ?? ($('#f-json').select()); };
   $('#copy').onclick = () => copy(JSON.stringify(shows,null,1),'JSON');
   $('#copyCsv').onclick = () => { const q=v=>/[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
@@ -609,13 +650,88 @@ function openData(){
   $('#frm').addEventListener('submit', e => { e.preventDefault();
     try { const d = JSON.parse($('#f-json').value); if(!Array.isArray(d)) throw 0;
       shows = d.map(s=>withPlace({id:s.id||newId(),artist:s.artist||'',venue:s.venue||'',city:s.city||'',state:s.state,country:s.country,date:s.date||null,type:s.type||'Music',notes:s.notes||''}));
-      commit(`Loaded ${shows.length} entries`);
+      commit(`Loaded ${shows.length} entries`, {method:'PUT', url:API, body:shows});
     } catch { toast('That isn’t a valid list of shows. Check the JSON and try again.'); } });
-  $('#reset').onclick = () => {
+  if ($('#reset')) $('#reset').onclick = () => {
     $('#confirmBox').innerHTML = `<div class="confirm">Replace everything with the original imported list? <button type="button" class="danger" id="rYes">Reset</button><button type="button" id="rNo">Cancel</button></div>`;
-    $('#rYes').onclick = () => { shows = JSON.parse($('#seed').textContent).map(withPlace); commit('Reset to original list'); };
+    $('#rYes').onclick = () => { shows = JSON.parse($('#seed').textContent).map(withPlace); commit('Reset to original list', {method:'PUT', url:API, body:shows}); };
     $('#rNo').onclick = () => $('#confirmBox').innerHTML='';
   };
+}
+
+/* ---------- change history (database mode, editors) ---------- */
+const SHOW_LABELS = {artist:'Artist', venue:'Venue', city:'City', state:'State', country:'Country', date:'Date', type:'Type', notes:'Notes'};
+const INFO_LABELS = {wiki:'Wikipedia page', desc:'Description', img:'Photo', note:'Note'};
+const fmtVal = v => { if (v === null || v === undefined || v === '') return '—'; if (Array.isArray(v)) return v.join(', '); return String(v); };
+function changeTitle(c){
+  const r = c.after || c.before;
+  if (c.table === 'shows') return `${r.artist} · ${r.venue || place(r) || 'No venue'} · ${r.date || 'Undated'}`;
+  if (c.table === 'venues') return `Venue info: ${c.row.replace('|', ', ')}`;
+  return `Artist info: ${c.row}`;
+}
+function changeVerb(c){
+  if (c.undo_of) return `Undid change #${c.undo_of}`;
+  if (c.action === 'insert') return 'Added';
+  if (c.action === 'delete') return 'Deleted';
+  return 'Edited';
+}
+// What changed, field by field, for an update
+function changeDiff(c){
+  if (c.action !== 'update') return [];
+  if (c.table === 'shows') {
+    const out = Object.keys(SHOW_LABELS).filter(k => fmtVal(c.before[k]) !== fmtVal(c.after[k]))
+      .map(k => [SHOW_LABELS[k], fmtVal(c.before[k]), fmtVal(c.after[k])]);
+    if (!out.length && c.before.sort_order !== c.after.sort_order) out.push(['Billing order', 'moved', '']);
+    return out;
+  }
+  const b = c.before.info, a = c.after.info;
+  if (!b && a) return [['Matched to', '—', a.wiki || a.desc || 'info']];
+  if (b && !a) return [['Match removed', b.wiki || '', '']];
+  return Object.keys(INFO_LABELS).filter(k => fmtVal(b?.[k]) !== fmtVal(a?.[k])).map(k => [INFO_LABELS[k], fmtVal(b?.[k]), fmtVal(a?.[k])]);
+}
+function changeItem(c){
+  const when = new Date(c.at).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'});
+  const diff = changeDiff(c).map(([f, from, to]) => {
+    let arrow = '';
+    if (to) arrow = ` <span class="arrow">→</span> <ins>${esc(to)}</ins>`;
+    return `<li><span class="f">${esc(f)}</span><span><del>${esc(from)}</del>${arrow}</span></li>`;
+  }).join('');
+  let action = `<button type="button" data-undo="${c.id}">Undo</button>`;
+  if (c.undone) action = '<span class="tag">Undone</span>';
+  let diffList = '';
+  if (diff) diffList = `<ul class="diff">${diff}</ul>`;
+  return `<li class="change ${c.action}">
+    <div class="head"><span class="verb">${esc(changeVerb(c))}</span><span class="what">${esc(changeTitle(c))}</span>${action}</div>
+    ${diffList}
+    <div class="meta">#${c.id} · ${esc(when)} · ${esc(c.by || 'unknown')}</div></li>`;
+}
+let historyFor = null;
+async function openHistory(table, key, before){
+  historyFor = {table, key};
+  let title = 'All recent changes';
+  if (table === 'shows') title = changeTitle({table, after: shows.find(s => s.id === key) || {artist:key}});
+  else if (table) title = changeTitle({table, row: key, after: {}});
+  if (!before) openSheet(`<h3>History</h3><p class="hint history-for">${esc(title)}</p><ol class="history" id="historyList"><li class="hint">Loading…</li></ol><div class="foot" id="historyMore"></div><div class="foot"><button type="button" data-close>Close</button></div>`);
+  const q = new URLSearchParams();
+  if (table) q.set('table', table);
+  if (key) q.set('row', key);
+  if (before) q.set('before', before);
+  const res = await api('GET', '/api/changes?' + q);
+  if (!res) { closeSheet(); return; }
+  const list = $('#historyList'); if (!list) return;
+  if (!before) list.innerHTML = '';
+  list.insertAdjacentHTML('beforeend', res.changes.map(changeItem).join(''));
+  if (!list.children.length) list.innerHTML = '<li class="hint">No changes yet.</li>';
+  const last = res.changes[res.changes.length - 1];
+  $('#historyMore').innerHTML = '';
+  if (res.more) $('#historyMore').innerHTML = `<button type="button" data-history-more="${last.id}">Older changes</button>`;
+  setState(user.name || user.email || 'Signed in');
+}
+async function undoChange(id){
+  if (await api('POST', `/api/changes/${id}/undo`) === null) return;
+  toast('Change undone');
+  await loadRaw(); shows = shows.map(withPlace); await loadInfo(); render();
+  openHistory(historyFor.table, historyFor.key);
 }
 
 /* ---------- artist & venue info ---------- */
@@ -625,11 +741,9 @@ async function loadInfo(){
   try { if (mode==='netlify'){ const r = await fetch('/api/info',{cache:'no-store'}); if (r.ok){ INFO = await r.json(); return; } } } catch {}
   try { INFO = (JSON.parse(store.get('show-log-info-v2') || 'null') || JSON.parse($('#info-seed').textContent)); } catch { INFO = JSON.parse($('#info-seed').textContent); }
 }
-async function saveInfo(){
+async function saveInfo(kind, key){
   if (mode !== 'netlify'){ store.set('show-log-info-v2', JSON.stringify(INFO)); return true; }
-  try { const r = await fetch('/api/info',{method:'PUT',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(INFO)});
-    if (r.status===401){ openLogin('Sign in to save changes.'); return false; } if (!r.ok) throw 0; return true; }
-  catch { toast('Couldn’t save the info. Try again.'); return false; }
+  return await api('PUT', '/api/info', {kind, key, info: INFO[kind][key]}) !== null;
 }
 const imgUrl = (img, w=800) => { if(!img) return ''; const [f,wiki] = img.split('|'); return `https://${wiki==='en'?'en.wikipedia.org':'commons.wikimedia.org'}/wiki/Special:FilePath/${encodeURIComponent(f)}?width=${w}`; };
 const fileUrl = img => { const [f,wiki] = img.split('|'); return `https://${wiki==='en'?'en.wikipedia.org':'commons.wikimedia.org'}/wiki/File:${encodeURIComponent(f)}`; };
@@ -708,6 +822,8 @@ function closeInfo(){ $('#info').hidden = true; if ($('#sheet').hidden) $('#scri
 /* editors can fix a match */
 function openInfoEdit(kind, key){
   const rec = INFO[kind]?.[key] || {};
+  let historyBtn = '';
+  if (mode === 'netlify') historyBtn = `<button type="button" data-history="${esc(kind)}" data-key="${esc(key)}">History</button>`;
   closeInfo();
   openSheet(`<h3>Edit info</h3><form id="frm">
     <p class="hint" style="font-size:14px">${esc(kind==='artists'?key:key.replace('|',', '))}</p>
@@ -716,7 +832,7 @@ function openInfoEdit(kind, key){
     <label for="f-desc">Short description<input id="f-desc" value="${esc(rec.desc||'')}"></label>
     <label for="f-img">Photo (Commons file name)<input id="f-img" value="${esc(rec.img||'')}" placeholder="File_name.jpg"></label>
     <label for="f-inote">Note<textarea id="f-inote" rows="2">${esc(rec.note||'')}</textarea></label>
-    <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button><span class="spacer"></span><button type="button" class="danger" id="unmatch">Remove match</button></div></form>`);
+    <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button><span class="spacer"></span>${historyBtn}<button type="button" class="danger" id="unmatch">Remove match</button></div></form>`);
   let fetched = null;
   $('#lookup').onclick = async () => {
     let t = $('#f-wiki').value.trim().replace(/^https?:\/\/en\.(m\.)?wikipedia\.org\/wiki\//,''); t = decodeURIComponent(t).replace(/_/g,' ');
@@ -731,17 +847,17 @@ function openInfoEdit(kind, key){
       $('#lookMsg').textContent = `Found: ${fetched.wiki}`;
     } catch { $('#lookMsg').textContent = 'Wikipedia didn’t respond. Try again.'; }
   };
-  $('#unmatch').onclick = async () => { INFO[kind][key] = null; if (await saveInfo()){ closeSheet(); toast('Match removed'); } };
+  $('#unmatch').onclick = async () => { INFO[kind][key] = null; if (await saveInfo(kind, key)){ closeSheet(); toast('Match removed'); } };
   $('#frm').addEventListener('submit', async e => { e.preventDefault();
     const wiki = $('#f-wiki').value.trim();
     let next = {...rec};
     if (fetched && fetched.qid !== rec.qid) next = {wiki:fetched.wiki, qid:fetched.qid};   // new page: drop old facts
     Object.assign(next, {wiki: wiki || undefined, desc: $('#f-desc').value.trim(), img: $('#f-img').value.trim() || undefined, note: $('#f-inote').value.trim() || undefined});
     INFO[kind] = INFO[kind] || {}; INFO[kind][key] = next.wiki || next.desc ? next : null;
-    if (await saveInfo()){ closeSheet(); toast('Info saved'); openInfo(kind, key); }
+    if (await saveInfo(kind, key)){ closeSheet(); toast('Info saved'); openInfo(kind, key); }
   });
 }
-function commit(msg){ closeSheet(); render(); persist(); toast(msg); }
+function commit(msg, op){ closeSheet(); render(); persist(op); toast(msg); }
 
 /* ---------- events ---------- */
 document.addEventListener('click', e => {
@@ -750,6 +866,9 @@ document.addEventListener('click', e => {
   if (t.dataset.venue !== undefined) { openInfo('venues', t.dataset.venue); return; }
   if ('closeInfo' in t.dataset) { closeInfo(); return; }
   if (t.dataset.infoEdit) { openInfoEdit(t.dataset.infoEdit, t.dataset.key); return; }
+  if (t.dataset.history !== undefined) { closeInfo(); openHistory(t.dataset.history, t.dataset.key); return; }
+  if (t.dataset.historyMore) { t.disabled = true; openHistory(historyFor.table, historyFor.key, t.dataset.historyMore); return; }
+  if (t.dataset.undo) { t.disabled = true; undoChange(t.dataset.undo); return; }
   if (t.dataset.edit) { closeInfo(); if (canEdit()) openEdit(t.dataset.edit); else { const a=shows.find(s=>s.id===t.dataset.edit); if(a){ $('#q').value=a.artist; filt.q=a.artist; renderList(); } } }
   else if (t.id==='btnAuth') { if (user) { idn.logout().finally(()=>{ user=null; applyAuth(); toast('Signed out'); }); } else openLogin(); }
   else if (t.dataset.addto) openAdd(shows.find(s=>s.id===t.dataset.addto));
