@@ -55,9 +55,14 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);bord
 .seg button{border:0;border-radius:0;padding:8px 12px}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
 
-.tabs{display:flex;gap:2px;border-bottom:2px solid var(--ink)}
-.tabs button{border:0;border-radius:6px 6px 0 0;font-family:var(--display);font-weight:800;font-size:22px;text-transform:uppercase;padding:6px 16px 4px;background:none;color:var(--muted)}
-.tabs button[aria-selected=true]{background:var(--ink);color:var(--paper)}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--ink);position:relative}
+.tabs button{border:0;border-radius:6px 6px 0 0;font-family:var(--display);font-weight:800;font-size:22px;text-transform:uppercase;padding:6px 16px 4px;background:none;color:var(--muted);width:112px;position:relative;z-index:1}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected=true]{color:var(--paper)}
+/* the selected tab's background is one shape that slides between the equal-width tabs */
+.tab-ink{position:absolute;left:0;top:0;bottom:0;width:112px;border-radius:6px 6px 0 0;background:var(--ink)}
+.tabs:has([data-view=stats][aria-selected=true]) .tab-ink{transform:translateX(calc(100% + 2px))}
+@supports not selector(:has(*)){.tab-ink{display:none}.tabs button[aria-selected=true]{background:var(--ink)}}
 .most button.more{background:none;border:1px dashed var(--line);border-radius:999px;padding:3px 10px;font-size:13px;color:var(--muted)}
 .sv{display:grid;gap:28px}
 .panel h3{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;gap:8px}
@@ -115,7 +120,8 @@ table.rep button:hover{color:var(--music);text-decoration:underline}
 .year.next::after{border-top-color:var(--upcoming)}
 .list{display:grid;gap:10px}
 
-.stub{display:grid;grid-template-columns:104px 1fr;background:var(--paper);border-radius:8px;position:relative;overflow:hidden}
+.stub{display:grid;grid-template-columns:104px 1fr;border-radius:8px;position:relative;overflow:hidden}
+.stub .date,.stub .body{background:var(--paper)}
 .stub .date{padding:14px 12px;border-right:2px dashed var(--line);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;position:relative}
 .stub .date .m{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .stub .date .d{font-family:var(--display);font-size:40px;font-weight:800;line-height:.9;font-variant-numeric:tabular-nums}
@@ -147,6 +153,14 @@ body.readonly .edit-only{display:none}
 .info .hero{position:relative;background:var(--chip);aspect-ratio:16/9;max-width:100%;overflow:hidden}
 .info .hero img{width:100%;height:100%;object-fit:cover;display:block}
 .info .hero .ph{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:96px;color:var(--line);text-transform:uppercase}
+/* initials are only a placeholder: gone once the photo has loaded (kept if it fails) */
+.info .hero.loaded .ph{opacity:0;visibility:hidden}
+.info .hero img{opacity:0}
+.info .hero.loaded img{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  .info .hero img{transition:opacity .25s var(--ease)}
+  .info .hero .ph{transition:opacity .2s var(--ease),visibility .2s}
+}
 .info .x{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;padding:0;background:rgb(10 12 20 / .55);color:#fff;border:0;font-size:20px;line-height:1}
 .info .credit{position:absolute;left:0;right:0;bottom:0;padding:16px 12px 6px;font-size:11px;color:#fff;background:linear-gradient(transparent,rgb(0 0 0 / .6));text-align:right}
 .info .credit a{color:#fff}
@@ -202,7 +216,56 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 .history .diff .arrow{color:var(--muted)}
 .history .meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:6px;z-index:30;font-size:14px}
-@media (prefers-reduced-motion:no-preference){.sheet{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(30px);opacity:.6}}}
+
+/* ---------- motion ----------
+   Subtle and quick: 150–250ms, small distances. Everything here is skipped for
+   prefers-reduced-motion, and the JS (hide(), countTo(), watchReveals()) checks it too. */
+:root{--ease:cubic-bezier(.2,.7,.3,1)}
+.stub .date{z-index:1} /* keep the perforation notches above the body when it shifts */
+@media (prefers-reduced-motion:no-preference){
+  /* stubs fade up as they scroll into view */
+  .stub{transition:opacity .25s var(--ease),transform .25s var(--ease),box-shadow .2s var(--ease)}
+  .stub.reveal{opacity:0;transform:translateY(8px)}
+  .list.swap{animation:dim .18s var(--ease)}
+  /* sheets, pop-ups, backdrop and toast animate in and out */
+  .sheet{animation:slide .2s var(--ease)}
+  .sheet.closing{animation:slide-out .16s ease-in forwards}
+  .info{animation:pop-in .2s var(--ease)}
+  .info.closing{animation:pop-out .15s ease-in forwards}
+  .scrim{animation:fade-in .2s var(--ease)}
+  .scrim.closing{animation:fade-out .16s ease-in forwards}
+  .toast.pop{animation:toast-in .2s var(--ease)}
+  .toast.closing{animation:fade-out .2s ease-in forwards}
+  .history .change{animation:rise .2s var(--ease) both}
+  /* views and stats */
+  .sv>*{animation:rise .25s var(--ease) both}
+  .sv>:nth-child(2){animation-delay:30ms}.sv>:nth-child(3){animation-delay:60ms}
+  .sv>:nth-child(4){animation-delay:90ms}.sv>:nth-child(n+5){animation-delay:120ms}
+  .bars .stack>div{transform-origin:bottom;animation:grow-y .45s var(--ease) both}
+  .rank .lab::before{transform-origin:left;animation:grow-x .45s var(--ease) both}
+  /* controls */
+  button{transition:background-color .15s,border-color .15s,color .15s,transform .1s}
+  button:active{transform:scale(.97)}
+  .tab-ink{transition:transform .25s var(--ease)}
+  .tabs button{transition:color .2s var(--ease)}
+}
+/* hover: stubs lift, and the ticket "tears" a little along the perforation */
+@media (prefers-reduced-motion:no-preference) and (hover:hover){
+  .stub .body{transform-origin:left center;transition:transform .2s var(--ease)}
+  .stub:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgb(0 0 0 / .1)}
+  .stub:hover .body{transform:translateX(3px) rotate(.4deg)}
+}
+@keyframes slide{from{transform:translateX(30px);opacity:.6}}
+@keyframes slide-out{to{transform:translateX(30px);opacity:0}}
+@keyframes pop-in{from{opacity:0;transform:translate(-50%,-48%) scale(.97)}}
+@keyframes pop-out{to{opacity:0;transform:translate(-50%,-49%) scale(.98)}}
+@keyframes fade-in{from{opacity:0}}
+@keyframes fade-out{to{opacity:0}}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,6px)}}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+@keyframes dim{from{opacity:.35}}
+@keyframes grow-y{from{transform:scaleY(0)}}
+@keyframes grow-x{from{transform:scaleX(0)}}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -223,6 +286,7 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 
   <section class="stats" id="stats" aria-label="Totals"></section>
   <nav class="tabs" role="tablist">
+    <span class="tab-ink" aria-hidden="true"></span>
     <button type="button" role="tab" data-view="log" aria-selected="true">Log</button>
     <button type="button" role="tab" data-view="stats" aria-selected="false">Stats</button>
   </nav>
@@ -271,7 +335,27 @@ const newId = () => 's' + Date.now().toString(36) + Math.random().toString(36).s
 // a show counts toward stats the day after it happens; undated shows are in the past
 const happened = s => !s.date || s.date < TODAY;
 
-function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,2200); }
+/* ---------- motion ---------- */
+const motionOK = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
+// open = shown and not on its way out
+const isOpen = el => !el.hidden && !el.classList.contains('closing');
+function show(el){ el.classList.remove('closing'); el.hidden = false; }
+// Plays the element's .closing animation, then hides it. Showing it again meanwhile cancels the hide.
+function hide(el){
+  if (!isOpen(el)) return;
+  if (!motionOK()) { el.hidden = true; return; }
+  el.classList.add('closing');
+  el.addEventListener('animationend', function done(e){
+    if (e.target !== el) return;
+    el.removeEventListener('animationend', done);
+    if (!el.classList.contains('closing')) return;
+    el.classList.remove('closing'); el.hidden = true;
+  });
+}
+// Restart a CSS animation class on an element that's already showing
+function replay(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; show(t); replay(t,'pop'); clearTimeout(toast.h); toast.h=setTimeout(()=>hide(t),2200); }
 
 
 async function load(){ await loadRaw(); shows = shows.map(withPlace); }
@@ -384,14 +468,30 @@ function matches(s){
   return true;
 }
 
+// Header totals count from what was last shown (0 on load) to the new value
+const statShown = {};
+function countTo(el, label, to){
+  const from = statShown[label] ?? 0;
+  statShown[label] = to;
+  if (from === to || !motionOK()) { el.textContent = to; return; }
+  const ms = 700, t0 = performance.now();
+  const step = now => {
+    if (!el.isConnected) return;
+    const p = Math.min((now - t0) / ms, 1);
+    el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 function renderStats(){
   const past = shows.filter(happened);
   const n = nights(past);
   const artists = new Map(); past.forEach(s => { const k=s.artist.trim(); artists.set(k,(artists.get(k)||0)+1); });
   const venues = new Set(past.map(s=>s.venue.toLowerCase()).filter(Boolean));
   const cities = new Set(past.filter(s=>s.city).map(cityKey));
-  $('#stats').innerHTML = [[n.length,'Nights out'],[artists.size,'Artists'],[venues.size,'Venues'],[cities.size,'Cities']]
-    .map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
+  const totals = [[n.length,'Nights out'],[artists.size,'Artists'],[venues.size,'Venues'],[cities.size,'Cities']];
+  $('#stats').innerHTML = totals.map(([v,l])=>`<div class="stat"><b>${statShown[l] ?? 0}</b><span>${l}</span></div>`).join('');
+  $('#stats').querySelectorAll('b').forEach((b, i) => countTo(b, totals[i][1], totals[i][0]));
   const reps = [...artists].filter(([,c])=>c>1).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
   const top = showAllMost ? reps : reps.slice(0,8);
   $('#most').innerHTML = reps.length ? `<span class="lbl">Seen 2+ times</span>` + top.map(([a,c])=>`<button class="chip" data-q="${esc(a)}" type="button">${esc(a)}<em>×${c}</em></button>`).join('')
@@ -406,7 +506,10 @@ function stub(n){
   const [Y,M,D] = n.date ? n.date.split('-') : [];
   const types = [...new Set(n.acts.map(a=>a.type))];
   const notes = n.acts.map(a=>a.notes).filter(Boolean);
-  return `<article class="stub ${up?'is-up':''}">
+  const k = nightKey(n);
+  let seen = 'reveal';
+  if (revealed.has(k)) seen = 'in';
+  return `<article class="stub ${up?'is-up':''} ${seen}" data-k="${esc(k)}">
       <div class="date">${n.date ? `<span class="m">${MONTHS[+M-1]}</span><span class="d">${+D}</span><span class="y">${Y}</span>` : `<span class="m">Date</span><span class="d">?</span>`}</div>
       <div class="body">
         <div class="where"><strong>${n.venue?`<button type="button" class="vbtn" data-venue="${esc(n.venue+'|'+n.city)}">${esc(n.venue)}</button>`:'Unknown venue'}</strong><span>${esc(place(n))}</span>
@@ -417,6 +520,25 @@ function stub(n){
         <button class="add-act edit-only" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button>
       </div></article>`;
 }
+// Stubs fade up the first time they scroll into view; ones already seen render in place,
+// so re-rendering after an edit only animates nights that are new or changed.
+const nightKey = n => [n.date||'undated', n.venue, n.city, n.acts.map(a=>a.id).join(',')].join('|').toLowerCase();
+const revealed = new Set();
+let revealer = null;
+if ('IntersectionObserver' in window) revealer = new IntersectionObserver(entries => entries.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.replace('reveal', 'in'); revealed.add(e.target.dataset.k); revealer.unobserve(e.target);
+}), {rootMargin:'0px 0px -24px 0px'});
+function watchReveals(){
+  revealer?.disconnect();
+  document.querySelectorAll('.stub.reveal').forEach(el => {
+    if (revealer && motionOK()) revealer.observe(el);
+    else { el.classList.replace('reveal', 'in'); revealed.add(el.dataset.k); }
+  });
+}
+// Filtering swaps the list in place: a quick cross-fade instead of every stub fading up
+function filterList(){ replay($('#list'), 'swap'); renderList(); }
+
 function renderList(){
   const all = nights(shows.filter(matches));
   if (!all.length){ $('#list').innerHTML = `<div class="empty">No shows match. Clear the search or add one with “+ Add show”.</div>`; return; }
@@ -432,6 +554,7 @@ function renderList(){
     html += stub(n);
   }
   $('#list').innerHTML = html;
+  watchReveals();
 }
 
 /* ---------- stats view ---------- */
@@ -566,14 +689,14 @@ function setView(v){
 function render(){ renderStats(); renderList(); if (view==='stats') renderStatsView(); }
 
 /* ---------- sheet ---------- */
-function openSheet(html){ $('#sheet').innerHTML = html; $('#sheet').hidden=false; $('#scrim').hidden=false; const f=$('#sheet input,#sheet textarea'); f && f.focus(); wireAutofill(); }
+function openSheet(html){ $('#sheet').innerHTML = html; show($('#sheet')); show($('#scrim')); const f=$('#sheet input,#sheet textarea'); f && f.focus(); wireAutofill(); }
 function wireAutofill(){
   const v=$('#f-venue'), c=$('#f-city'); if(!v||!c) return;
   const fill = known => { if(!known) return; if(!c.value) c.value = known.city; if(c.value===known.city){ $('#f-state').value = known.state||''; $('#f-country').value = known.country||'US'; } };
   v.addEventListener('change', () => fill(shows.find(x=>x.venue.toLowerCase()===v.value.trim().toLowerCase())));
   c.addEventListener('change', () => fill(shows.find(x=>x.city.toLowerCase()===c.value.trim().toLowerCase())));
 }
-function closeSheet(){ $('#sheet').hidden=true; if ($('#info').hidden) $('#scrim').hidden=true; }
+function closeSheet(){ hide($('#sheet')); if (!isOpen($('#info'))) hide($('#scrim')); }
 function datalists(){
   const uniq = k => [...new Set(shows.map(s=>s[k]).filter(Boolean))].sort();
   return ['artist','venue','city','state','country'].map(k=>`<datalist id="dl-${k}">${uniq(k).map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`).join('');
@@ -783,7 +906,7 @@ function openInfo(kind, key, actId){
   const initials = title.replace(/^the\s+/i,'').split(/\s+/).map(w=>w[0]).join('').slice(0,2);
   const box = $('#info');
   box.innerHTML = `
-    <div class="hero">${rec?.img?`<img src="${imgUrl(rec.img)}" alt="${esc(title)}" onerror="this.remove()">`:''}<div class="ph" aria-hidden="true">${esc(initials)}</div>
+    <div class="hero">${rec?.img?`<img src="${imgUrl(rec.img)}" alt="${esc(title)}" onload="this.parentNode.classList.add('loaded')" onerror="this.remove()">`:''}<div class="ph" aria-hidden="true">${esc(initials)}</div>
       ${rec?.img?`<div class="credit"><a href="${fileUrl(rec.img)}" target="_blank" rel="noopener" id="credit">Photo: Wikimedia Commons</a></div>`:''}
       <button type="button" class="x" data-close-info aria-label="Close">×</button></div>
     <div class="ib">
@@ -799,7 +922,7 @@ function openInfo(kind, key, actId){
         ${actId?`<button type="button" class="edit-only" data-edit="${actId}">Edit this show</button>`:''}
         <button type="button" data-q="${esc(title)}">Show in log</button></div>
     </div>`;
-  box.hidden = false; $('#scrim').hidden = false; box.querySelector('.x').focus();
+  show(box); show($('#scrim')); box.querySelector('.x').focus();
   if (rec?.wiki) loadSummary(rec, ++infoReq);
 }
 async function loadSummary(rec, req){
@@ -817,7 +940,7 @@ async function loadSummary(rec, req){
     const c = req===infoReq && $('#credit'); if (c && (who||lic)) c.textContent = `Photo: ${who||'Wikimedia Commons'}${lic?` · ${lic}`:''}`;
   } catch {}
 }
-function closeInfo(){ $('#info').hidden = true; if ($('#sheet').hidden) $('#scrim').hidden = true; }
+function closeInfo(){ hide($('#info')); if (!isOpen($('#sheet'))) hide($('#scrim')); }
 
 /* editors can fix a match */
 function openInfoEdit(kind, key){
@@ -869,20 +992,20 @@ document.addEventListener('click', e => {
   if (t.dataset.history !== undefined) { closeInfo(); openHistory(t.dataset.history, t.dataset.key); return; }
   if (t.dataset.historyMore) { t.disabled = true; openHistory(historyFor.table, historyFor.key, t.dataset.historyMore); return; }
   if (t.dataset.undo) { t.disabled = true; undoChange(t.dataset.undo); return; }
-  if (t.dataset.edit) { closeInfo(); if (canEdit()) openEdit(t.dataset.edit); else { const a=shows.find(s=>s.id===t.dataset.edit); if(a){ $('#q').value=a.artist; filt.q=a.artist; renderList(); } } }
+  if (t.dataset.edit) { closeInfo(); if (canEdit()) openEdit(t.dataset.edit); else { const a=shows.find(s=>s.id===t.dataset.edit); if(a){ $('#q').value=a.artist; filt.q=a.artist; filterList(); } } }
   else if (t.id==='btnAuth') { if (user) { idn.logout().finally(()=>{ user=null; applyAuth(); toast('Signed out'); }); } else openLogin(); }
   else if (t.dataset.addto) openAdd(shows.find(s=>s.id===t.dataset.addto));
   else if ('close' in t.dataset) closeSheet();
-  else if (t.dataset.q !== undefined){ closeInfo(); $('#q').value = t.dataset.q; filt.q = t.dataset.q; setView('log'); renderList(); window.scrollTo({top:0}); }
+  else if (t.dataset.q !== undefined){ closeInfo(); $('#q').value = t.dataset.q; filt.q = t.dataset.q; setView('log'); filterList(); window.scrollTo({top:0}); }
   else if (t.dataset.view){ setView(t.dataset.view); }
   else if (t.id==='moreBtn'){ showAllMost=!showAllMost; renderStats(); }
-  else if (t.dataset.type !== undefined){ filt.type = t.dataset.type; document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', b===t)); renderList(); }
+  else if (t.dataset.type !== undefined){ filt.type = t.dataset.type; document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', b===t)); filterList(); }
 });
 $('#scrim').onclick = () => { closeSheet(); closeInfo(); };
-document.addEventListener('keydown', e => { if (e.key==='Escape') { if (!$('#sheet').hidden) closeSheet(); else if (!$('#info').hidden) closeInfo(); } });
-$('#q').addEventListener('input', e => { filt.q = e.target.value.trim(); renderList(); });
+document.addEventListener('keydown', e => { if (e.key==='Escape') { if (isOpen($('#sheet'))) closeSheet(); else if (isOpen($('#info'))) closeInfo(); } });
+$('#q').addEventListener('input', e => { filt.q = e.target.value.trim(); filterList(); });
 document.addEventListener('change', e => { if (e.target.id==='f-move' && e.target.value){ store.set('show-log-move', e.target.value); renderStatsView(); } });
-$('#city').addEventListener('change', e => { filt.city = e.target.value; renderList(); });
+$('#city').addEventListener('change', e => { filt.city = e.target.value; filterList(); });
 $('#btnAdd').onclick = () => openAdd(null);
 $('#btnData').onclick = openData;
 
