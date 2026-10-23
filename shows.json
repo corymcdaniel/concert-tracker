@@ -1,5 +1,38 @@
 [
  {
+  "id": "smvicr32t5xbg",
+  "artist": "Deftones",
+  "venue": "Petco Park",
+  "city": "San Diego",
+  "state": "CA",
+  "country": "US",
+  "date": "2022-11-05",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvicr32ttfao",
+  "artist": "Turnstile",
+  "venue": "Petco Park",
+  "city": "San Diego",
+  "state": "CA",
+  "country": "US",
+  "date": "2022-11-05",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvicr32tej0n",
+  "artist": "Phantogram",
+  "venue": "Petco Park",
+  "city": "San Diego",
+  "state": "CA",
+  "country": "US",
+  "date": "2022-11-05",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s001",
   "artist": "Weezer",
   "venue": "Mortgage Matchup Center",
@@ -55,6 +88,17 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjop6pu",
+  "artist": "DOMS",
+  "venue": "Arizona Financial Theatre",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2026-10-03",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s006",
   "artist": "Marc Maron",
   "venue": "Stand Up Live",
@@ -68,6 +112,17 @@
  {
   "id": "s007",
   "artist": "Puscifer",
+  "venue": "Arizona Financial Theatre",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2026-03-21",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjobcwg",
+  "artist": "Dave Hill",
   "venue": "Arizona Financial Theatre",
   "city": "Phoenix",
   "state": "AZ",
@@ -154,6 +209,17 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjowj68",
+  "artist": "Ioanna Gika",
+  "venue": "Arizona Financial Theatre",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2025-09-26",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s015",
   "artist": "Dan Soder",
   "venue": "Stand Up Live",
@@ -178,6 +244,17 @@
  {
   "id": "s017",
   "artist": "Khruangbin",
+  "venue": "Arizona Financial Theatre",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2025-05-20",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjozaxo",
+  "artist": "John Carroll Kirby",
   "venue": "Arizona Financial Theatre",
   "city": "Phoenix",
   "state": "AZ",
@@ -330,8 +407,30 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjohqtc",
+  "artist": "Golden Boots",
+  "venue": "The Van Buren",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2024-01-22",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s031",
   "artist": "Queen's Of The Stone Age",
+  "venue": "Arizona Financial Theatre",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2023-12-05",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjooo4n",
+  "artist": "Spiritualized",
   "venue": "Arizona Financial Theatre",
   "city": "Phoenix",
   "state": "AZ",
@@ -396,6 +495,28 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjovfsy",
+  "artist": "Spoon",
+  "venue": "Arizona Financial Theatre",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2023-08-30",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjoso74",
+  "artist": "White Reaper",
+  "venue": "Arizona Financial Theatre",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2023-08-30",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s037",
   "artist": "Phoenix",
   "venue": "Mortgage Matchup Center",
@@ -440,6 +561,17 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjoeu7l",
+  "artist": "EarthGang",
+  "venue": "Mortgage Matchup Center",
+  "city": "Phoenix",
+  "state": "AZ",
+  "country": "US",
+  "date": "2022-09-26",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s041",
   "artist": "IDKHOW",
   "venue": "The Van Buren",
@@ -464,6 +596,17 @@
  {
   "id": "s043",
   "artist": "Joywave",
+  "venue": "Terminal West",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2022-03-29",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjoe2eh",
+  "artist": "Joe P",
   "venue": "Terminal West",
   "city": "Atlanta",
   "state": "GA",
@@ -737,6 +880,17 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjo88vg",
+  "artist": "DRAM",
+  "venue": "Infinite Energy Arena",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2017-10-11",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s068",
   "artist": "Little Dragon",
   "venue": "The Masquerade",
@@ -794,6 +948,17 @@
  {
   "id": "s073",
   "artist": "Die Antwoord",
+  "venue": "Tabernacle",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2016-10-26",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjo1mt1",
+  "artist": "Death Trap",
   "venue": "Tabernacle",
   "city": "Atlanta",
   "state": "GA",
@@ -957,6 +1122,17 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjo3n07",
+  "artist": "Nicole Dollanganger",
+  "venue": "Buckhead Theatre",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2015-11-11",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s088",
   "artist": "Neon Indian",
   "venue": "Terminal West",
@@ -970,6 +1146,17 @@
  {
   "id": "s089",
   "artist": "Death Cab For Cutie",
+  "venue": "Fox Theatre",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2015-04-27",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjodhc1",
+  "artist": "The Antlers",
   "venue": "Fox Theatre",
   "city": "Atlanta",
   "state": "GA",
@@ -1067,8 +1254,30 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjo1hb9",
+  "artist": "Giraffage",
+  "venue": "The Masquerade",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2013-10-31",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s098",
   "artist": "Sigur Ros",
+  "venue": "Chastaine Park Ampitheatre",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2013-10-05",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjo032u",
+  "artist": "Julianna Barwick",
   "venue": "Chastaine Park Ampitheatre",
   "city": "Atlanta",
   "state": "GA",
@@ -1199,6 +1408,17 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjo6qr2",
+  "artist": "Ra Ra Riot",
+  "venue": "Fox Theatre",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2013-06-06",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s110",
   "artist": "Bill Burr",
   "venue": "Tabernacle",
@@ -1256,6 +1476,17 @@
  {
   "id": "s115",
   "artist": "Crystal Castles",
+  "venue": "The Masquerade",
+  "city": "Atlanta",
+  "state": "GA",
+  "country": "US",
+  "date": "2010-09-08",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjorr95",
+  "artist": "Bear in Heaven",
   "venue": "The Masquerade",
   "city": "Atlanta",
   "state": "GA",
@@ -1342,6 +1573,17 @@
   "notes": ""
  },
  {
+  "id": "smvlihkjph6zt",
+  "artist": "Lichens",
+  "venue": "Calvin College Fine Arts Center",
+  "city": "Grand Rapids",
+  "state": "MI",
+  "country": "US",
+  "date": "2008-04-02",
+  "type": "Music",
+  "notes": ""
+ },
+ {
   "id": "s123",
   "artist": "Quruli",
   "venue": "Intex Osaka",
@@ -1410,6 +1652,17 @@
  {
   "id": "s129",
   "artist": "Bjork",
+  "venue": "Fox Theatre",
+  "city": "Detroit",
+  "state": "MI",
+  "country": "US",
+  "date": "2007-09-11",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjpi8yx",
+  "artist": "M.I.A.",
   "venue": "Fox Theatre",
   "city": "Detroit",
   "state": "MI",
@@ -1520,6 +1773,17 @@
  {
   "id": "s139",
   "artist": "Sigur Ros",
+  "venue": "The Chicago Theater",
+  "city": "Chicago",
+  "state": "IL",
+  "country": "US",
+  "date": "2005-09-21",
+  "type": "Music",
+  "notes": ""
+ },
+ {
+  "id": "smvlihkjpnz89",
+  "artist": "Amiina",
   "venue": "The Chicago Theater",
   "city": "Chicago",
   "state": "IL",
