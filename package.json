@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "netlify dev",
+    "dev": "node scripts/dev.mjs",
     "build:identity": "esbuild scripts/identity-entry.js --bundle --format=esm --platform=browser --minify --outfile=vendor/identity.js"
   },
   "dependencies": {
