@@ -151,15 +151,20 @@ body.readonly .edit-only{display:none}
 .tools{display:flex;flex-wrap:wrap;gap:6px}
 .add-act{font-family:var(--mono);font-size:11px;padding:3px 8px;color:var(--muted);border-style:dashed}
 /* billing order sheet */
-.bill-for{font-size:14px;margin:-6px 0 4px}
 .bill{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:bill}
-.bill li{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--paper);counter-increment:bill}
+.bill li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:6px 8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--paper);counter-increment:bill;transition:border-color .15s}
+.bill li:focus-within{border-color:var(--muted)}
 .bill li::before{content:counter(bill);font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center}
-.bill .name{font-family:var(--display);font-weight:600;font-size:20px;line-height:1.1;overflow-wrap:anywhere}
+.bill .act{display:grid;gap:4px;min-width:0}
+.bill .act input{width:100%;padding:4px 8px}
+.bill .name{font-family:var(--display);font-weight:600;font-size:20px;line-height:1.1}
+.bill .note{font-size:13px}
 .bill li:first-child{border-color:var(--ink)}
 .bill li:first-child .name{font-weight:800}
-.bill .ctl{display:flex;gap:4px;align-items:center}
+.bill .ctl{grid-column:2;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .bill .ctl button{padding:3px 8px;font-size:13px}
+.bill .ctl .rm{transition:color .15s,border-color .15s}
+.bill .ctl .rm:hover{color:var(--comedy);border-color:var(--comedy)}
 .bill .star{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--upcoming)}
 @media (prefers-reduced-motion:no-preference){.bill li.moved{animation:rise .2s var(--ease)}}
 .stub.is-up{outline:2px solid var(--upcoming);outline-offset:-2px}
@@ -533,8 +538,6 @@ function stub(n){
   const k = nightKey(n);
   let seen = 'reveal';
   if (revealed.has(k)) seen = 'in';
-  let billBtn = '';
-  if (n.acts.length > 1) billBtn = `<button class="add-act" type="button" data-bill="${n.acts[0].id}">Edit bill</button>`;
   // Repeat sightings: the stub glows by its most-seen act; each repeat act gets a ×N badge
   const best = Math.max(...n.acts.map(a => nthSeen.get(a.id) || 1));
   let glow = '';
@@ -552,7 +555,7 @@ function stub(n){
           ${isToday?'<span class="tag up">Tonight</span>':up?'<span class="tag up">Upcoming</span>':''}</div>
         <ul class="acts">${n.acts.map((a,i)=>`<li class="${i===0?'first':''}"><button type="button" data-artist="${esc(a.artist)}" data-id="${a.id}" title="About ${esc(a.artist)}">${esc(a.artist)}</button>${act(a)}</li>`).join('')}</ul>
         ${notes.length?`<div class="notes">${notes.map(esc).join(' · ')}</div>`:''}
-        <div class="tools edit-only"><button class="add-act" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button>${billBtn}</div>
+        <div class="tools edit-only"><button class="add-act" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button><button class="add-act" type="button" data-bill="${n.acts[0].id}">Edit bill</button></div>
       </div></article>`;
 }
 // Stubs fade up the first time they scroll into view; ones already seen render in place,
@@ -758,27 +761,39 @@ function fields(s, multi){
     ${multi
       ? `<label for="f-artists">Artists<textarea id="f-artists" rows="4" required placeholder="One per line, headliner first">${esc(s.artist||'')}</textarea><span class="hint">Festival or multi-act bill? Put each act on its own line.</span></label>`
       : `<label for="f-artist">Artist<input id="f-artist" list="dl-artist" required value="${esc(s.artist)}"></label>`}
-    <label for="f-venue">Venue<input id="f-venue" list="dl-venue" value="${esc(s.venue)}"></label>
+    ${nightFields(s)}
+    <label for="f-notes">Notes<textarea id="f-notes" rows="3" placeholder="Who you went with, opener, setlist highlight…">${esc(s.notes||'')}</textarea></label>`;
+}
+// The details every act of a night shares. A blank type means the acts differ.
+function nightFields(s){
+  let mixed = '';
+  if (!s.type) mixed = `<option value="" selected>Mixed (keep as is)</option>`;
+  return `<label for="f-venue">Venue<input id="f-venue" list="dl-venue" value="${esc(s.venue)}"></label>
     <div class="row2">
       <label for="f-city">City<input id="f-city" list="dl-city" value="${esc(s.city)}"></label>
       <label for="f-state">State / region<input id="f-state" list="dl-state" value="${esc(s.state||'')}"></label>
     </div>
     <div class="row2">
       <label for="f-country">Country<input id="f-country" list="dl-country" value="${esc(s.country||'US')}"></label>
-      <label for="f-type">Type<select id="f-type">${['Music','Comedy'].map(t=>`<option ${t===s.type?'selected':''}>${t}</option>`).join('')}</select></label>
+      <label for="f-type">Type<select id="f-type">${mixed}${['Music','Comedy'].map(t=>`<option ${t===s.type?'selected':''}>${t}</option>`).join('')}</select></label>
     </div>
-    <label for="f-date">Date<input id="f-date" type="date" value="${s.date||''}"><span class="hint">Leave blank if you don't remember. Pick a future date to add it under Up next; it counts toward stats the day after.</span></label>
-    <label for="f-notes">Notes<textarea id="f-notes" rows="3" placeholder="Who you went with, opener, setlist highlight…">${esc(s.notes||'')}</textarea></label>`;
+    <label for="f-date">Date<input id="f-date" type="date" value="${s.date||''}"><span class="hint">Leave blank if you don't remember. Pick a future date to add it under Up next; it counts toward stats the day after.</span></label>`;
+}
+function readNight(){
+  return { venue:$('#f-venue').value.trim(), city:$('#f-city').value.trim(), state:$('#f-state').value.trim(), country:$('#f-country').value.trim()||'US', type:$('#f-type').value, date:$('#f-date').value||null };
 }
 function readForm(){
-  return { venue:$('#f-venue').value.trim(), city:$('#f-city').value.trim(), state:$('#f-state').value.trim(), country:$('#f-country').value.trim()||'US', type:$('#f-type').value, date:$('#f-date').value||null, notes:$('#f-notes').value.trim() };
+  return { ...readNight(), notes:$('#f-notes').value.trim() };
+}
+function undoNote(){
+  if (mode === 'netlify') return 'You can undo this from History.';
+  return "This can't be undone.";
 }
 function openEdit(id){
   const s = shows.find(x=>x.id===id); if(!s) return;
-  let undoNote = "This can't be undone.", historyBtn = '';
+  let historyBtn = '';
   if (mode === 'netlify') {
-    undoNote = 'You can undo this from History.';
-    historyBtn = `<button type="button" data-history="shows" data-key="${esc(id)}">History</button>`;
+    historyBtn =`<button type="button" data-history="shows" data-key="${esc(id)}">History</button>`;
   }
   openSheet(`<h3>Edit act</h3><form id="frm">${fields(s,false)}
     <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button><span class="spacer"></span>${historyBtn}<button type="button" class="danger" id="del">Delete</button></div>
@@ -787,7 +802,7 @@ function openEdit(id){
     Object.assign(s, readForm(), {artist:$('#f-artist').value.trim()});
     commit('Saved '+s.artist, {method:'PATCH', url:`${API}/${encodeURIComponent(id)}`, body:s}); });
   $('#del').addEventListener('click', () => {
-    $('#confirmBox').innerHTML = `<div class="confirm">Delete ${esc(s.artist)}? ${undoNote} <button type="button" class="danger" id="delYes">Delete</button><button type="button" id="delNo">Keep</button></div>`;
+    $('#confirmBox').innerHTML = `<div class="confirm">Delete ${esc(s.artist)}? ${undoNote()} <button type="button" class="danger" id="delYes">Delete</button><button type="button" id="delNo">Keep</button></div>`;
     $('#delYes').onclick = () => { shows = shows.filter(x=>x.id!==id); commit('Deleted '+s.artist, {method:'DELETE', url:`${API}/${encodeURIComponent(id)}`}); };
     $('#delNo').onclick = () => $('#confirmBox').innerHTML='';
   });
@@ -807,49 +822,76 @@ function openAdd(base){
     commit(`Added ${names.length} act${names.length>1?'s':''}`, {method:'POST', url:API, body:{rows, after}});
   });
 }
-// Reorder one night's acts: first = headliner
+// Edit a whole night in one step: its shared details and its acts (first = headliner)
 function openBill(id){
   const night = nights(shows).find(n => n.acts.some(a => a.id === id)); if (!night) return;
-  let order = night.acts.map(a => a.id), moved = null;
-  const name = x => shows.find(s => s.id === x).artist;
+  const was = night.acts.map(a => a.id);
+  // A working copy, so Cancel leaves the real list alone
+  let order = night.acts.map(a => ({...a})), moved = null;
+  const rows = () => order.map((a, i) => {
+    let ctl = '<span class="star">★ Headliner</span>';
+    if (i > 0) {
+      let down = '';
+      if (i < order.length - 1) down = `<button type="button" data-move="${i}" data-by="1" aria-label="Move ${esc(a.artist)} down">↓</button>`;
+      ctl = `<button type="button" data-move="${i}" data-by="-1" aria-label="Move ${esc(a.artist)} up">↑</button>${down}<button type="button" data-top="${i}">Make headliner</button>`;
+    }
+    if (order.length > 1) ctl += `<button type="button" class="rm" data-rm="${i}" aria-label="Remove ${esc(a.artist)}">✕</button>`;
+    let cls = '';
+    if (a.id === moved) cls = 'moved';
+    return `<li class="${cls}"><span class="act">
+        <input class="name" list="dl-artist" required pattern=".*\\S.*" aria-label="Artist" placeholder="Artist" data-i="${i}" data-f="artist" value="${esc(a.artist)}">
+        <input class="note" aria-label="Notes" placeholder="Notes" data-i="${i}" data-f="notes" value="${esc(a.notes||'')}">
+      </span><span class="ctl">${ctl}</span></li>`;
+  }).join('');
   const draw = () => {
-    $('#billList').innerHTML = order.map((x, i) => {
-      let ctl = '<span class="star">★ Headliner</span>';
-      if (i > 0) {
-        let down = '';
-        if (i < order.length - 1) down = `<button type="button" data-move="${i}" data-by="1" aria-label="Move ${esc(name(x))} down">↓</button>`;
-        ctl = `<button type="button" data-move="${i}" data-by="-1" aria-label="Move ${esc(name(x))} up">↑</button>${down}<button type="button" data-top="${i}">Make headliner</button>`;
-      }
-      let cls = '';
-      if (x === moved) cls = 'moved';
-      return `<li class="${cls}"><span class="name">${esc(name(x))}</span><span class="ctl">${ctl}</span></li>`;
-    }).join('');
+    $('#billList').innerHTML = rows();
+    $('#billReverse').hidden = order.length < 2;
   };
-  let when = 'Undated';
-  if (night.date) when = fmt(night.date);
-  openSheet(`<h3>Edit bill</h3><form id="frm">
-    <p class="hint bill-for">${esc(night.venue || 'Unknown venue')} · ${esc(when)}</p>
-    <ol class="bill" id="billList"></ol>
-    <div class="foot"><button type="button" id="billReverse">Reverse order</button></div>
-    <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button></div></form>`);
-  draw();
+  const types = [...new Set(order.map(a => a.type))];
+  let type = '';
+  if (types.length === 1) type = types[0];
+  openSheet(`<h3>Edit bill</h3><form id="frm">${datalists()}
+    <ol class="bill" id="billList">${rows()}</ol>
+    <div class="foot"><button type="button" id="billAdd">+ Add act</button><button type="button" id="billReverse">Reverse order</button></div>
+    ${nightFields({...night, type})}
+    <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button><span class="spacer"></span><button type="button" class="danger" id="del">Delete bill</button></div>
+    <div id="confirmBox"></div></form>`);
+  $('#billReverse').hidden = order.length < 2;
+  // Typing doesn't redraw, so the cursor stays put
+  $('#billList').addEventListener('input', e => { order[+e.target.dataset.i][e.target.dataset.f] = e.target.value; });
   $('#billList').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.rm !== undefined) { order.splice(+b.dataset.rm, 1); moved = null; draw(); return; }
     const i = +(b.dataset.move ?? b.dataset.top);
-    moved = order[i];
+    moved = order[i].id;
     if (b.dataset.top !== undefined) order = [order[i], ...order.filter((_, j) => j !== i)];
     else { const j = i + +b.dataset.by; [order[i], order[j]] = [order[j], order[i]]; }
     draw();
   });
-  $('#billReverse').onclick = () => { order.reverse(); moved = order[0]; draw(); };
-  $('#frm').addEventListener('submit', e => { e.preventDefault();
-    if (order.join() === night.acts.map(a => a.id).join()) { closeSheet(); return; }
-    // the night keeps its place in the list: its acts go back where the first one was, in the new order
-    const at = shows.findIndex(s => order.includes(s.id));
-    const acts = order.map(x => shows.find(s => s.id === x));
-    shows = shows.filter(s => !order.includes(s.id));
+  $('#billAdd').onclick = () => {
+    const a = {id:newId(), artist:'', notes:'', type:order[0].type};
+    order.push(a); moved = a.id; draw();
+    $('#billList li:last-child .name').focus();
+  };
+  $('#billReverse').onclick = () => { order.reverse(); moved = order[0].id; draw(); };
+  // The night keeps its place in the list: its acts go back where the first one was
+  const putBack = acts => {
+    const at = shows.findIndex(s => was.includes(s.id));
+    shows = shows.filter(s => !was.includes(s.id));
     shows.splice(at, 0, ...acts);
-    commit(`${acts[0].artist} is the headliner`, {method:'POST', url:`${API}/order`, body:{ids:order}});
+  };
+  $('#del').addEventListener('click', () => {
+    let count = `${was.length} acts`;
+    if (was.length === 1) count = '1 act';
+    $('#confirmBox').innerHTML = `<div class="confirm">Delete this bill (${count})? ${undoNote()} <button type="button" class="danger" id="delYes">Delete</button><button type="button" id="delNo">Keep</button></div>`;
+    $('#delYes').onclick = () => { putBack([]); commit('Deleted bill', {method:'POST', url:`${API}/bill`, body:{was, acts:[]}}); };
+    $('#delNo').onclick = () => $('#confirmBox').innerHTML='';
+  });
+  $('#frm').addEventListener('submit', e => { e.preventDefault();
+    const f = readNight();
+    const acts = order.map(a => ({...a, ...f, type:f.type || a.type, artist:a.artist.trim(), notes:(a.notes||'').trim()}));
+    putBack(acts);
+    commit('Saved bill', {method:'POST', url:`${API}/bill`, body:{was, acts}});
   });
 }
 function openData(){
@@ -910,19 +952,64 @@ function changeDiff(c){
   if (b && !a) return [['Match removed', b.wiki || '', '']];
   return Object.keys(INFO_LABELS).filter(k => fmtVal(b?.[k]) !== fmtVal(a?.[k])).map(k => [INFO_LABELS[k], fmtVal(b?.[k]), fmtVal(a?.[k])]);
 }
-function changeItem(c){
+// Changes saved together become one history entry
+function groupChanges(list){
+  const groups = new Map();
+  for (const c of list) {
+    const k = c.batch || c.id;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(c);
+  }
+  return [...groups.values()];
+}
+function batchVerb(cs){
+  if (cs[0].undo_of) return 'Undid bill change';
+  if (cs.every(c => c.action === 'delete')) return 'Deleted bill';
+  return 'Edited bill';
+}
+function batchTitle(cs){
+  let changed = cs.filter(c => c.after);
+  if (!changed.length) changed = cs;
+  const acts = changed.map(c => c.after || c.before).sort((a, b) => a.sort_order - b.sort_order);
+  return `${changeTitle({table:'shows', after:acts[0]})} + others`;
+}
+// What changed across the bill. A venue change touches every act but reads once.
+function batchDiff(cs){
+  const out = new Map();
+  for (const c of cs) {
+    let rows = changeDiff(c);
+    if (c.action === 'insert') rows = [['Added', c.after.artist, '']];
+    if (c.action === 'delete') rows = [['Removed', c.before.artist, '']];
+    for (const r of rows) {
+      let row = r;
+      if (r[0] === 'Billing order') row = [r[0], `${c.after.artist} ${r[1]}`, ''];
+      out.set(row.join('|'), row);
+    }
+  }
+  return [...out.values()];
+}
+function changeItem(cs){
+  const c = cs[0];
+  let verb = changeVerb(c), what = changeTitle(c), rows = changeDiff(c), kind = c.action;
+  if (cs.length > 1) {
+    verb = batchVerb(cs); what = batchTitle(cs); rows = batchDiff(cs);
+    if (!cs.every(x => x.action === c.action)) kind = 'update';
+  }
   const when = new Date(c.at).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'});
-  const diff = changeDiff(c).map(([f, from, to]) => {
+  const diff = rows.map(([f, from, to]) => {
     let val = esc(from);
     if (to) val = `<del>${esc(from)}</del> <span class="arrow">→</span> <ins>${esc(to)}</ins>`;
     return `<li><span class="f">${esc(f)}</span><span>${val}</span></li>`;
   }).join('');
-  let action = `<button type="button" data-undo="${c.id}">Undo</button>`;
-  if (c.undone) action = '<span class="tag">Undone</span>';
+  // A single act's history shows only its part of a bill change, but undo reverses all of it
+  let undoLabel = 'Undo';
+  if (c.batch_size > cs.length) undoLabel = 'Undo whole bill';
+  let action = `<button type="button" data-undo="${c.id}">${undoLabel}</button>`;
+  if (cs.some(x => x.undone)) action = '<span class="tag">Undone</span>';
   let diffList = '';
   if (diff) diffList = `<ul class="diff">${diff}</ul>`;
-  return `<li class="change ${c.action}">
-    <div class="head"><span class="verb">${esc(changeVerb(c))}</span><span class="what">${esc(changeTitle(c))}</span>${action}</div>
+  return `<li class="change ${kind}">
+    <div class="head"><span class="verb">${esc(verb)}</span><span class="what">${esc(what)}</span>${action}</div>
     ${diffList}
     <div class="meta">#${c.id} · ${esc(when)} · ${esc(c.by || 'unknown')}</div></li>`;
 }
@@ -941,7 +1028,7 @@ async function openHistory(table, key, before){
   if (!res) { closeSheet(); return; }
   const list = $('#historyList'); if (!list) return;
   if (!before) list.innerHTML = '';
-  list.insertAdjacentHTML('beforeend', res.changes.map(changeItem).join(''));
+  list.insertAdjacentHTML('beforeend', groupChanges(res.changes).map(changeItem).join(''));
   if (!list.children.length) list.innerHTML = '<li class="hint">No changes yet.</li>';
   const last = res.changes[res.changes.length - 1];
   $('#historyMore').innerHTML = '';

@@ -4,10 +4,12 @@
 // PUT    /api/shows      -> editors: replace the whole list (Data panel import). Only real differences are logged.
 // PATCH  /api/shows/:id  -> editors: update one show
 // DELETE /api/shows/:id  -> editors: delete one show
-// POST   /api/shows/order -> editors: set one night's billing order { ids: [headliner, ...] }
-//                            ids must be every act of that night; the night keeps its place in the log
+// POST   /api/shows/bill -> editors: save one night { was: [id, ...], acts: [show, ...] }
+//                           was = the night's acts when the editor opened it; refused if that's out of date
+//                           acts = the night as it should be, headliner first. Acts left out are deleted,
+//                           so an empty list removes the night. It keeps its place in the log.
 import { requireEditor, json } from "../lib/auth.mjs";
-import { read, write, cleanShow, newId, Invalid, SHOW_FIELDS, SHOW_SELECT } from "../lib/db.mjs";
+import { read, write, cleanShow, newId, newBatch, Invalid, SHOW_FIELDS, SHOW_SELECT } from "../lib/db.mjs";
 
 const bad = (msg) => new Response(msg, { status: 400 });
 const COLS = SHOW_FIELDS.join(", ");
@@ -29,23 +31,41 @@ export default async (req, context) => {
   }
 
   try {
-    if (req.method === "POST" && id === "order") {
-      const ids = body?.ids;
-      if (!Array.isArray(ids) || !ids.length || new Set(ids).size !== ids.length) return bad("Expected { ids: [...] }");
-      const result = await write(user, async (c) => {
+    if (req.method === "POST" && id === "bill") {
+      const was = body?.was;
+      if (!Array.isArray(was) || !was.length || new Set(was).size !== was.length || !Array.isArray(body.acts))
+        return bad("Expected { was: [...], acts: [...] }");
+      const acts = body.acts.map((r) => ({ id: String(r.id || newId()), ...cleanShow(r) }));
+      if (new Set(acts.map((a) => a.id)).size !== acts.length) return bad("The same act is listed twice");
+      const saved = await write(user, async (c) => {
         // Every act sharing the first act's night (same grouping as the page: date + venue + city, any case)
         const { rows: night } = await c.query(
           `SELECT n.id, n.sort_order FROM shows s JOIN shows n
              ON n.date IS NOT DISTINCT FROM s.date AND lower(n.venue) = lower(s.venue) AND lower(n.city) = lower(s.city)
-           WHERE s.id = $1 ORDER BY n.sort_order FOR UPDATE OF n`, [ids[0]]);
+           WHERE s.id = $1 ORDER BY n.sort_order FOR UPDATE OF n`, [was[0]]);
         const inNight = new Set(night.map((r) => r.id));
-        if (night.length !== ids.length || !ids.every((x) => inNight.has(x))) return null;
-        // Hand the night's existing sort_order values out in the new order
-        for (const [i, x] of ids.entries())
-          await c.query("UPDATE shows SET sort_order = $2 WHERE id = $1", [x, night[i].sort_order]);
-        return ids.length;
-      });
-      if (result === null) return bad("The list must be every act of one night. Reload and try again.");
+        if (night.length !== was.length || !was.every((x) => inNight.has(x))) return false;
+        // Hand the night's existing sort_order values out in the new order; extra acts slot in after them
+        const order = night.map((r) => r.sort_order);
+        if (acts.length > order.length) order.push(...await slots(c, night[night.length - 1].id, acts.length - order.length));
+        const keep = new Set(acts.map((a) => a.id));
+        for (const r of night)
+          if (!keep.has(r.id)) await c.query("DELETE FROM shows WHERE id = $1", [r.id]);
+        const orderParam = `$${SHOW_FIELDS.length + 2}`;
+        for (const [i, a] of acts.entries()) {
+          if (inNight.has(a.id)) {
+            await c.query(
+              `UPDATE shows SET ${SHOW_FIELDS.map((f, j) => `${f} = $${j + 2}`).join(", ")}, sort_order = ${orderParam} WHERE id = $1`,
+              [a.id, ...values(a), order[i]]);
+          } else {
+            await c.query(
+              `INSERT INTO shows (id, ${COLS}, sort_order) VALUES ($1, ${PARAMS}, ${orderParam})`,
+              [a.id, ...values(a), order[i]]);
+          }
+        }
+        return true;
+      }, newBatch());
+      if (!saved) return bad("This bill changed since you opened it. Reload and try again.");
       return json({ ok: true });
     }
 

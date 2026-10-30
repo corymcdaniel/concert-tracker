@@ -1,7 +1,9 @@
 // Database access shared by the functions.
-//   read(text, params)       one-off query, returns rows
-//   write(user, fn, undoOf)  runs fn(client) in a transaction tagged with the
-//                            editor, so the change-log trigger records who did it
+//   read(text, params)      one-off query, returns rows
+//   write(user, fn, batch)  runs fn(client) in a transaction tagged with the
+//                           editor, so the change-log trigger records who did it.
+//                           batch (from newBatch) groups its changes in History.
+import { randomUUID } from "node:crypto";
 import { getDatabase } from "@netlify/database";
 
 let db;
@@ -11,12 +13,12 @@ export async function read(text, params = []) {
   return (await pool().query(text, params)).rows;
 }
 
-export async function write(user, fn, undoOf = null) {
+export async function write(user, fn, batch = null) {
   const client = await pool().connect();
   try {
     await client.query("BEGIN");
-    await client.query("SELECT set_config('app.user', $1, true), set_config('app.undo_of', $2, true)",
-      [user?.email || user?.name || "", String(undoOf ?? "")]);
+    await client.query("SELECT set_config('app.user', $1, true), set_config('app.batch', $2, true)",
+      [user?.email || user?.name || "", batch ?? ""]);
     const out = await fn(client);
     await client.query("COMMIT");
     return out;
@@ -56,3 +58,4 @@ export function cleanShow(s) {
 }
 
 export const newId = () => "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+export const newBatch = () => randomUUID();

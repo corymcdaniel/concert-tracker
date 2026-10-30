@@ -1,10 +1,11 @@
 // GET  /api/changes                 -> editors: recent changes, newest first
 //        ?table=shows&row=<id>         only that row's history
 //        ?before=<change id>           older page
-// POST /api/changes/:id/undo        -> editors: reverse one change. Refused (409) if the row
-//                                      has changed again since, so newer edits are never lost.
+// POST /api/changes/:id/undo        -> editors: reverse one change, along with the rest of its batch.
+//                                      Refused (409) if any row has changed again since, so newer
+//                                      edits are never lost.
 import { requireEditor, json } from "../lib/auth.mjs";
-import { read, write } from "../lib/db.mjs";
+import { read, write, newBatch } from "../lib/db.mjs";
 
 // Primary key and editable columns per tracked table (also the whitelist for undo's SQL)
 const TABLES = {
@@ -13,6 +14,14 @@ const TABLES = {
   venues: { pk: "key", cols: ["info"] },
 };
 const PAGE = 50;
+const SELECT = `SELECT c.id, c.table_name AS table, c.row_id AS row, c.action, c.before, c.after, c.changed_by AS by,
+              c.changed_at AS at, c.undo_of, c.batch,
+              (SELECT count(*)::int FROM changes b WHERE b.batch = c.batch) AS batch_size,
+              EXISTS (SELECT 1 FROM changes u WHERE u.undo_of = c.id) AS undone
+       FROM changes c`;
+
+// Thrown inside the transaction, so anything already undone in the batch rolls back
+class Conflict extends Error {}
 
 export default async (req, context) => {
   const { user, error } = await requireEditor(req);
@@ -28,38 +37,51 @@ export default async (req, context) => {
     if (q.get("before")) { params.push(q.get("before")); where.push(`id < $${params.length}`); }
     let filter = "";
     if (where.length) filter = "WHERE " + where.join(" AND ");
-    const rows = await read(
-      `SELECT c.id, c.table_name AS table, c.row_id AS row, c.action, c.before, c.after, c.changed_by AS by,
-              c.changed_at AS at, c.undo_of, EXISTS (SELECT 1 FROM changes u WHERE u.undo_of = c.id) AS undone
-       FROM changes c ${filter}
-       ORDER BY c.id DESC LIMIT ${PAGE}`, params);
-    return json({ changes: rows, more: rows.length === PAGE });
+    const rows = await read(`${SELECT} ${filter} ORDER BY c.id DESC LIMIT ${PAGE}`, params);
+    const more = rows.length === PAGE;
+    // A batch is one entry on the page, so a page never ends partway through one
+    const last = rows[rows.length - 1];
+    if (last?.batch && !q.get("row"))
+      rows.push(...await read(`${SELECT} WHERE c.batch = $1 AND c.id < $2 ORDER BY c.id DESC`, [last.batch, last.id]));
+    return json({ changes: rows, more });
   }
 
   if (req.method === "POST" && id) {
     const [ch] = await read("SELECT * FROM changes WHERE id = $1", [id]);
     if (!ch) return new Response("Not found", { status: 404 });
-    const t = TABLES[ch.table_name];
-    const result = await write(user, async (c) => {
-      // The row must still look exactly like this change left it
-      const { rows: [cur] } = await c.query(
-        `SELECT to_jsonb(t) - 'created_at' - 'updated_at' AS row FROM ${ch.table_name} t WHERE ${t.pk} = $1 FOR UPDATE`, [ch.row_id]);
-      if (JSON.stringify(sortKeys(cur?.row ?? null)) !== JSON.stringify(sortKeys(ch.after)))
-        return "conflict";
-      if (ch.action === "insert") {
-        await c.query(`DELETE FROM ${ch.table_name} WHERE ${t.pk} = $1`, [ch.row_id]);
-      } else if (ch.action === "delete") {
-        const cols = [t.pk, ...t.cols].join(", ");
-        await c.query(`INSERT INTO ${ch.table_name} (${cols}) SELECT ${cols} FROM jsonb_populate_record(NULL::${ch.table_name}, $1)`, [ch.before]);
-      } else {
-        const cols = t.cols.join(", ");
-        await c.query(`UPDATE ${ch.table_name} SET (${cols}) = (SELECT ${cols} FROM jsonb_populate_record(NULL::${ch.table_name}, $1)) WHERE ${t.pk} = $2`,
-          [ch.before, ch.row_id]);
-      }
-      return "ok";
-    }, ch.id);
-    if (result === "conflict")
-      return new Response("This was changed again afterwards. Undo the newer change first.", { status: 409 });
+    // Newest first, so a row touched twice in a batch unwinds in order
+    let group = [ch];
+    let batch = null;
+    if (ch.batch) {
+      group = await read("SELECT * FROM changes WHERE batch = $1 ORDER BY id DESC", [ch.batch]);
+      batch = newBatch();
+    }
+    try {
+      await write(user, async (c) => {
+        for (const g of group) {
+          const t = TABLES[g.table_name];
+          await c.query("SELECT set_config('app.undo_of', $1, true)", [String(g.id)]);
+          // The row must still look exactly like this change left it
+          const { rows: [cur] } = await c.query(
+            `SELECT to_jsonb(t) - 'created_at' - 'updated_at' AS row FROM ${g.table_name} t WHERE ${t.pk} = $1 FOR UPDATE`, [g.row_id]);
+          if (JSON.stringify(sortKeys(cur?.row ?? null)) !== JSON.stringify(sortKeys(g.after))) throw new Conflict();
+          if (g.action === "insert") {
+            await c.query(`DELETE FROM ${g.table_name} WHERE ${t.pk} = $1`, [g.row_id]);
+          } else if (g.action === "delete") {
+            const cols = [t.pk, ...t.cols].join(", ");
+            await c.query(`INSERT INTO ${g.table_name} (${cols}) SELECT ${cols} FROM jsonb_populate_record(NULL::${g.table_name}, $1)`, [g.before]);
+          } else {
+            const cols = t.cols.join(", ");
+            await c.query(`UPDATE ${g.table_name} SET (${cols}) = (SELECT ${cols} FROM jsonb_populate_record(NULL::${g.table_name}, $1)) WHERE ${t.pk} = $2`,
+              [g.before, g.row_id]);
+          }
+        }
+      }, batch);
+    } catch (e) {
+      if (e instanceof Conflict)
+        return new Response("This was changed again afterwards. Undo the newer change first.", { status: 409 });
+      throw e;
+    }
     return json({ ok: true });
   }
   return new Response("Method not allowed", { status: 405 });

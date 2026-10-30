@@ -9,7 +9,7 @@ in a history they can browse and undo.
 |---|---|
 | `index.html` | The whole app. No build step. |
 | `netlify/database/migrations/` | Database schema and seed data, applied automatically on deploy. |
-| `netlify/functions/shows.mjs` | `GET /api/shows` (public); add, edit, delete and bulk replace (editors). |
+| `netlify/functions/shows.mjs` | `GET /api/shows` (public); add, edit, delete, save a whole bill and bulk replace (editors). |
 | `netlify/functions/info.mjs` | `GET /api/info` (public); save one artist or venue record (editors). |
 | `netlify/functions/changes.mjs` | Change history and undo (editors). |
 | `netlify/lib/db.mjs` | Database connection, transactions tagged with the editor, show validation. |
@@ -30,6 +30,10 @@ The data lives in Netlify Database (Postgres). Four tables:
 
 Acts sharing a date + venue + city are shown as one night, billed in `sort_order` (headliner first). Adding an act to a
 night places it after the night's last act; a new show goes to the top.
+
+**Edit bill** on a stub edits the whole night in one sheet: venue, date and the other shared details, plus each act's
+name and notes, billing order, and adding or removing acts. **Delete bill** removes every act of the night. Changing a
+night's date or venue to match another night merges the two, since that's what makes acts one night.
 
 **Upcoming shows:** add a show with a future date and it's pinned under **Up next** at the top of the log, soonest first.
 Upcoming shows (including tonight's) are left out of every count: header totals, the Stats tab, the year headers and
@@ -59,6 +63,9 @@ On the site, signed-in editors get:
 - **History** in a show's edit sheet, or an artist/venue's **Edit info**: just that record's changes.
 - **Undo** on each change. An undo is itself a change (marked "Undid change #N"), so it can be undone too.
   If the record has been changed again since, the undo is refused, so newer edits are never overwritten.
+- **One entry per bill:** everything saved by **Edit bill** or **Delete bill** shares a `batch` id, so it shows as one
+  change and one **Undo** reverses all of it, or none of it if any act has changed since. In a single act's history,
+  the button reads **Undo whole bill**.
 
 To look at history in SQL:
 
@@ -68,7 +75,7 @@ FROM changes WHERE table_name = 'shows' AND row_id = 's036' ORDER BY id DESC;
 ```
 
 ### Changing the schema
-Add a new numbered file to `netlify/database/migrations/` (e.g. `0004_add_rating.sql`). Applied migrations can't be
+Add a new numbered file to `netlify/database/migrations/` (e.g. `0005_add_rating.sql`). Applied migrations can't be
 edited. Netlify applies new migrations right before a deploy is published; a failing migration blocks the deploy.
 Deploy previews get their own copy of the production database, so testing there never touches real data.
 
