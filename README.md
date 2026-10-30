@@ -12,6 +12,8 @@ in a history they can browse and undo.
 | `netlify/functions/shows.mjs` | `GET /api/shows` (public); add, edit, delete, save a whole bill and bulk replace (editors). |
 | `netlify/functions/info.mjs` | `GET /api/info` (public); save one artist or venue record (editors). |
 | `netlify/functions/changes.mjs` | Change history and undo (editors). |
+| `netlify/functions/setlists.mjs` | `GET /api/setlists` (public); look up the next act on setlist.fm (editors). |
+| `map-land.json`, `hometowns.json` | Static data for the Hometowns map. Rebuild with `node scripts/build-map.mjs`. |
 | `netlify/lib/db.mjs` | Database connection, transactions tagged with the editor, show validation. |
 | `netlify/lib/auth.mjs` | Shared editor check. |
 | `shows.json`, `info.json` | The data the database was seeded from. Also used when `index.html` is opened from disk. |
@@ -19,11 +21,12 @@ in a history they can browse and undo.
 | `vendor/identity.js` | Prebuilt Netlify Identity client (`@netlify/identity` 2.0.0). |
 
 ## Data
-The data lives in Netlify Database (Postgres). Four tables:
+The data lives in Netlify Database (Postgres). Five tables:
 
 | Table | Holds |
 |---|---|
-| `shows` | One row per act per night: `id, artist, venue, city, state, country, date, type, notes, sort_order`, plus `created_at` / `updated_at`. |
+| `shows` | One row per act per night: `id, artist, venue, city, state, country, date, type, notes, rating, price, companions, sort_order`, plus `created_at` / `updated_at`. |
+| `setlists` | setlist.fm results per act and date. A cache of outside data, so it isn't in the change log. |
 | `artists` | `name` → `info` (jsonb Wikipedia/Wikidata details, or `NULL` when no match was found). |
 | `venues` | `key` (`venue|city`) → `info`, same as artists. |
 | `changes` | Every insert, update and delete on the three tables above. |
@@ -52,6 +55,17 @@ Artist and venue `info` looks like this:
 photo, its credit and the Wikipedia summary live from Wikipedia. Editors can fix any match from the pop-up with
 **Edit info → Look up**.
 
+### Ratings, prices and companions
+Set per night from **Edit bill** or when adding a show. Only editors can set them, and the API refuses anyone else.
+Ratings are public. Price and companions are left out of `GET /api/shows` unless the request comes from an editor, and
+their panels only appear when there's data to show. They're also in `changes`, which only editors can read.
+If a save leaves these fields out, the saved values are kept, so a page loaded before signing in can't blank them.
+
+### Setlists
+**Check setlist.fm** in the Stats tab (editors) looks up each past music act, one request at a time. Comedy is skipped.
+Acts with no result are checked again after 30 days. The key stays on the server.
+Set `SETLISTFM_API_KEY` in Netlify, and in a git-ignored `.env.dev` locally (see `.env.example`).
+
 ### Change history
 A database trigger writes a row to `changes` for every insert, update and delete, with the row as it was
 (`before`) and as it became (`after`), when, and which editor (`changed_by`). Because it's a trigger, nothing can
@@ -75,7 +89,7 @@ FROM changes WHERE table_name = 'shows' AND row_id = 's036' ORDER BY id DESC;
 ```
 
 ### Changing the schema
-Add a new numbered file to `netlify/database/migrations/` (e.g. `0005_add_rating.sql`). Applied migrations can't be
+Add a new numbered file to `netlify/database/migrations/` (e.g. `0006_add_tour.sql`). Applied migrations can't be
 edited. Netlify applies new migrations right before a deploy is published; a failing migration blocks the deploy.
 Deploy previews get their own copy of the production database, so testing there never touches real data.
 
@@ -96,9 +110,9 @@ Deploy previews get their own copy of the production database, so testing there 
 ## Local development
 ```
 npm install
-npx netlify dev
+npm run dev
 ```
-`netlify dev` starts a local Postgres database. Useful commands:
+`npm run dev` runs `netlify dev` with the variables from `.env.dev`, and starts a local Postgres database. Useful commands:
 
 ```
 npx netlify database migrations apply   # apply new migrations locally
@@ -114,6 +128,12 @@ Opening `index.html` straight from disk also works: it runs in "local" mode and 
 | `@netlify/database` | Connects functions to Netlify Database; picks the right driver for local dev vs. production. |
 | `@netlify/identity` | Sign-in for editors, and the server-side check that a request comes from one. |
 | `esbuild` (dev) | Builds the browser copy of the Identity client into `vendor/identity.js`. |
+
+No charting, map or animation libraries: the charts and map are plain HTML and SVG, and the motion is CSS plus browser
+features (view transitions and scroll timelines, where supported). All of it respects `prefers-reduced-motion`.
+
+External data: map outlines from Natural Earth (public domain, via `world-atlas`), hometown coordinates from Wikidata,
+setlists from [setlist.fm](https://www.setlist.fm).
 
 ## Upgrading the Identity client
 ```
