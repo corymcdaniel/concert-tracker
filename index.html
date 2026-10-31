@@ -243,6 +243,8 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 .history .diff .arrow{color:var(--muted)}
 .history .meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:6px;z-index:30;font-size:14px}
+.to-top{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;gap:6px;align-items:center;padding:8px 14px 6px;background:var(--ink);color:var(--paper);border-color:var(--ink);font-family:var(--display);font-weight:800;font-size:18px;line-height:1;text-transform:uppercase;box-shadow:0 4px 14px rgb(0 0 0 / .25);opacity:0;visibility:hidden}
+.to-top.on{opacity:1;visibility:visible}
 
 /* ---------- motion ----------
    Subtle and quick: 150–250ms, small distances. Everything here is skipped for
@@ -260,6 +262,9 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
   .info.closing{animation:pop-out .15s ease-in forwards}
   .scrim{animation:fade-in .2s var(--ease)}
   .scrim.closing{animation:fade-out .16s ease-in forwards}
+  .to-top{transform:translateY(8px);transition:opacity .2s var(--ease),transform .2s var(--ease),visibility .2s}
+  .to-top.on{transform:none}
+  .to-top.on:hover,.to-top.on:focus-visible{transform:translateY(-3px)}
   .toast.pop{animation:toast-in .2s var(--ease)}
   .toast.closing{animation:fade-out .2s ease-in forwards}
   .history .change{animation:rise .2s var(--ease) both}
@@ -329,14 +334,32 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 .maprow .seg button{padding:4px 10px;font-size:13px}
 .pininfo{margin-top:8px;font-size:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .pininfo b{font-weight:600;margin-right:4px}
+.wallbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.wallbar .seg button{padding:4px 10px;font-size:13px}
+.wallbar select{padding:4px 8px;font-size:13px;max-width:190px}
+.wallbar [data-wall-clear]{padding:4px 10px;font-size:13px}
+.wallinfo{min-height:21px;margin:0 0 8px;font-size:14px;color:var(--muted)}
+.wallinfo b{color:var(--ink);font-weight:600}
 .wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));grid-auto-rows:72px;grid-auto-flow:dense;gap:4px}
-.wall button{position:relative;padding:0;border:0;border-radius:6px;overflow:hidden;background:var(--chip);font-size:11px;color:var(--muted)}
+.wall.timeline{grid-auto-flow:row}
+.wall button{position:relative;padding:0;border:0;border-radius:6px;overflow:hidden;background:color-mix(in oklab,var(--music) 18%,var(--chip));color:var(--ink);view-transition-class:wall-tile;transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.wall button:hover,.wall button:focus-visible{z-index:1;transform:scale(1.05);box-shadow:0 6px 16px rgb(0 0 0 / .3)}
+.wall button.c{background:color-mix(in oklab,var(--comedy) 18%,var(--chip))}
+.wall button[hidden]{display:none}
 .wall .t2{grid-column:span 2;grid-row:span 2}
 .wall .t3{grid-column:span 3;grid-row:span 3}
+.wall .nm{position:absolute;inset:0;display:grid;place-items:center;padding:4px;font-family:var(--display);font-style:normal;font-weight:700;font-size:14px;line-height:1;text-align:center;text-transform:uppercase;overflow-wrap:anywhere}
+.wall .nm.long{font-size:11px}
+.wall .t2 .nm{font-size:24px}
+.wall .t3 .nm{font-size:36px}
 .wall img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s var(--ease)}
 .wall button:hover img{transform:scale(1.07)}
-.wall span{position:absolute;inset:auto 0 0;padding:14px 5px 3px;color:#fff;background:linear-gradient(transparent,rgb(0 0 0 / .75));text-align:left;line-height:1.15;opacity:0;transition:opacity .15s}
-.wall button:hover span,.wall button:focus-visible span,.wall .t3 span{opacity:1}
+.wall span{position:absolute;inset:auto 0 0;padding:14px 5px 3px;color:#fff;background:linear-gradient(transparent,rgb(0 0 0 / .75));font-size:11px;text-align:left;line-height:1.15;opacity:0;transition:opacity .15s}
+.wall button:hover img~span,.wall button:focus-visible img~span,.wall .t3 img~span{opacity:1}
+.wall-yr{display:grid;place-items:center;border-radius:6px;background:var(--ink);color:var(--paper);font-family:var(--display);font-weight:800;font-size:24px}
+@media (prefers-reduced-motion:no-preference){
+  ::view-transition-group(.wall-tile){animation-duration:.35s;animation-timing-function:var(--ease)}
+}
 .bucket{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .bucket button{position:relative;aspect-ratio:1;padding:0;border:0;border-radius:8px;overflow:hidden;background:var(--chip);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .bucket button:hover,.bucket button:focus-visible{transform:translateY(-3px);box-shadow:0 8px 20px rgb(0 0 0 / .25)}
@@ -475,6 +498,7 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 <aside id="sheet" class="sheet" hidden aria-modal="true" role="dialog"></aside>
 <div id="info" class="info" role="dialog" aria-modal="true" hidden></div>
 <div id="toast" class="toast" hidden></div>
+<button id="toTop" class="to-top" type="button" aria-label="Up to the top of the page"><span aria-hidden="true">↑</span> Up</button>
 <dialog id="review" class="review" aria-label="Year in review"></dialog>
 <div class="progress" aria-hidden="true"></div>
 
@@ -924,6 +948,7 @@ function renderStatsView(){
     ${setlistPanel(rank)}
     <div class="panel"><h3>Seen more than once <span>${reps.length} artists</span></h3><div class="tbl-wrap">${tbl}</div></div>`;
   runCounters($('#statsView'));
+  arrangeWall();
   drawMap();
 }
 
@@ -1050,18 +1075,98 @@ function agePanel(dated){
     <div class="two"><div><p class="sub">Longest in the game</p><ul class="mini">${veterans.join('')}</ul></div>
     <div><p class="sub">Caught them early</p><ul class="mini">${rookies.join('')}</ul></div></div></div>`;
 }
-// Sized by how often you've seen them. Photos load as they scroll into view.
+// Sized by how often you've seen them. Photos load as they scroll into view, and sorting
+// or filtering moves the existing tiles (see arrangeWall) so they don't load again.
+let WALL = [];
+const wallOpts = {sort:'seen', genre:'', decade:''};
+const decadeOf = a => { if (!a.first) return ''; return `${a.first.slice(0,3)}0s`; };
 function wallPanel(past){
-  const counts = new Map();
-  past.forEach(s => { if (INFO.artists?.[s.artist]?.img) counts.set(s.artist, (counts.get(s.artist) || 0) + 1); });
-  if (!counts.size) return '';
-  const tiles = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([name, c]) => {
-    let size = '', times = '';
-    if (c >= 2) { size = 't2'; times = ` ×${c}`; }
-    if (c >= 4) size = 't3';
-    return `<button type="button" class="${size}" data-artist="${esc(name)}" title="${esc(name)}: ${plural(c,'time')}">${esc(name)}<img loading="lazy" src="${imgUrl(INFO.artists[name].img, 240)}" alt="" onerror="this.remove()"><span>${esc(name)}${times}</span></button>`;
+  const byName = new Map();
+  past.forEach(s => {
+    const a = byName.get(s.artist) || {name:s.artist, times:0, first:'', comedy:false, genres:INFO.artists?.[s.artist]?.genre || []};
+    a.times++;
+    if (s.date && (!a.first || s.date < a.first)) a.first = s.date;
+    if (s.type === 'Comedy') a.comedy = true;
+    byName.set(s.artist, a);
+  });
+  WALL = [...byName.values()];
+  if (!WALL.length) return '';
+  const genreCount = new Map();
+  WALL.forEach(a => a.genres.forEach(g => genreCount.set(g, (genreCount.get(g) || 0) + 1)));
+  const genres = [...genreCount].filter(g => g[1] >= 3).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const decades = [...new Set(WALL.map(decadeOf).filter(Boolean))].sort().reverse();
+  if (!genreCount.has(wallOpts.genre)) wallOpts.genre = '';
+  if (!decades.includes(wallOpts.decade)) wallOpts.decade = '';
+  const option = (value, label, on) => `<option value="${esc(value)}"${value === on ? ' selected' : ''}>${esc(label)}</option>`;
+  const tiles = WALL.map(a => {
+    let img = '', times = '', cls = '';
+    const rec = INFO.artists?.[a.name];
+    if (rec?.img) img = `<img loading="lazy" src="${imgUrl(rec.img, 240)}" alt="" onerror="this.remove()">`;
+    if (a.times >= 2) times = ` ×${a.times}`;
+    if (a.comedy) cls = 'c';
+    // Keeps a long word on one line in a small tile
+    let nameCls = 'nm';
+    if (a.name.split(/\s+/).some(w => w.length >= 11)) nameCls = 'nm long';
+    return `<button type="button" class="${cls}" data-artist="${esc(a.name)}" title="${esc(a.name)}: ${plural(a.times,'time')}"><i class="${nameCls}">${esc(a.name)}</i>${img}<span>${esc(a.name)}${times}</span></button>`;
   }).join('');
-  return `<div class="panel"><h3>Everyone you've seen <span>photos: Wikimedia Commons</span></h3><div class="wall">${tiles}</div></div>`;
+  return `<div class="panel"><h3>Everyone you've seen <span><span id="wallCount"></span> · photos: Wikimedia Commons</span></h3>
+    <div class="wallbar">
+      <div class="seg" role="group" aria-label="Order the wall">
+        <button type="button" data-wall-sort="seen">Most seen</button><button type="button" data-wall-sort="timeline">Timeline</button>
+      </div>
+      <select id="wallGenre" aria-label="Filter by genre">${option('', 'All genres', wallOpts.genre)}${genres.map(([g, n]) => option(g, `${g} (${n})`, wallOpts.genre)).join('')}</select>
+      <select id="wallDecade" aria-label="Filter by the decade you first saw them">${option('', 'First seen: any time', wallOpts.decade)}${decades.map(d => option(d, `First seen: ${d}`, wallOpts.decade)).join('')}</select>
+      <button type="button" data-wall-clear hidden>Clear</button>
+    </div>
+    <p class="wallinfo" id="wallInfo" aria-live="polite"></p>
+    <div class="wall" id="wall">${tiles}</div></div>`;
+}
+function arrangeWall(){
+  const box = $('#wall'); if (!box) return;
+  const {sort, genre, decade} = wallOpts;
+  const timeline = sort === 'timeline';
+  const list = WALL.filter(a => (!genre || a.genres.includes(genre)) && (!decade || decadeOf(a) === decade));
+  if (timeline) list.sort((a, b) => b.first.localeCompare(a.first) || a.name.localeCompare(b.name));
+  else list.sort((a, b) => b.times - a.times || a.name.localeCompare(b.name));
+  const tiles = new Map([...box.querySelectorAll('button')].map(b => [b.dataset.artist, b]));
+  const out = [];
+  let year = null;
+  list.forEach(a => {
+    const tile = tiles.get(a.name);
+    if (timeline) {
+      const y = a.first.slice(0,4) || '?';
+      if (y !== year) { const mark = document.createElement('div'); mark.className = 'wall-yr'; mark.textContent = y; out.push(mark); year = y; }
+    }
+    tile.hidden = false;
+    tile.classList.toggle('t2', !timeline && a.times >= 2 && a.times < 4);
+    tile.classList.toggle('t3', !timeline && a.times >= 4);
+    out.push(tile);
+    tiles.delete(a.name);
+  });
+  tiles.forEach(tile => { tile.hidden = true; out.push(tile); });
+  box.classList.toggle('timeline', timeline);
+  box.replaceChildren(...out);
+  $('#wallCount').textContent = plural(list.length, 'artist');
+  document.querySelectorAll('[data-wall-sort]').forEach(b => b.setAttribute('aria-pressed', b.dataset.wallSort === sort));
+  document.querySelector('[data-wall-clear]').hidden = !genre && !decade;
+  let info = 'Hover or tab to a tile for the details.';
+  if (!list.length) info = 'Nobody matches both of those. Try clearing a filter.';
+  $('#wallInfo').textContent = info;
+}
+// Tiles glide to their new spots where the browser supports view transitions
+function updateWall(){
+  if (!document.startViewTransition || !motionOK()) { arrangeWall(); return; }
+  const tiles = document.querySelectorAll('#wall button');
+  tiles.forEach((b, i) => { b.style.viewTransitionName = `wall-${i}`; });
+  const tr = document.startViewTransition(arrangeWall);
+  tr.finished.finally(() => tiles.forEach(b => { b.style.viewTransitionName = ''; }));
+}
+function showWallTile(tile){
+  const a = WALL.find(x => x.name === tile.dataset.artist); if (!a) return;
+  const parts = [plural(a.times,'time')];
+  if (a.first) parts.push(`first seen ${fmt(a.first)}`);
+  if (a.genres.length) parts.push(a.genres.slice(0,3).join(', '));
+  $('#wallInfo').innerHTML = `<b>${esc(a.name)}</b> · ${esc(parts.join(' · '))}`;
 }
 
 /* bucket list: listening.json comes from scripts/build-listening.mjs */
@@ -1899,6 +2004,8 @@ document.addEventListener('click', e => {
   if (t.id === 'rvShare') { shareReview(t); return; }
   if (t.dataset.review) { openReview(t.dataset.review); return; }
   if (t.dataset.region) { setRegion(t.dataset.region); return; }
+  if (t.dataset.wallSort) { wallOpts.sort = t.dataset.wallSort; updateWall(); return; }
+  if ('wallClear' in t.dataset) { wallOpts.genre = ''; wallOpts.decade = ''; $('#wallGenre').value = ''; $('#wallDecade').value = ''; updateWall(); return; }
   if (t.id === 'syncSets') { syncSetlists(t); return; }
   if (t.dataset.artist !== undefined) { morphOpen(t, () => openInfo('artists', t.dataset.artist, canEdit() ? t.dataset.id : null)); return; }
   if (t.dataset.venue !== undefined) { morphOpen(t, () => openInfo('venues', t.dataset.venue)); return; }
@@ -1917,6 +2024,14 @@ document.addEventListener('click', e => {
   else if (t.id==='moreBtn'){ showAllMost=!showAllMost; renderStats(); }
   else if (t.dataset.type !== undefined){ filt.type = t.dataset.type; document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', b===t)); filterList(); }
 });
+document.addEventListener('change', e => {
+  if (e.target.id === 'wallGenre') { wallOpts.genre = e.target.value; updateWall(); }
+  if (e.target.id === 'wallDecade') { wallOpts.decade = e.target.value; updateWall(); }
+});
+['pointerover', 'focusin'].forEach(type => document.addEventListener(type, e => {
+  const tile = e.target.closest?.('#wall button');
+  if (tile) showWallTile(tile);
+}));
 $('#scrim').onclick = () => { closeSheet(); closeInfo(); };
 document.addEventListener('keydown', e => { if (e.key==='Escape') { if (isOpen($('#sheet'))) closeSheet(); else if (isOpen($('#info'))) closeInfo(); } });
 $('#q').addEventListener('input', e => { filt.q = e.target.value.trim(); filterList(); });
@@ -1971,6 +2086,27 @@ if (motionOK() && matchMedia('(hover:hover)').matches) {
     });
   });
 }
+
+// The Up button appears 40% of the way down. Filters and tabs change the page height without scrolling, so watch that too.
+let upFrame = 0;
+function queueUp(){
+  if (upFrame) return;
+  upFrame = requestAnimationFrame(() => {
+    upFrame = 0;
+    const room = document.documentElement.scrollHeight - innerHeight;
+    $('#toTop').classList.toggle('on', room > 0 && scrollY / room >= .4);
+  });
+}
+addEventListener('scroll', queueUp, {passive: true});
+addEventListener('resize', queueUp);
+new ResizeObserver(queueUp).observe(document.body);
+$('#toTop').onclick = () => {
+  let behavior = 'auto';
+  if (motionOK()) behavior = 'smooth';
+  window.scrollTo({top: 0, behavior});
+  // The button is about to hide, so keep keyboard focus at the top with the page
+  $('.tabs button[aria-selected=true]').focus({preventScroll: true});
+};
 
 load().then(async () => {
   if (mode==='netlify') await initIdentity();
