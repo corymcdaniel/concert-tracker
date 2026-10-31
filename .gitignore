@@ -9,6 +9,13 @@ node_modules/
 .env.*
 !.env.example
 
+# Raw Spotify exports: only the totals in listening.json belong in the repo
+Spotify Extended Streaming History/
+Spotify Account Data/
+my_spotify_data/
+Streaming_History_*.json
+StreamingHistory*.json
+
 # Logs
 logs/
 *.log

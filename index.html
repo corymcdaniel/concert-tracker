@@ -337,6 +337,17 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 .wall button:hover img{transform:scale(1.07)}
 .wall span{position:absolute;inset:auto 0 0;padding:14px 5px 3px;color:#fff;background:linear-gradient(transparent,rgb(0 0 0 / .75));text-align:left;line-height:1.15;opacity:0;transition:opacity .15s}
 .wall button:hover span,.wall button:focus-visible span,.wall .t3 span{opacity:1}
+.bucket{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.bucket button{position:relative;aspect-ratio:1;padding:0;border:0;border-radius:8px;overflow:hidden;background:var(--chip);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.bucket button:hover,.bucket button:focus-visible{transform:translateY(-3px);box-shadow:0 8px 20px rgb(0 0 0 / .25)}
+.bucket img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s var(--ease)}
+.bucket button:hover img{transform:scale(1.07)}
+.bucket .cap{position:absolute;inset:auto 0 0;display:grid;gap:2px;padding:28px 9px 8px;color:#fff;background:linear-gradient(transparent,rgb(0 0 0 / .85));text-align:left;line-height:1.2}
+.bucket .cap b{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.bucket .cap small{font-family:var(--mono);font-size:11px;opacity:.85}
+.bucket .rk{position:absolute;top:6px;left:6px;padding:1px 6px;border-radius:4px;font-family:var(--mono);font-size:11px;color:#fff;background:rgb(0 0 0 / .6)}
+.bucket-more{margin-top:14px}
+.bucket-more .mini{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));column-gap:28px}
 .stub-extra{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);align-items:baseline}
 .stub-extra .rated{color:var(--gold-ink);letter-spacing:.08em}
 .otd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;border:1px dashed var(--gold);border-radius:8px;padding:8px 12px;font-size:14px;background:color-mix(in oklab,var(--gold) 8%,var(--paper))}
@@ -909,6 +920,7 @@ function renderStatsView(){
     ${openerPanel(ns)}
     <div class="panel" id="mapPanel"></div>
     ${wallPanel(past)}
+    ${bucketPanel(past)}
     ${setlistPanel(rank)}
     <div class="panel"><h3>Seen more than once <span>${reps.length} artists</span></h3><div class="tbl-wrap">${tbl}</div></div>`;
   runCounters($('#statsView'));
@@ -1050,6 +1062,41 @@ function wallPanel(past){
     return `<button type="button" class="${size}" data-artist="${esc(name)}" title="${esc(name)}: ${plural(c,'time')}">${esc(name)}<img loading="lazy" src="${imgUrl(INFO.artists[name].img, 240)}" alt="" onerror="this.remove()"><span>${esc(name)}${times}</span></button>`;
   }).join('');
   return `<div class="panel"><h3>Everyone you've seen <span>photos: Wikimedia Commons</span></h3><div class="wall">${tiles}</div></div>`;
+}
+
+/* bucket list: listening.json comes from scripts/build-listening.mjs */
+let LISTEN = null;
+async function loadListening(){
+  try { const r = await fetch('listening.json'); if (r.ok) LISTEN = await r.json(); } catch {}
+}
+// Spotify and the log can spell a name differently: "The Cure" / "Cure", "Bjork" / "Björk", "A & B" / "A and B"
+const matchKey = name => name.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/^the\s+/, '').replace(/[&+]/g, 'and').replace(/[^\p{L}\p{N}]/gu, '');
+const hoursLabel = h => { if (h >= 10) return `${Math.round(h).toLocaleString()} hrs`; return `${h} hrs`; };
+function bucketPanel(past){
+  if (!LISTEN) {
+    if (!canEdit()) return '';
+    return `<div class="panel"><h3>Bucket list</h3><p class="hint">Your most-played artists you've never seen live appear here once <b>listening.json</b> is built from your Spotify export. See the README.</p></div>`;
+  }
+  const seen = new Set(past.map(s => matchKey(s.artist)));
+  const soon = new Map(shows.filter(s => !happened(s)).map(s => [matchKey(s.artist), s.date]));
+  const list = LISTEN.artists.filter(a => !seen.has(matchKey(a.name)));
+  if (!list.length) return '';
+  const note = a => {
+    if (soon.has(matchKey(a.name))) return `seeing them ${fmt(soon.get(matchKey(a.name)))}`;
+    return `${hoursLabel(a.hours)} since ${a.first}`;
+  };
+  const tiles = list.slice(0, 12).map((a, i) => {
+    let img = '';
+    if (a.img) img = `<img loading="lazy" src="${imgUrl(a.img, 400)}" alt="" onerror="this.remove()">`;
+    return `<button type="button" data-artist="${esc(a.name)}">${img}<span class="rk">${i + 1}</span><span class="cap"><b>${esc(a.name)}</b><small>${esc(note(a))}</small></span></button>`;
+  }).join('');
+  const rest = list.slice(12, 30);
+  let more = '';
+  if (rest.length) more = `<div class="bucket-more"><p class="sub">Next on the list</p><ul class="mini">${rest.map(a =>
+    `<li><button type="button" data-artist="${esc(a.name)}">${esc(a.name)}</button><span>${esc(note(a))}</span></li>`).join('')}</ul></div>`;
+  return `<div class="panel"><h3>Bucket list <span>listening: Spotify · photos: Wikimedia Commons</span></h3>
+    <p class="lede">You've never seen <b>${list.length}</b> of your ${LISTEN.artists.length} most-played artists since ${esc(LISTEN.from)}.</p>
+    <div class="bucket">${tiles}</div>${more}</div>`;
 }
 
 /* hometowns: map-land.json and hometowns.json come from scripts/build-map.mjs */
@@ -1724,8 +1771,10 @@ const yr = d => d ? String(d).slice(0,4) : '';
 const fmtFull = d => { if(!d) return ''; const p=String(d).split('-'); return p.length===3 ? fmt(d) : p.length===2 ? `${MONTHS[+p[1]-1]} ${p[0]}` : p[0]; };
 let infoReq = 0;
 function openInfo(kind, key, actId){
-  const rec = INFO[kind]?.[key] || null;
   const isA = kind==='artists';
+  // Bucket list artists aren't in the log, so their page and photo come from listening.json
+  let rec = INFO[kind]?.[key] || null;
+  if (!rec && isA) rec = LISTEN?.artists.find(a => a.name === key && a.wiki) || null;
   const [vName, vCity] = isA ? [key,''] : key.split('|');
   const title = isA ? key : vName;
   const facts = [];
@@ -1925,7 +1974,7 @@ if (motionOK() && matchMedia('(hover:hover)').matches) {
 
 load().then(async () => {
   if (mode==='netlify') await initIdentity();
-  await Promise.all([loadInfo(), loadSetlists()]);
+  await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
   render(); applyAuth();
   if (location.hash==='#stats') setView('stats');
   const reviewYear = /^#review-(\d{4})$/.exec(location.hash);

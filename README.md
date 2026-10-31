@@ -14,6 +14,7 @@ in a history they can browse and undo.
 | `netlify/functions/changes.mjs` | Change history and undo (editors). |
 | `netlify/functions/setlists.mjs` | `GET /api/setlists` (public); look up the next act on setlist.fm (editors). |
 | `map-land.json`, `hometowns.json` | Static data for the Hometowns map. Rebuild with `node scripts/build-map.mjs`. |
+| `listening.json` | Public per-artist Spotify totals for the Bucket list. Rebuild with `node scripts/build-listening.mjs "<export folder>"`. |
 | `netlify/lib/db.mjs` | Database connection, transactions tagged with the editor, show validation. |
 | `netlify/lib/auth.mjs` | Shared editor check. |
 | `shows.json`, `info.json` | The data the database was seeded from. Also used when `index.html` is opened from disk. |
@@ -65,6 +66,20 @@ If a save leaves these fields out, the saved values are kept, so a page loaded b
 **Check setlist.fm** in the Stats tab (editors) looks up each past music act, one request at a time. Comedy is skipped.
 Acts with no result are checked again after 30 days. The key stays on the server.
 Set `SETLISTFM_API_KEY` in Netlify, and in a git-ignored `.env.dev` locally (see `.env.example`).
+
+### Bucket list
+The Stats tab lists your most-played Spotify artists you've never seen live. Which ones you've seen is worked out in the
+browser from the log, so an artist drops off as soon as their show has happened. It comes from a Spotify data export, not
+the API, so there's no login or token.
+
+1. On [Spotify's privacy page](https://www.spotify.com/account/privacy/), request **Extended streaming history**. It can
+   take up to 30 days. The basic **Account data** export also works, but only covers about a year.
+2. Unzip it **outside this repo**. The raw files can include IP addresses, and the repo root is the published site.
+3. Run `node scripts/build-listening.mjs "<export folder>"`, then commit `listening.json` and deploy.
+
+`listening.json` is public and holds only the top 300 artists: name, hours, plays, first year played and a Wikipedia page
+and free photo. Plays under 30 seconds, podcasts and private sessions aren't counted. Photos are matched by name, so an
+artist with a common name can occasionally get the wrong page. Run the script again with a new export to refresh it.
 
 ### Change history
 A database trigger writes a row to `changes` for every insert, update and delete, with the row as it was
@@ -133,7 +148,8 @@ No charting, map or animation libraries: the charts and map are plain HTML and S
 features (view transitions and scroll timelines, where supported). All of it respects `prefers-reduced-motion`.
 
 External data: map outlines from Natural Earth (public domain, via `world-atlas`), hometown coordinates from Wikidata,
-setlists from [setlist.fm](https://www.setlist.fm).
+setlists from [setlist.fm](https://www.setlist.fm), listening totals from your own Spotify data export, Bucket list
+photos from Wikipedia and Wikimedia Commons.
 
 ## Upgrading the Identity client
 ```
