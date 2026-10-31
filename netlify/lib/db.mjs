@@ -31,8 +31,11 @@ export async function write(user, fn, batch = null) {
 }
 
 // Columns a show can be saved with, in API order
-export const SHOW_FIELDS = ["artist", "venue", "city", "state", "country", "date", "type", "notes"];
-export const SHOW_SELECT = `id, artist, venue, city, state, country, to_char(date, 'YYYY-MM-DD') AS date, type, notes`;
+export const SHOW_FIELDS = ["artist", "venue", "city", "state", "country", "date", "type", "notes", "rating", "price", "companions"];
+// Saved as they are when a request leaves them out, so an edit can't blank them by accident
+export const EXTRA_FIELDS = ["rating", "price", "companions"];
+export const PUBLIC_SELECT = `id, artist, venue, city, state, country, to_char(date, 'YYYY-MM-DD') AS date, type, notes, rating`;
+export const SHOW_SELECT = `${PUBLIC_SELECT}, price, companions`;
 
 // Bad input from a request: the functions answer it with a 400
 export class Invalid extends Error {}
@@ -54,7 +57,28 @@ export function cleanShow(s) {
   if (!out.artist) throw new Invalid("Artist is required");
   if (out.date !== null && !/^\d{4}-\d{2}-\d{2}$/.test(out.date)) throw new Invalid("Date must be YYYY-MM-DD");
   if (!["Music", "Comedy"].includes(out.type)) throw new Invalid("Type must be Music or Comedy");
+  const blank = (v) => v === null || v === "";
+  if (s.rating !== undefined) {
+    out.rating = null;
+    if (!blank(s.rating)) out.rating = Number(s.rating);
+    if (out.rating !== null && (!Number.isInteger(out.rating) || out.rating < 1 || out.rating > 5)) throw new Invalid("Rating must be 1 to 5");
+  }
+  if (s.price !== undefined) {
+    out.price = null;
+    if (!blank(s.price)) out.price = Number(s.price);
+    if (out.price !== null && !(out.price >= 0)) throw new Invalid("Price must be a positive number");
+  }
+  if (s.companions !== undefined) out.companions = str(s.companions) || null;
   return out;
+}
+
+// Fill in the extras a request left out from what's saved, inside the write's transaction
+export async function keepExtras(c, rows) {
+  const { rows: saved } = await c.query(`SELECT id, ${EXTRA_FIELDS.join(", ")} FROM shows WHERE id = ANY($1)`, [rows.map((r) => r.id)]);
+  const byId = new Map(saved.map((r) => [r.id, r]));
+  for (const r of rows)
+    for (const f of EXTRA_FIELDS)
+      if (r[f] === undefined) r[f] = byId.get(r.id)?.[f] ?? null;
 }
 
 export const newId = () => "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);

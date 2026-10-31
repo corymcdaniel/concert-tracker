@@ -9,7 +9,7 @@ import { read, write, newBatch } from "../lib/db.mjs";
 
 // Primary key and editable columns per tracked table (also the whitelist for undo's SQL)
 const TABLES = {
-  shows: { pk: "id", cols: ["artist", "venue", "city", "state", "country", "date", "type", "notes", "sort_order"] },
+  shows: { pk: "id", cols: ["artist", "venue", "city", "state", "country", "date", "type", "notes", "sort_order", "rating", "price", "companions"] },
   artists: { pk: "name", cols: ["info"] },
   venues: { pk: "key", cols: ["info"] },
 };
@@ -64,7 +64,7 @@ export default async (req, context) => {
           // The row must still look exactly like this change left it
           const { rows: [cur] } = await c.query(
             `SELECT to_jsonb(t) - 'created_at' - 'updated_at' AS row FROM ${g.table_name} t WHERE ${t.pk} = $1 FOR UPDATE`, [g.row_id]);
-          if (JSON.stringify(sortKeys(cur?.row ?? null)) !== JSON.stringify(sortKeys(g.after))) throw new Conflict();
+          if (JSON.stringify(comparable(cur?.row ?? null)) !== JSON.stringify(comparable(g.after))) throw new Conflict();
           if (g.action === "insert") {
             await c.query(`DELETE FROM ${g.table_name} WHERE ${t.pk} = $1`, [g.row_id]);
           } else if (g.action === "delete") {
@@ -86,6 +86,12 @@ export default async (req, context) => {
   }
   return new Response("Method not allowed", { status: 405 });
 };
+
+// Empty columns are left out, so changes logged before a column was added still match
+function comparable(row) {
+  if (!row) return row;
+  return sortKeys(Object.fromEntries(Object.entries(row).filter(([, v]) => v !== null)));
+}
 
 // jsonb comes back with keys in Postgres order; compare by content, not key order
 function sortKeys(v) {

@@ -1,4 +1,4 @@
-// GET    /api/shows      -> public: every show, in billing order
+// GET    /api/shows      -> public: every show, in billing order. Price and companions are editors only.
 // POST   /api/shows      -> editors: add acts { rows: [show, ...], after?: id }
 //                           after = add them to that act's night, right after it; otherwise they go first
 // PUT    /api/shows      -> editors: replace the whole list (Data panel import). Only real differences are logged.
@@ -8,8 +8,8 @@
 //                           was = the night's acts when the editor opened it; refused if that's out of date
 //                           acts = the night as it should be, headliner first. Acts left out are deleted,
 //                           so an empty list removes the night. It keeps its place in the log.
-import { requireEditor, json } from "../lib/auth.mjs";
-import { read, write, cleanShow, newId, newBatch, Invalid, SHOW_FIELDS, SHOW_SELECT } from "../lib/db.mjs";
+import { requireEditor, isEditor, json } from "../lib/auth.mjs";
+import { read, write, cleanShow, keepExtras, newId, newBatch, Invalid, SHOW_FIELDS, SHOW_SELECT, PUBLIC_SELECT } from "../lib/db.mjs";
 
 const bad = (msg) => new Response(msg, { status: 400 });
 const COLS = SHOW_FIELDS.join(", ");
@@ -20,7 +20,9 @@ export default async (req, context) => {
   const id = context.params?.id;
 
   if (req.method === "GET" && !id) {
-    return json(await read(`SELECT ${SHOW_SELECT} FROM shows ORDER BY sort_order, id`));
+    let select = PUBLIC_SELECT;
+    if (await isEditor()) select = SHOW_SELECT;
+    return json(await read(`SELECT ${select} FROM shows ORDER BY sort_order, id`));
   }
 
   const { user, error } = await requireEditor(req);
@@ -48,6 +50,7 @@ export default async (req, context) => {
         // Hand the night's existing sort_order values out in the new order; extra acts slot in after them
         const order = night.map((r) => r.sort_order);
         if (acts.length > order.length) order.push(...await slots(c, night[night.length - 1].id, acts.length - order.length));
+        await keepExtras(c, acts);
         const keep = new Set(acts.map((a) => a.id));
         for (const r of night)
           if (!keep.has(r.id)) await c.query("DELETE FROM shows WHERE id = $1", [r.id]);
@@ -91,6 +94,7 @@ export default async (req, context) => {
       const rows = body.map((r) => ({ id: String(r.id || newId()), ...cleanShow(r) }));
       await write(user, async (c) => {
         const order = sortOrders(rows, (await c.query("SELECT id, sort_order FROM shows ORDER BY sort_order, id")).rows);
+        await keepExtras(c, rows);
         await c.query("DELETE FROM shows WHERE NOT (id = ANY($1))", [rows.map((r) => r.id)]);
         for (const [i, r] of rows.entries()) {
           await c.query(
@@ -105,10 +109,13 @@ export default async (req, context) => {
     }
 
     if (req.method === "PATCH" && id) {
-      const s = cleanShow(body);
-      const [row] = await write(user, async (c) => (await c.query(
-        `UPDATE shows SET ${SHOW_FIELDS.map((f, i) => `${f} = $${i + 2}`).join(", ")} WHERE id = $1 RETURNING ${SHOW_SELECT}`,
-        [id, ...values(s)])).rows);
+      const s = { id, ...cleanShow(body) };
+      const [row] = await write(user, async (c) => {
+        await keepExtras(c, [s]);
+        return (await c.query(
+          `UPDATE shows SET ${SHOW_FIELDS.map((f, i) => `${f} = $${i + 2}`).join(", ")} WHERE id = $1 RETURNING ${SHOW_SELECT}`,
+          [id, ...values(s)])).rows;
+      });
       if (!row) return new Response("Not found", { status: 404 });
       return json(row);
     }
