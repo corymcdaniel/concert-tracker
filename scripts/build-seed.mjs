@@ -5,8 +5,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const root = new URL("..", import.meta.url);
-const shows = JSON.parse(readFileSync(new URL("shows.json", root), "utf8"));
-const info = JSON.parse(readFileSync(new URL("info.json", root), "utf8"));
+const shows = JSON.parse(readFileSync(new URL("public/shows.json", root), "utf8"));
+const info = JSON.parse(readFileSync(new URL("public/info.json", root), "utf8"));
 const lit = (v) => {
   const s = JSON.stringify(v);
   if (s.includes("$seed$")) throw new Error("Seed data contains the $seed$ delimiter");

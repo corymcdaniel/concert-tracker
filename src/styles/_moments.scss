@@ -1,0 +1,41 @@
+/* ---------- scroll line and sticky years ---------- */
+.progress{display:none}
+#list .year{position:sticky;top:0;z-index:4;background:var(--bg);padding-block:4px}
+@supports (animation-timeline:scroll()){
+  @media (prefers-reduced-motion:no-preference){
+    .progress{display:block;position:fixed;inset:0 0 auto 0;height:3px;background:var(--music);transform-origin:left;z-index:15;animation:grow-x linear both;animation-timeline:scroll(root)}
+  }
+}
+
+/* ---------- bigger moments ---------- */
+.stub::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .2s;background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgb(255 255 255 / .22),transparent 70%)}
+.stub.rep::before{background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),color-mix(in oklab,var(--gold) 40%,transparent),transparent 70%)}
+.vt-name{view-transition-name:vt-name}
+@media (prefers-reduced-motion:no-preference) and (hover:hover){
+  .stub:hover{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-2px)}
+  .stub:hover::before{opacity:1}
+}
+@media (prefers-reduced-motion:no-preference){
+  ::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}
+  ::view-transition-group(vt-name){animation-duration:.3s;animation-timing-function:var(--ease)}
+  /* a deleted ticket rips along its perforation and falls away */
+  .stub.tearing{overflow:visible;z-index:6;pointer-events:none;box-shadow:none;transform:none}
+  .stub.tearing .date{animation:tear-l .5s cubic-bezier(.5,0,.8,.6) forwards;transform-origin:top right}
+  .stub.tearing .body{animation:tear-r .5s cubic-bezier(.5,0,.8,.6) forwards;transform-origin:top left}
+  /* a new ticket gets stamped */
+  .stub.stamped{animation:stamp-card .5s var(--ease)}
+  .stub.stamped::after{content:"Admitted";position:absolute;top:50%;right:7%;z-index:3;pointer-events:none;font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:.06em;text-transform:uppercase;color:var(--upcoming);border:3px solid currentColor;border-radius:6px;padding:0 10px;animation:stamp 1.5s var(--ease) forwards}
+  .heat i{animation:fade-in .35s var(--ease) both;animation-delay:calc(var(--m,0) * 25ms)}
+  .pin{animation:pin-in .4s var(--ease) both;animation-delay:calc(var(--i,0) * 12ms)}
+  .rv-slide{animation:rv-in .35s var(--ease)}
+  .rv-slide>*{animation:rise .45s var(--ease) both}
+  .rv-slide>:nth-child(2){animation-delay:90ms}.rv-slide>:nth-child(3){animation-delay:180ms}.rv-slide>:nth-child(n+4){animation-delay:270ms}
+  .rv-photo{animation:rv-pop .55s cubic-bezier(.2,1.5,.4,1) both!important}
+}
+@keyframes tear-l{to{transform:translate(-26px,70px) rotate(-11deg);opacity:0}}
+@keyframes tear-r{to{transform:translate(34px,110px) rotate(6deg);opacity:0}}
+@keyframes stamp-card{30%{transform:scale(.985)}}
+@keyframes stamp{0%{opacity:0;transform:translateY(-50%) rotate(-9deg) scale(2.2)}18%{opacity:.95;transform:translateY(-50%) rotate(-9deg) scale(1)}75%{opacity:.95;transform:translateY(-50%) rotate(-9deg) scale(1)}100%{opacity:0;transform:translateY(-50%) rotate(-9deg) scale(1)}}
+@keyframes pin-in{from{transform:scale(0)}}
+@keyframes rv-in{from{opacity:.4;transform:scale(1.02)}}
+@keyframes rv-pop{from{opacity:0;transform:scale(.6)}}
