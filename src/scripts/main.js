@@ -13,11 +13,12 @@ import { setRegion, showPin } from './stats/map.js';
 import { loadSetlists, syncSetlists } from './stats/setlists.js';
 import { showWallTile, updateWall, wallOpts } from './stats/wall.js';
 import { $, store } from './util.js';
-import { render, setView } from './view.js';
+import { followHash, followStatsLink, openStatsSection, render, setView, statsHash } from './view.js';
 
 /* ---------- events ---------- */
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.statsSection !== undefined) { openStatsSection(t.dataset.statsSection); return; }
   if (t.id === 'rvClose') { $('#review').close(); return; }
   if (t.id === 'rvShare') { shareReview(t); return; }
   if (t.dataset.review) { openReview(t.dataset.review); return; }
@@ -51,6 +52,7 @@ document.addEventListener('change', e => {
   if (tile) showWallTile(tile);
 }));
 $('#scrim').onclick = () => { closeSheet(); closeInfo(); };
+addEventListener('popstate', followHash);
 document.addEventListener('keydown', e => { if (e.key==='Escape') { if (isOpen($('#sheet'))) closeSheet(); else if (isOpen($('#info'))) closeInfo(); } });
 $('#q').addEventListener('input', e => { filt.q = e.target.value.trim(); filterList(); });
 document.addEventListener('change', e => { if (e.target.id==='f-move' && e.target.value){ store.set('show-log-move', e.target.value); renderStatsView(); } });
@@ -80,7 +82,7 @@ document.addEventListener('keydown', e => {
 });
 $('#review').addEventListener('close', () => {
   let hash = location.pathname + location.search;
-  if (state.view === 'stats') hash = '#stats';
+  if (state.view === 'stats') hash = statsHash();
   try { history.replaceState(null, '', hash); } catch {}
 });
 
@@ -130,8 +132,8 @@ load().then(async () => {
   if (state.mode==='netlify') await initIdentity();
   await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
   render(); applyAuth();
-  if (location.hash==='#stats') setView('stats');
+  followStatsLink();
   const reviewYear = /^#review-(\d{4})$/.exec(location.hash);
-  if (reviewYear) { setView('stats'); openReview(reviewYear[1]); }
+  if (reviewYear) { setView('stats', 'overview'); openReview(reviewYear[1]); }
   if (state.mode!=='netlify') setState('Saved in this browser');
 });

@@ -1,5 +1,6 @@
 import { canEdit } from '../auth.js';
 import { imgUrl } from '../info.js';
+import { matchKey } from '../match.js';
 import { state } from '../state.js';
 import { fmt } from './index.js';
 import { esc, happened } from '../util.js';
@@ -9,8 +10,6 @@ import { esc, happened } from '../util.js';
 export async function loadListening(){
   try { const r = await fetch('listening.json'); if (r.ok) state.LISTEN = await r.json(); } catch {}
 }
-// Spotify and the log can spell a name differently: "The Cure" / "Cure", "Bjork" / "Björk", "A & B" / "A and B"
-const matchKey = name => name.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/^the\s+/, '').replace(/[&+]/g, 'and').replace(/[^\p{L}\p{N}]/gu, '');
 const hoursLabel = h => { if (h >= 10) return `${Math.round(h).toLocaleString()} hrs`; return `${h} hrs`; };
 export function bucketPanel(past){
   if (!state.LISTEN) {

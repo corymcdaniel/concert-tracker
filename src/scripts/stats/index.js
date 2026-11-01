@@ -1,12 +1,14 @@
 import { nights } from '../log.js';
 import { reviewPanel } from '../review.js';
 import { MONTHS, state } from '../state.js';
+import { aroundPanel } from './around.js';
 import { bucketPanel } from './bucket.js';
 import { eraPanel } from './era.js';
 import { companionPanel, extrasHint, ratingPanel, spendingPanel } from './extras.js';
 import { drawMap } from './map.js';
 import { agePanel, counter, dayPanel, gapPanel, genrePanel, heatPanel, newRepeatPanel, openerPanel, runCounters } from './panels.js';
-import { setlistPanel } from './setlists.js';
+import { byYearPanel, clockPanel, favoritesPanel, habitsPanel, summaryPanel, yearTopsPanel } from './listening.js';
+import { knownPanel, setlistPanel } from './setlists.js';
 import { arrangeWall, wallPanel } from './wall.js';
 import { $, esc, happened, place } from '../util.js';
 
@@ -74,34 +76,70 @@ export function renderStatsView(){
     ${reps.map(a=>`<tr><td><button type="button" data-artist="${esc(a.name)}">${esc(a.name)}</button></td><td class="num">${a.times}</td>
       <td>${a.dates[0]?fmt(a.dates[0]):'—'}</td><td>${a.dates.length?fmt(a.dates.at(-1)):'—'}</td><td class="num">${a.span?a.span.toFixed(0)+' yr':'—'}</td></tr>`).join('')}</tbody></table>`;
 
-  $('#statsView').innerHTML = `
-    ${reviewPanel(nd)}
-    <div class="panel"><h3>Highlights</h3><div class="hl">${hl.map(([b,l,p])=>`<div><span>${l}</span><b>${b}</b><p>${p}</p></div>`).join('')}</div></div>
-    ${eraPanel(ns)}
-    ${ratingPanel(nd)}
-    ${spendingPanel(nd)}
-    ${companionPanel(ns)}
-    ${extrasHint(nd)}
-    <div class="panel"><h3>Nights per year <span class="legend"><span><i style="background:var(--music)"></i>Music</span><span><i style="background:var(--comedy)"></i>Comedy</span></span></h3><div class="bars">${yb}</div></div>
-    ${newRepeatPanel(past, y0, y1)}
-    ${heatPanel(nd, y0, y1)}
-    <div class="two">
-      <div class="panel"><h3>Top venues <span>nights</span></h3>${rank(venueNames, 10, k => `data-venue="${esc(venueKeyOf[k])}"`)}</div>
-      <div class="panel"><h3>Cities <span>nights</span></h3>${rank(cityN)}</div>
-    </div>
-    <div class="two">
-      <div class="panel"><h3>By month</h3><div class="bars" style="height:120px">${mb}</div></div>
-      ${dayPanel(nd)}
-    </div>
-    ${gapPanel(nd)}
-    ${genrePanel(dated, rank)}
-    ${agePanel(dated)}
-    ${openerPanel(ns)}
-    <div class="panel" id="mapPanel"></div>
-    ${wallPanel(past)}
-    ${bucketPanel(past)}
-    ${setlistPanel(rank)}
-    <div class="panel"><h3>Seen more than once <span>${reps.length} artists</span></h3><div class="tbl-wrap">${tbl}</div></div>`;
+  const sections = {
+    overview: `
+      ${reviewPanel(nd)}
+      <div class="panel"><h3>Highlights</h3><div class="hl">${hl.map(([b,l,p])=>`<div><span>${l}</span><b>${b}</b><p>${p}</p></div>`).join('')}</div></div>
+      <div class="panel"><h3>Nights per year <span class="legend"><span><i style="background:var(--music)"></i>Music</span><span><i style="background:var(--comedy)"></i>Comedy</span></span></h3><div class="bars">${yb}</div></div>
+      ${newRepeatPanel(past, y0, y1)}
+      ${heatPanel(nd, y0, y1)}
+      <div class="two">
+        <div class="panel"><h3>By month</h3><div class="bars" style="height:120px">${mb}</div></div>
+        ${dayPanel(nd)}
+      </div>
+      ${gapPanel(nd)}
+      ${ratingPanel(nd)}
+      ${spendingPanel(nd)}
+      ${companionPanel(ns)}
+      ${extrasHint(nd)}`,
+    artists: `
+      ${wallPanel(past)}
+      <div class="panel"><h3>Seen more than once <span>${reps.length} artists</span></h3><div class="tbl-wrap">${tbl}</div></div>
+      ${genrePanel(dated, rank)}
+      ${agePanel(dated)}
+      ${openerPanel(ns)}`,
+    places: `
+      <div class="two">
+        <div class="panel"><h3>Top venues <span>nights</span></h3>${rank(venueNames, 10, k => `data-venue="${esc(venueKeyOf[k])}"`)}</div>
+        <div class="panel"><h3>Cities <span>nights</span></h3>${rank(cityN)}</div>
+      </div>
+      <div class="panel" id="mapPanel"></div>
+      ${eraPanel(ns)}`,
+    listening: `
+      ${summaryPanel()}
+      ${bucketPanel(past)}
+      ${aroundPanel(past)}
+      ${knownPanel()}
+      ${setlistPanel(rank)}
+      ${byYearPanel(nd)}
+      ${yearTopsPanel()}
+      ${habitsPanel()}
+      ${favoritesPanel()}
+      ${clockPanel()}`,
+  };
+  const hasListening = sections.listening.trim();
+  if (state.statsSection && !sections[state.statsSection]?.trim()) state.statsSection = null;
+  // Counted as in the header: a venue name in two cities is one venue there, though the rankings split it
+  const venueCount = new Set(past.map(s => s.venue.toLowerCase()).filter(Boolean)).size, cityCount = cityN.size;
+  let listeningLine = 'Setlists from the shows you saw';
+  let listeningBig = `${past.length} sets`;
+  if (state.LISTEN?.summary) {
+    listeningLine = 'Bucket list, the show bump, songs you knew, and when you press play';
+    listeningBig = `${state.LISTEN.summary.hours.toLocaleString()} hours`;
+  }
+  const cards = [
+    ['overview', 'Overview', `${ns.length} nights`, 'Year in review, highlights, streaks and every month out'],
+    ['artists', 'Artists', `${A.length} acts`, 'Everyone you\'ve seen, repeat sightings, genres and openers'],
+    ['places', 'Places', `${venueCount} venues`, `${cityCount} cities, where the bands came from, and before and after the move`],
+  ];
+  if (hasListening) cards.push(['listening', 'Listening', listeningBig, listeningLine]);
+  const landing = `<div class="stat-cards">${cards.map(([id, name, big, line]) => `<button type="button" class="stat-card" data-stats-section="${id}"><span class="k">${name}</span><b>${big}</b><span class="line">${esc(line)}</span></button>`).join('')}</div>`;
+  let body = landing;
+  if (state.statsSection) {
+    const title = cards.find(c => c[0] === state.statsSection)[1];
+    body = `<div class="stats-head"><button type="button" class="back" data-stats-section="">← All stats</button><h2>${title}</h2></div>${sections[state.statsSection]}`;
+  }
+  $('#statsView').innerHTML = body;
   runCounters($('#statsView'));
   arrangeWall();
   drawMap();
