@@ -44,7 +44,7 @@ async function buildLand() {
 
 // Coordinates of where each artist formed (or was born), from Wikidata
 async function buildHometowns() {
-  const info = JSON.parse(await readFile("info.json", "utf8"));
+  const info = JSON.parse(await readFile("public/info.json", "utf8"));
   const artists = Object.values(info.artists).filter((a) => a?.qid && (a.formed_in || a.birthplace));
   const out = {};
   for (let i = 0; i < artists.length; i += 50) {
@@ -73,6 +73,6 @@ async function buildHometowns() {
 
 const land = await buildLand();
 const hometowns = await buildHometowns();
-await writeFile("map-land.json", JSON.stringify(land));
-await writeFile("hometowns.json", JSON.stringify(hometowns, null, 0));
+await writeFile("public/map-land.json", JSON.stringify(land));
+await writeFile("public/hometowns.json", JSON.stringify(hometowns, null, 0));
 console.log(`land path ${land.path.length} chars, ${Object.keys(hometowns).length} places`);

@@ -1,0 +1,61 @@
+import { api } from '../api.js';
+import { canEdit } from '../auth.js';
+import { toast } from '../motion.js';
+import { TODAY, state } from '../state.js';
+import { fmt, renderStatsView } from './index.js';
+import { plural } from './panels.js';
+import { esc } from '../util.js';
+
+/* setlists: from setlist.fm through /api/setlists */
+let SETS = {sets:[], checked:0};
+export async function loadSetlists(){
+  if (state.mode !== 'netlify') return;
+  try { const r = await fetch('/api/setlists', {cache:'no-store'}); if (r.ok) SETS = await r.json(); } catch {}
+}
+export function setlistPanel(rank){
+  const sync = `<button type="button" class="edit-only" id="syncSets">Check setlist.fm</button>`;
+  if (state.mode !== 'netlify') return '';
+  if (!SETS.sets.length) {
+    if (!canEdit()) return '';
+    return `<div class="panel"><h3>Songs you've heard</h3><p class="lede">No setlists loaded yet. This looks up each music act on setlist.fm, about one per second.</p>${sync}</div>`;
+  }
+  const songs = new Map(), covers = new Map();
+  let heard = 0;
+  SETS.sets.forEach(set => set.songs.forEach(song => {
+    heard++;
+    const k = `${song.name} · ${set.artist}`;
+    songs.set(k, (songs.get(k) || 0) + 1);
+    if (song.cover) covers.set(`${song.name} (${song.cover}) · ${set.artist}`, 1);
+  }));
+  const coverList = [...covers.keys()].slice(0, 8);
+  let coverHtml = '';
+  if (coverList.length) coverHtml = `<div><p class="sub">Covers you caught</p><ul class="mini">${coverList.map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>`;
+  return `<div class="panel"><h3>Songs you've heard <span><a href="https://www.setlist.fm" target="_blank" rel="noopener">Data: setlist.fm</a></span></h3>
+    <p class="lede"><b>${heard.toLocaleString()} songs</b> across ${plural(SETS.sets.length,'setlist')}, ${songs.size.toLocaleString()} of them different.</p>
+    <div class="two"><div><p class="sub">Heard most</p>${rank(songs, 10)}</div>${coverHtml}</div>
+    <div class="maprow">${sync}</div></div>`;
+}
+export async function syncSetlists(btn){
+  btn.disabled = true;
+  let limited = 0;
+  for (;;) {
+    const r = await api('POST', '/api/setlists/sync', {});
+    if (!r) break;
+    // setlist.fm allows a couple of requests a second; the round trip itself spaces the retries out
+    if (r.rateLimited) { limited++; if (limited > 5) { toast('setlist.fm is rate limiting. Try again in a minute.'); break; } continue; }
+    limited = 0;
+    if (!r.remaining) { toast('Setlists are up to date'); break; }
+    btn.textContent = `Checking… ${r.remaining} left`;
+  }
+  await loadSetlists();
+  if (state.view === 'stats') renderStatsView();
+}
+export function artistSongs(name){
+  const sets = SETS.sets.filter(s => s.artist === name && s.date < TODAY);
+  if (!sets.length) return '';
+  const songs = new Map();
+  sets.forEach(set => set.songs.forEach(song => songs.set(song.name, (songs.get(song.name) || 0) + 1)));
+  const top = [...songs].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
+  const links = sets.filter(s => s.url).map(s => `<li><span>${fmt(s.date)}</span><span><a href="${esc(s.url)}" target="_blank" rel="noopener">Setlist on setlist.fm ↗</a></span></li>`).join('');
+  return `<div class="seen"><h4>Songs you've heard · ${songs.size}</h4><ul>${top.map(([song, c]) => { let times = ''; if (c > 1) times = `×${c}`; return `<li><span>${times}</span><span>${esc(song)}</span></li>`; }).join('')}${links}</ul></div>`;
+}

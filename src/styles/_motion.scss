@@ -1,0 +1,54 @@
+/* ---------- motion ----------
+   Subtle and quick: 150–250ms, small distances. Everything here is skipped for
+   prefers-reduced-motion, and the JS (hide(), countTo(), watchReveals()) checks it too. */
+:root{--ease:cubic-bezier(.2,.7,.3,1)}
+.stub .date{z-index:1} /* keep the perforation notches above the body when it shifts */
+@media (prefers-reduced-motion:no-preference){
+  /* stubs fade up as they scroll into view */
+  .stub{transition:opacity .25s var(--ease),transform .25s var(--ease),box-shadow .2s var(--ease)}
+  .stub.reveal{opacity:0;transform:translateY(8px)}
+  /* sheets, pop-ups, backdrop and toast animate in and out */
+  .sheet{animation:slide .2s var(--ease)}
+  .sheet.closing{animation:slide-out .16s ease-in forwards}
+  .info{animation:pop-in .2s var(--ease)}
+  .info.closing{animation:pop-out .15s ease-in forwards}
+  .scrim{animation:fade-in .2s var(--ease)}
+  .scrim.closing{animation:fade-out .16s ease-in forwards}
+  .to-top{transform:translateY(8px);transition:opacity .2s var(--ease),transform .2s var(--ease),visibility .2s}
+  .to-top.on{transform:none}
+  .to-top.on:hover,.to-top.on:focus-visible{transform:translateY(-3px)}
+  .toast.pop{animation:toast-in .2s var(--ease)}
+  .toast.closing{animation:fade-out .2s ease-in forwards}
+  .history .change{animation:rise .2s var(--ease) both}
+  /* views and stats */
+  .sv>*{animation:rise .25s var(--ease) both}
+  .sv>:nth-child(2){animation-delay:30ms}.sv>:nth-child(3){animation-delay:60ms}
+  .sv>:nth-child(4){animation-delay:90ms}.sv>:nth-child(n+5){animation-delay:120ms}
+  .bars .stack>div{transform-origin:bottom;animation:grow-y .45s var(--ease) both}
+  .rank .lab::before{transform-origin:left;animation:grow-x .45s var(--ease) both}
+  /* controls */
+  button{transition:background-color .15s,border-color .15s,color .15s,transform .1s}
+  button:active{transform:scale(.97)}
+  .tab-ink{transition:transform .25s var(--ease)}
+  .tabs button{transition:color .2s var(--ease)}
+}
+/* hover: stubs lift, and the ticket "tears" a little along the perforation */
+@media (prefers-reduced-motion:no-preference) and (hover:hover){
+  .stub .body{transform-origin:left center;transition:transform .2s var(--ease)}
+  .stub:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgb(0 0 0 / .1),var(--glow,0 0 0 transparent)}
+  .stub:hover .body{transform:translateX(3px) rotate(.4deg)}
+  /* the foil catches the light as you hover */
+  .stub.rep-5 .body{transition:transform .2s var(--ease),background-position .6s var(--ease)}
+  .stub.rep-5:hover .body{background-position:0 0}
+}
+@keyframes slide{from{transform:translateX(30px);opacity:.6}}
+@keyframes slide-out{to{transform:translateX(30px);opacity:0}}
+@keyframes pop-in{from{opacity:0;transform:translate(-50%,-48%) scale(.97)}}
+@keyframes pop-out{to{opacity:0;transform:translate(-50%,-49%) scale(.98)}}
+@keyframes fade-in{from{opacity:0}}
+@keyframes fade-out{to{opacity:0}}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,6px)}}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+@keyframes grow-y{from{transform:scaleY(0)}}
+@keyframes grow-x{from{transform:scaleX(0)}}
+

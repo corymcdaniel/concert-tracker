@@ -1,4 +1,4 @@
-// Turns a Spotify data export into listening.json, the public per-artist totals used by the Bucket list panel.
+// Turns a Spotify data export into public/listening.json, the public per-artist totals used by the Bucket list panel.
 // Run by hand with the folder you unzipped (keep it outside this repo):
 //   node scripts/build-listening.mjs "C:/path/to/Spotify Extended Streaming History"
 // Only artist totals are written. Tracks, timestamps, IP addresses and devices never leave the export.
@@ -114,7 +114,7 @@ try {
 }
 
 const years = top.flatMap((a) => [a.first, a.last]).filter(Boolean).sort();
-await writeFile("listening.json", JSON.stringify({
+await writeFile("public/listening.json", JSON.stringify({
   from: years[0],
   to: years.at(-1),
   artists: top.map(({ name, ms, plays, first, wiki, desc, img }) => ({
@@ -122,4 +122,4 @@ await writeFile("listening.json", JSON.stringify({
   })),
 }));
 console.log(`${files.length} file(s), ${plays.toLocaleString()} plays, ${artists.length.toLocaleString()} artists.`);
-console.log(`Wrote the top ${top.length} to listening.json, ${top.filter((a) => a.img).length} with photos.`);
+console.log(`Wrote the top ${top.length} to public/listening.json, ${top.filter((a) => a.img).length} with photos.`);

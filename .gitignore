@@ -25,6 +25,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Build / cache output
+.astro/
 dist/
 build/
 coverage/

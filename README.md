@@ -7,19 +7,20 @@ in a history they can browse and undo.
 ## What's here
 | Path | What it is |
 |---|---|
-| `index.html` | The whole app. No build step. |
+| `src/pages/index.astro`, `src/layouts/`, `src/components/` | The page shell: head, header, tabs, filters and empty overlays. |
+| `src/scripts/` | The app, as plain JS modules. `main.js` wires up events and starts it; `state.js` holds what modules share. Nearly all markup is built here at runtime from the API's data. |
+| `src/styles/` | Global SCSS partials, loaded in order by `global.scss`. Global rather than CSS modules because the markup comes from JS template strings, which scoped styles can't reach. |
 | `netlify/database/migrations/` | Database schema and seed data, applied automatically on deploy. |
 | `netlify/functions/shows.mjs` | `GET /api/shows` (public); add, edit, delete, save a whole bill and bulk replace (editors). |
 | `netlify/functions/info.mjs` | `GET /api/info` (public); save one artist or venue record (editors). |
 | `netlify/functions/changes.mjs` | Change history and undo (editors). |
 | `netlify/functions/setlists.mjs` | `GET /api/setlists` (public); look up the next act on setlist.fm (editors). |
-| `map-land.json`, `hometowns.json` | Static data for the Hometowns map. Rebuild with `node scripts/build-map.mjs`. |
-| `listening.json` | Public per-artist Spotify totals for the Bucket list. Rebuild with `node scripts/build-listening.mjs "<export folder>"`. |
+| `public/map-land.json`, `public/hometowns.json` | Static data for the Hometowns map. Rebuild with `node scripts/build-map.mjs`. |
+| `public/listening.json` | Public per-artist Spotify totals for the Bucket list. Rebuild with `node scripts/build-listening.mjs "<export folder>"`. |
 | `netlify/lib/db.mjs` | Database connection, transactions tagged with the editor, show validation. |
 | `netlify/lib/auth.mjs` | Shared editor check. |
-| `shows.json`, `info.json` | The data the database was seeded from. Also used when `index.html` is opened from disk. |
+| `public/shows.json`, `public/info.json` | The data the database was seeded from. Also used in local mode, when there's no API. |
 | `scripts/build-seed.mjs` | Regenerates the seed migration from `shows.json` and `info.json`. |
-| `vendor/identity.js` | Prebuilt Netlify Identity client (`@netlify/identity` 2.0.0). |
 
 ## Data
 The data lives in Netlify Database (Postgres). Five tables:
@@ -74,10 +75,10 @@ the API, so there's no login or token.
 
 1. On [Spotify's privacy page](https://www.spotify.com/account/privacy/), request **Extended streaming history**. It can
    take up to 30 days. The basic **Account data** export also works, but only covers about a year.
-2. Unzip it **outside this repo**. The raw files can include IP addresses, and the repo root is the published site.
-3. Run `node scripts/build-listening.mjs "<export folder>"`, then commit `listening.json` and deploy.
+2. Unzip it **outside this repo**. The raw files can include IP addresses.
+3. Run `node scripts/build-listening.mjs "<export folder>"`, then commit `public/listening.json` and deploy.
 
-`listening.json` is public and holds only the top 300 artists: name, hours, plays, first year played and a Wikipedia page
+`public/listening.json` is public and holds only the top 300 artists: name, hours, plays, first year played and a Wikipedia page
 and free photo. Plays under 30 seconds, podcasts and private sessions aren't counted. Photos are matched by name, so an
 artist with a common name can occasionally get the wrong page. Run the script again with a new export to refresh it.
 
@@ -109,7 +110,8 @@ edited. Netlify applies new migrations right before a deploy is published; a fai
 Deploy previews get their own copy of the production database, so testing there never touches real data.
 
 ## Deploy
-1. Push this folder to a Git repo and import it in Netlify. No build command; publish directory is the repo root.
+1. Push this folder to a Git repo and import it in Netlify. `netlify.toml` sets the build command (`npm run build`) and
+   publish directory (`dist`).
 2. **Database:** nothing to set up. The first deploy provisions it and runs the migrations, which also load the
    shows and artist/venue details. (Netlify Database needs a credit-based Netlify plan.)
 3. **Enable Identity:** Project configuration → Identity → Enable.
@@ -127,7 +129,8 @@ Deploy previews get their own copy of the production database, so testing there 
 npm install
 npm run dev
 ```
-`npm run dev` runs `netlify dev` with the variables from `.env.dev`, and starts a local Postgres database. Useful commands:
+`npm run dev` runs `netlify dev` with the variables from `.env.dev`, which starts the Astro dev server, the functions and
+a local Postgres database, all at http://localhost:8888. Useful commands:
 
 ```
 npx netlify database migrations apply   # apply new migrations locally
@@ -135,14 +138,16 @@ npx netlify database status             # what's applied and pending
 npx netlify database reset              # wipe the local database (then apply again)
 ```
 
-Opening `index.html` straight from disk also works: it runs in "local" mode and saves edits to the browser only.
+`npm run build` then `npm run preview` serves the built site without the functions. With no API it runs in "local" mode
+and saves edits to the browser only. Opening a file straight from disk no longer works, since the site needs a server.
 
 ## Packages
 | Package | Why |
 |---|---|
 | `@netlify/database` | Connects functions to Netlify Database; picks the right driver for local dev vs. production. |
 | `@netlify/identity` | Sign-in for editors, and the server-side check that a request comes from one. |
-| `esbuild` (dev) | Builds the browser copy of the Identity client into `vendor/identity.js`. |
+| `astro` | Builds the static site: splits the page into components and bundles the scripts and styles. No adapter, since the API is plain Netlify Functions. Held at version 6 because version 7 needs Node 22.23.4 or newer. |
+| `sass` | Compiles the SCSS partials. |
 
 No charting, map or animation libraries: the charts and map are plain HTML and SVG, and the motion is CSS plus browser
 features (view transitions and scroll timelines, where supported). All of it respects `prefers-reduced-motion`.
@@ -150,9 +155,3 @@ features (view transitions and scroll timelines, where supported). All of it res
 External data: map outlines from Natural Earth (public domain, via `world-atlas`), hometown coordinates from Wikidata,
 setlists from [setlist.fm](https://www.setlist.fm), listening totals from your own Spotify data export, Bucket list
 photos from Wikipedia and Wikimedia Commons.
-
-## Upgrading the Identity client
-```
-npm install @netlify/identity@<version>
-npm run build:identity
-```
