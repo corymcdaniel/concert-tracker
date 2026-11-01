@@ -51,6 +51,16 @@ function reviewSlides(s){
   if (s.fresh.length > 18) moreFresh = `<li>+ ${s.fresh.length - 18} more</li>`;
   if (s.fresh.length) out.push(`<div class="rv-k">First time seeing</div><div class="rv-big">${counter('rv-new', s.fresh.length)}</div><ul class="rv-list">${s.fresh.slice(0, 18).map(a => `<li>${esc(a)}</li>`).join('')}${moreFresh}</ul>`);
   if (s.genre) out.push(`<div class="rv-k">Your sound</div><div class="rv-name">${esc(s.genre[0])}</div><p class="rv-p">${plural(s.genre[1],'set')} leaned that way.</p>`);
+  const played = state.LISTEN?.years?.[s.year] || [];
+  if (played.length) {
+    const [lead, ...rest] = played;
+    const pic = state.LISTEN.artists.find(a => a.name === lead.name)?.img;
+    let photoTop = '';
+    if (pic) photoTop = `<img class="rv-photo" src="${imgUrl(pic, 500)}" alt="" onerror="this.remove()">`;
+    let then = '';
+    if (rest.length > 1) then = ` Then ${esc(rest[0].name)} and ${esc(rest[1].name)}.`;
+    out.push(`${photoTop}<div class="rv-k">On repeat</div><div class="rv-name">${esc(lead.name)}</div><p class="rv-p">${Math.round(lead.hours)} hours on Spotify.${then}</p>`);
+  }
   if (s.biggest.acts.length > 1) out.push(`<div class="rv-k">Biggest bill</div><div class="rv-big">${counter('rv-bill', s.biggest.acts.length)}</div><p class="rv-p">acts at ${esc(s.biggest.venue)}, led by ${esc(s.biggest.acts[0].artist)}.</p>`);
   if (s.best) out.push(`<div class="rv-k">Your top-rated night</div><div class="rv-name">${esc(s.best.acts[0].artist)}</div><p class="rv-p">${'★'.repeat(nightVal(s.best, 'rating'))} at ${esc(s.best.venue)}.</p>`);
   const cards = [[nightsWord, 'Out'], [name, 'Most seen'], [s.venue?.[0] || '—', 'Top room'], [monthName, 'Busiest month'], [plural(s.fresh.length,'new act'), 'Discovered']];

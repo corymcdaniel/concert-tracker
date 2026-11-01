@@ -8,6 +8,7 @@ export let filt = {q:'', type:'', city:''};
 export const state = {
   showAllMost: false,
   view: 'log',
+  statsSection: null,
   shows: [],
   mode: 'local',
   idn: null,
