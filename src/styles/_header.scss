@@ -100,3 +100,7 @@ $grain-on-dark: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' wi
 @media (max-width:640px){.foot-in{padding-bottom:max(76px,calc(env(safe-area-inset-bottom,0px) + 64px))}}
 .foot-credits a{color:inherit;text-underline-offset:2px;transition:opacity .15s}
 .foot-credits a:hover{opacity:.75}
+// The sign-off under the credits
+.foot-made{margin:0;position:relative;font-family:var(--mono);font-size:12px;letter-spacing:.08em;opacity:.9}
+.foot-made a{color:inherit;font-weight:500;text-underline-offset:3px;text-decoration-thickness:1px;transition:text-decoration-color .15s,opacity .15s}
+.foot-made a:hover{opacity:.75}
