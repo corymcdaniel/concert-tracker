@@ -16,6 +16,7 @@ in a history they can browse and undo.
 | `netlify/functions/changes.mjs` | Change history and undo (editors). |
 | `netlify/functions/setlists.mjs` | `GET /api/setlists` (public); look up the next act on setlist.fm (editors). |
 | `public/map-land.json`, `public/hometowns.json` | Static data for the Hometowns map. Rebuild with `node scripts/build-map.mjs`. |
+| `public/venue-coords.json` | Coordinates for venues whose info record has no `coord` (no Wikidata match, or a festival). Add a `"Venue|City"` entry when a new venue doesn't show on the map. |
 | `public/listening.json`, `public/listening-songs.json` | Public Spotify summaries for the listening stats. Rebuild with `node scripts/build-listening.mjs spotify`. |
 | `netlify/lib/db.mjs` | Database connection, transactions tagged with the editor, show validation. |
 | `netlify/lib/auth.mjs` | Shared editor check. |
@@ -71,6 +72,13 @@ Set `SETLISTFM_API_KEY` in Netlify, and in a git-ignored `.env.dev` locally (see
 ### Stats sections
 The Stats tab opens on four cards: **Overview**, **Artists**, **Places** and **Listening**. Each section has its own link, like
 `#stats/listening`, and the browser's back button returns to the cards. Older `#stats` and `#review-YYYY` links still work.
+
+### Venue map
+Under **Stats → Places**, every venue you've been to sits on a street map. Pins grow with the number of nights there,
+nearby venues group into clusters showing venue and night counts, and the buttons zoom to your top cities. Clicking a pin lists
+every night there; the venue name opens its pop-up. Scroll-wheel zoom turns on after you first click the map, so scrolling the page
+doesn't get caught. Coordinates come from each venue's `info.coord` (Wikidata), then `public/venue-coords.json`.
+Venues with neither are counted as "not mapped" in the panel heading. Leaflet loads only when the Places section opens.
 
 ### Listening stats
 These come from a Spotify data export, not the API, so there's no login or token.
@@ -166,10 +174,12 @@ and saves edits to the browser only. Opening a file straight from disk no longer
 | `@netlify/identity` | Sign-in for editors, and the server-side check that a request comes from one. |
 | `astro` | Builds the static site: splits the page into components and bundles the scripts and styles. No adapter, since the API is plain Netlify Functions. Held at version 6 because version 7 needs Node 22.23.4 or newer. |
 | `sass` | Compiles the SCSS partials. |
+| `leaflet` | The venue map: a real, zoomable street map with OpenStreetMap tiles. Small (about 40 KB gzipped), no API key, and loaded only on the Places section. |
+| `leaflet.markercluster` | Groups nearby venue pins (16 are in metro Atlanta) into clusters that split apart as you zoom, and fans out venues at the same spot. |
 
-No charting, map or animation libraries: the charts and map are plain HTML and SVG, and the motion is CSS plus browser
+No charting or animation libraries: the charts and the hometowns map are plain HTML and SVG, and the motion is CSS plus browser
 features (view transitions and scroll timelines, where supported). All of it respects `prefers-reduced-motion`.
 
-External data: map outlines from Natural Earth (public domain, via `world-atlas`), hometown coordinates from Wikidata,
+External data: venue map tiles from [OpenStreetMap](https://www.openstreetmap.org/copyright), map outlines from Natural Earth (public domain, via `world-atlas`), hometown coordinates from Wikidata,
 setlists from [setlist.fm](https://www.setlist.fm), listening totals from your own Spotify data export, Bucket list
 photos from Wikipedia and Wikimedia Commons.
