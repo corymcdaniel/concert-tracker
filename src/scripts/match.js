@@ -2,7 +2,6 @@
 
 // Log spellings that no amount of tidying will match to Spotify's name
 const ALIASES = {
-  daveattel: 'daveattell',
   idkhow: 'idontknowhowbuttheyfoundme',
   megtheestalion: 'megantheestallion',
 };
