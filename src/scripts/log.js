@@ -50,6 +50,11 @@ export function renderStats(){
   const totals = [[n.length,'Nights out'],[artists.size,'Artists'],[venues.size,'Venues'],[cities.size,'Cities']];
   // Nights go on the ticket's stub, the rest in its main part
   countTo($('#tNights'), totals[0][1], totals[0][0]);
+  // The stamp on the ticket: first to latest year out
+  const years = n.filter(x => x.date).map(x => x.date.slice(0, 4)).sort();
+  let span = '';
+  if (years.length) span = `${years[0]}–${years.at(-1)}`;
+  $('#tStamp').textContent = span;
   const rest = totals.slice(1);
   $('#stats').innerHTML = rest.map(([v,l])=>`<div class="stat"><b>${statShown[l] ?? 0}</b><span>${l}</span></div>`).join('');
   $('#stats').querySelectorAll('b').forEach((b, i) => countTo(b, rest[i][1], rest[i][0]));

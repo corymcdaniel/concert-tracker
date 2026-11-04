@@ -110,14 +110,14 @@ if (motionOK() && matchMedia('(hover:hover)').matches) {
   });
 }
 
-// The Up button appears 40% of the way down. Filters and tabs change the page height without scrolling, so watch that too.
+// The Up button appears a fifth of the way down. Filters and tabs change the page height without scrolling, so watch that too.
 let upFrame = 0;
 function queueUp(){
   if (upFrame) return;
   upFrame = requestAnimationFrame(() => {
     upFrame = 0;
     const room = document.documentElement.scrollHeight - innerHeight;
-    $('#toTop').classList.toggle('on', room > 0 && scrollY / room >= .4);
+    $('#toTop').classList.toggle('on', room > 0 && scrollY / room >= .2);
   });
 }
 addEventListener('scroll', queueUp, {passive: true});

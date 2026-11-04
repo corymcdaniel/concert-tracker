@@ -67,3 +67,36 @@
 }
 @keyframes ticket-in{from{opacity:0;transform:translateY(8px)}}
 @keyframes stub-in{from{opacity:0;transform:translateX(10px)}}
+
+/* ---------- ticket detail: paper grain and a rubber stamp ---------- */
+// Grain is a tiled SVG noise filter, no image file: faint dark specks on light paper, faint light ones on dark
+$grain-on-light: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .2 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E";
+$grain-on-dark: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .2 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E";
+.t-main{background-image:url($grain-on-light);background-size:180px}
+.t-main>*{position:relative;z-index:1}
+@mixin dark-grain{.t-main{background-image:url($grain-on-dark)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){@include dark-grain}}
+:root[data-theme="dark"]{@include dark-grain}
+
+.t-main .t-stamp{position:absolute;right:clamp(18px,6%,48px);top:50%;z-index:0;padding:5px 12px 3px;border:2px solid currentColor;border-radius:6px;outline:1px solid currentColor;outline-offset:3px;
+  font-family:var(--display);font-size:24px;font-weight:800;letter-spacing:.06em;line-height:1;white-space:nowrap;
+  color:color-mix(in oklab,var(--comedy) 60%,var(--muted));opacity:.42;transform:translateY(-50%) rotate(-9deg);transition:opacity .3s var(--ease),transform .3s var(--ease);pointer-events:none}
+.t-stamp:empty{display:none}
+.ticket:hover .t-stamp{opacity:.6;transform:translateY(-50%) rotate(-7deg)}
+// On narrow tickets there's no clear space for it beside the title and totals
+@media (max-width:640px){.t-main .t-stamp{display:none}}
+
+/* ---------- footer: one dark band across the page ---------- */
+.site-foot{margin-top:40px;background:var(--band);color:var(--band-ink);position:relative;overflow:hidden;border-top:1px solid var(--line)}
+.foot-in{max-width:980px;margin:0 auto;padding:34px max(16px,env(safe-area-inset-right,0px)) max(30px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:grid;gap:16px;position:relative}
+.foot-mark{position:absolute;right:-8px;bottom:-34px;font-family:var(--display);font-weight:800;font-size:clamp(90px,18vw,180px);line-height:1;text-transform:uppercase;white-space:nowrap;color:currentColor;opacity:.06;pointer-events:none;user-select:none}
+.foot-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;position:relative}
+.foot-name{margin:0;font-family:var(--display);font-weight:800;font-size:26px;text-transform:uppercase;letter-spacing:.02em}
+.foot-name span{font-family:var(--mono);font-size:11px;font-weight:400;letter-spacing:.12em;opacity:.65}
+.site-foot button{background:transparent;color:var(--band-ink);border:1px solid color-mix(in oklab,var(--band-ink) 35%,transparent);transition:background-color .15s,border-color .15s}
+.site-foot button:hover{background:color-mix(in oklab,var(--band-ink) 10%,transparent);border-color:var(--band-ink)}
+.foot-credits{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.7;opacity:.7;position:relative;max-width:70ch}
+// Room under the credits so the fixed Up button doesn't sit on them
+@media (max-width:640px){.foot-in{padding-bottom:max(76px,calc(env(safe-area-inset-bottom,0px) + 64px))}}
+.foot-credits a{color:inherit;text-underline-offset:2px;transition:opacity .15s}
+.foot-credits a:hover{opacity:.75}

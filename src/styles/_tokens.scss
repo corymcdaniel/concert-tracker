@@ -1,17 +1,17 @@
 /* Layout: a running ticket-stub ledger, grouped by year, with a stats strip up top and an edit sheet that slides in */
 :root{
   --bg:#e9ecf1; --paper:#fbfcfd; --ink:#16192b; --muted:#646a82; --line:#cdd2dd;
-  --music:#2a46e8; --comedy:#c4176b; --upcoming:#0f8a5f; --chip:#dfe3ec; --gold:#c99a06; --gold-ink:#7a5a00; --spotify:#1db954; --spotify-ink:#117a37;
+  --music:#2a46e8; --comedy:#c4176b; --upcoming:#0f8a5f; --chip:#dfe3ec; --gold:#c99a06; --gold-ink:#7a5a00; --spotify:#1db954; --spotify-ink:#117a37; --band:#16192b; --band-ink:#e7e9f2;
   --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0e1019; --paper:#171a27; --ink:#e7e9f2; --muted:#9097b1; --line:#2c3145;
-  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; color-scheme:dark}}
+  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; --band:#07080d; --band-ink:#c9cde0; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0e1019; --paper:#171a27; --ink:#e7e9f2; --muted:#9097b1; --line:#2c3145;
-  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; color-scheme:dark}
+  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; --band:#07080d; --band-ink:#c9cde0; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
 .wrap{max-width:980px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
