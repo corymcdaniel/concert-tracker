@@ -1,11 +1,10 @@
-import { imgUrl } from './info.js';
 import { nightKey, nights } from './log.js';
 import { motionOK } from './motion.js';
 import { MONTHS, state } from './state.js';
 import { $, esc, happened } from './util.js';
 
-/* ---------- the end of the log: a year rail to jump around, then a mosaic of nights ----------
-   Mosaic tiles are nights. Each shows its headliner's Wikipedia photo for now; uploaded photos will take their place. */
+/* ---------- the end of the log: a year rail to jump around, then a mosaic of your own photos ----------
+   Only photos uploaded to a night appear in the mosaic; until there are some, it's just the heading and the rail. */
 // Tiles come in blocks of 8 that fill a 6 x 2 grid exactly: one big (2 x 2), one wide (2 x 1), six single.
 // Every other block is mirrored so the big tiles alternate sides.
 const BLOCK = 8, MAX_BLOCKS = 2;
@@ -45,40 +44,36 @@ function rail(dated){
   return `<div class="rail" role="group" aria-label="Jump to a year">${cols.join('')}</div>`;
 }
 
-// The newest nights with a photo, no artist twice, in whole blocks so the grid has no holes
-function mosaic(dated){
-  const used = new Set(), tiles = [];
-  for (const n of dated) {
-    if (tiles.length >= BLOCK * MAX_BLOCKS) break;
-    const act = n.acts.find(a => state.INFO.artists?.[a.artist]?.img && !used.has(a.artist));
-    if (!act) continue;
-    used.add(act.artist);
-    tiles.push({n, act, img: state.INFO.artists[act.artist].img});
-  }
+// The newest uploaded photos, each tile a link to its night, in whole blocks so the grid has no holes.
+// photos: [{n: night, url}] newest first.
+function mosaic(photos){
+  const tiles = photos.slice(0, BLOCK * MAX_BLOCKS);
   if (!tiles.length) return '';
   // Fewer than one block: plain singles. Otherwise drop the leftovers.
   const blocks = Math.floor(tiles.length / BLOCK);
   if (blocks) tiles.length = blocks * BLOCK;
-  return `<div class="mosaic">${tiles.map(({n, act, img}, i) => {
+  return `<div class="mosaic">${tiles.map(({n, url}, i) => {
     let size = '';
     if (blocks) size = BLOCK_SIZES[Math.floor(i / BLOCK) % 2][i % BLOCK] || '';
     return `<button type="button" class="tile ${size}" data-night="${esc(nightKey(n))}" data-i="${Math.min(i, 16)}">
-      <img loading="lazy" src="${imgUrl(img, 500)}" alt="" onerror="this.closest('.tile').remove()">
-      <span class="cap"><b>${esc(act.artist)}</b><small>${esc(n.venue)} · ${longDate(n.date)}</small></span></button>`;
+      <img loading="lazy" src="${esc(url)}" alt="" onerror="this.closest('.tile').remove()">
+      <span class="cap"><b>${esc(n.acts[0].artist)}</b><small>${esc(n.venue)} · ${longDate(n.date)}</small></span></button>`;
   }).join('')}</div>`;
 }
 
 export function renderEnd(){
   const box = $('#endcap'); if (!box) return;
-  const dated = nights(state.shows.filter(happened)).filter(n => n.date);
+  // Every past night counts, dated or not, the same as the header
+  const all = nights(state.shows.filter(happened));
+  const dated = all.filter(n => n.date);
   if (!dated.length) { box.innerHTML = ''; return; }
   const first = dated.at(-1);
   const span = +dated[0].date.slice(0, 4) - +first.date.slice(0, 4) + 1;
   box.innerHTML = `<div class="end-head">
       <p class="end-k">End of the log</p>
-      <h2>${span} years, ${dated.length} nights</h2>
+      <h2>${span} years, ${all.length} nights</h2>
       <p class="end-sub">It started with <b>${esc(first.acts[0].artist)}</b> at ${esc(first.venue)}, ${longDate(first.date)}.</p>
-    </div>${rail(dated)}${mosaic(dated)}`;
+    </div>${rail(dated)}${mosaic(state.PHOTOS || [])}`;
 }
 
 // Scroll so the year's first ticket sits just under its pinned header

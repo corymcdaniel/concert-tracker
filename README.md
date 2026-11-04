@@ -47,8 +47,8 @@ the first tickets on screen and becomes it (`dealIn` in `src/scripts/log.js`, st
 into Stats keeps the hand up until Stats can be drawn. With reduced motion on, the log just appears.
 
 **End of the log:** below the last ticket, a year rail (one bar per year, music and comedy stacked; click to jump to
-that year) and a mosaic of recent nights. Each tile shows the headliner's Wikipedia photo for now; click to jump to that
-night's ticket (`src/scripts/endcap.js`).
+that year), then a mosaic of photos you've uploaded to nights. Click a tile to jump to that night's ticket. The mosaic
+only appears once there are uploaded photos (`src/scripts/endcap.js`).
 
 **Upcoming shows:** add a show with a future date and it's pinned under **Up next** at the top of the log, soonest first.
 Upcoming shows (including tonight's) are left out of every count: header totals, the Stats tab, the year headers and
