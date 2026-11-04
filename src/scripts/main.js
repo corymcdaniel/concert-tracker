@@ -1,5 +1,6 @@
 import { load } from './api.js';
 import { applyAuth, canEdit, initIdentity, openLogin, setState } from './auth.js';
+import { startAutoInfo } from './autoinfo.js';
 import { openHistory, undoChange } from './history.js';
 import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit } from './info.js';
 import { filterList, renderStats } from './log.js';
@@ -134,6 +135,7 @@ load().then(async () => {
   if (state.mode==='netlify') await initIdentity();
   await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
   render(); applyAuth();
+  startAutoInfo();
   followStatsLink();
   const reviewYear = /^#review-(\d{4})$/.exec(location.hash);
   if (reviewYear) { setView('stats', 'overview'); openReview(reviewYear[1]); }

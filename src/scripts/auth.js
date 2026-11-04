@@ -1,3 +1,4 @@
+import { fillMissingArtists } from './autoinfo.js';
 import { loadRaw } from './api.js';
 import { toast } from './motion.js';
 import { closeSheet, openSheet } from './sheets.js';
@@ -10,6 +11,8 @@ import { render } from './view.js';
 export const canEdit = () => state.mode !== 'netlify' || !!state.user;
 export function applyAuth(){
   document.body.classList.toggle('readonly', !canEdit());
+  // Signing in fills in any artists still missing their Wikipedia record
+  fillMissingArtists();
   const b = $('#btnAuth'); if (!b) return;
   b.hidden = state.mode !== 'netlify';
   $('#btnHistory').hidden = state.mode !== 'netlify' || !state.user;

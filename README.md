@@ -54,6 +54,12 @@ Artist and venue `info` looks like this:
   "genre": ["alternative metal", "nu metal"], "website": "deftones.com" }
 ```
 
+**New artists are matched automatically.** When an editor saves a show with an artist that has no record, the page looks them
+up on Wikipedia: the name, then `Name (band)`, `(musician)`, `(rapper)` and the other suffixes in `src/scripts/wikimatch.js`. A page
+only counts if its description says band, musician, comedian or similar, and it's never a disambiguation page. The facts above
+(formed, from, born, genres, website) then come from Wikidata. Signing in does the same for any artist still missing a record. An
+artist with no page is saved as `null` so it isn't retried; fix those, or a wrong match, with **Edit info → Look up**.
+
 `img` is a Wikimedia Commons file name (suffix `|en` for files hosted on English Wikipedia). The pop-up loads the
 photo, its credit and the Wikipedia summary live from Wikipedia. Editors can fix any match from the pop-up with
 **Edit info → Look up**.

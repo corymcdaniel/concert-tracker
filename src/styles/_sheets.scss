@@ -51,8 +51,9 @@ body.readonly .edit-only{display:none}
 .where .vbtn{border:0;background:none;padding:0;font:inherit;font-weight:600;font-size:14px;color:var(--ink);text-align:left}
 .where .vbtn:hover,.rank .lab button:hover{color:var(--music);text-decoration:underline;text-underline-offset:3px}
 .rank .lab button{border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.info{position:fixed;z-index:21;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,calc(100% - 24px));max-height:calc(100% - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;background:var(--paper);border-radius:12px;box-shadow:0 24px 60px rgb(0 0 0 / .35);display:grid}
-.info .hero{position:relative;background:var(--chip);aspect-ratio:16/9;max-width:100%;overflow:hidden}
+.info{position:fixed;z-index:21;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,calc(100% - 24px));max-height:calc(100% - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;background:var(--paper);border-radius:12px;box-shadow:0 24px 60px rgb(0 0 0 / .35);display:block}
+/* A plain block stack: as a grid, a pop-up taller than the screen squeezed the photo's row to nothing and the text slid under the photo */
+.info .hero{position:relative;background:var(--chip);aspect-ratio:16/9;width:100%;overflow:hidden}
 .info .hero img{width:100%;height:100%;object-fit:cover;display:block}
 .info .hero .ph{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:96px;color:var(--line);text-transform:uppercase}
 /* initials are only a placeholder: gone once the photo has loaded (kept if it fails) */
