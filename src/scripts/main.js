@@ -10,6 +10,7 @@ import { filt, state } from './state.js';
 import { loadListening } from './stats/bucket.js';
 import { renderStatsView } from './stats/index.js';
 import { setRegion, showPin } from './stats/map.js';
+import { fitTo } from './stats/venues.js';
 import { loadSetlists, syncSetlists } from './stats/setlists.js';
 import { showWallTile, updateWall, wallOpts } from './stats/wall.js';
 import { $, store } from './util.js';
@@ -23,6 +24,7 @@ document.addEventListener('click', e => {
   if (t.id === 'rvShare') { shareReview(t); return; }
   if (t.dataset.review) { openReview(t.dataset.review); return; }
   if (t.dataset.region) { setRegion(t.dataset.region); return; }
+  if (t.dataset.vcity !== undefined) { fitTo(t.dataset.vcity); return; }
   if (t.dataset.wallSort) { wallOpts.sort = t.dataset.wallSort; updateWall(); return; }
   if ('wallClear' in t.dataset) { wallOpts.genre = ''; wallOpts.decade = ''; $('#wallGenre').value = ''; $('#wallDecade').value = ''; updateWall(); return; }
   if (t.id === 'syncSets') { syncSetlists(t); return; }

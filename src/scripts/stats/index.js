@@ -6,6 +6,7 @@ import { bucketPanel } from './bucket.js';
 import { eraPanel } from './era.js';
 import { companionPanel, extrasHint, ratingPanel, spendingPanel } from './extras.js';
 import { drawMap } from './map.js';
+import { drawVenueMap } from './venues.js';
 import { agePanel, counter, dayPanel, gapPanel, genrePanel, heatPanel, newRepeatPanel, openerPanel, runCounters } from './panels.js';
 import { byYearPanel, clockPanel, favoritesPanel, habitsPanel, summaryPanel, yearTopsPanel } from './listening.js';
 import { knownPanel, setlistPanel } from './setlists.js';
@@ -103,6 +104,7 @@ export function renderStatsView(){
         <div class="panel"><h3>Top venues <span>nights</span></h3>${rank(venueNames, 10, k => `data-venue="${esc(venueKeyOf[k])}"`)}</div>
         <div class="panel"><h3>Cities <span>nights</span></h3>${rank(cityN)}</div>
       </div>
+      <div class="panel" id="venueMapPanel"></div>
       <div class="panel" id="mapPanel"></div>
       ${eraPanel(ns)}`,
     listening: `
@@ -130,7 +132,7 @@ export function renderStatsView(){
   const cards = [
     ['overview', 'Overview', `${ns.length} nights`, 'Year in review, highlights, streaks and every month out'],
     ['artists', 'Artists', `${A.length} acts`, 'Everyone you\'ve seen, repeat sightings, genres and openers'],
-    ['places', 'Places', `${venueCount} venues`, `${cityCount} cities, where the bands came from, and before and after the move`],
+    ['places', 'Places', `${venueCount} venues`, `${cityCount} cities on a map, where the bands came from, and before and after the move`],
   ];
   if (hasListening) cards.push(['listening', 'Listening', listeningBig, listeningLine]);
   const landing = `<div class="stat-cards">${cards.map(([id, name, big, line]) => `<button type="button" class="stat-card" data-stats-section="${id}"><span class="k">${name}</span><b>${big}</b><span class="line">${esc(line)}</span></button>`).join('')}</div>`;
@@ -143,4 +145,5 @@ export function renderStatsView(){
   runCounters($('#statsView'));
   arrangeWall();
   drawMap();
+  drawVenueMap();
 }
