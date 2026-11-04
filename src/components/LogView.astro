@@ -11,5 +11,15 @@
     <select id="city" aria-label="City"><option value="">All cities</option></select>
   </div>
 
-  <main id="list" class="list"></main>
+  <main id="list" class="list" aria-busy="true">
+    <!-- Shown until the shows load: a hand of blank tickets that deals out into the real ones (log.js dealIn) -->
+    <div class="deck" id="deck" role="status">
+      <span class="sr-only">Loading the log…</span>
+      <div class="ghost g1"><i class="gd"></i><i class="gb"><b></b><b></b><b></b></i></div>
+      <div class="ghost g2"><i class="gd"></i><i class="gb"><b></b><b></b><b></b></i></div>
+      <div class="ghost g3"><i class="gd"></i><i class="gb"><b></b><b></b><b></b></i></div>
+      <div class="ghost g4"><i class="gd"></i><i class="gb"><b></b><b></b><b></b></i></div>
+      <div class="ghost g5"><i class="gd"></i><i class="gb"><b></b><b></b><b></b></i></div>
+    </div>
+  </main>
 </div>

@@ -66,7 +66,13 @@ function cityButtons(list){
 export async function drawVenueMap(){
   const box = $('#venueMapPanel'); if (!box) return;
   if (map) { map.remove(); map = null; markers.clear(); }
-  await Promise.all([loadLib(), loadFallback()]);
+  try {
+    await Promise.all([loadLib(), loadFallback()]);
+  } catch {
+    // No map library (offline, blocked): drop the panel rather than leave an empty card
+    box.remove();
+    return;
+  }
   // The section may have changed while the library loaded
   if (!box.isConnected) return;
   const {list, missing} = venueGroups();

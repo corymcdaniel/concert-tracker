@@ -18,7 +18,12 @@ export function applyAuth(){
   $('#btnHistory').hidden = state.mode !== 'netlify' || !state.user;
   b.textContent = state.user ? 'Sign out' : 'Sign in';
   b.title = state.user ? `Signed in as ${state.user.email||state.user.name||''}` : '';
-  if (state.mode==='netlify') setState(state.user ? (state.user.name||state.user.email||'Signed in') : 'View only');
+  // Signed in shows who; signed out shows nothing
+  if (state.mode==='netlify') {
+    let who = '';
+    if (state.user) who = state.user.name || state.user.email || 'Signed in';
+    setState(who);
+  }
   reloadForUser();
 }
 // Prices and companions only come back when signed in, so the list follows who's signed in

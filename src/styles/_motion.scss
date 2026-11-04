@@ -14,9 +14,10 @@
   .info.closing{animation:pop-out .15s ease-in forwards}
   .scrim{animation:fade-in .2s var(--ease)}
   .scrim.closing{animation:fade-out .16s ease-in forwards}
-  .to-top{transform:translateY(8px);transition:opacity .2s var(--ease),transform .2s var(--ease),visibility .2s}
-  .to-top.on{transform:none}
-  .to-top.on:hover,.to-top.on:focus-visible{transform:translateY(-3px)}
+  .float-nav{transform:translateY(8px);transition:opacity .2s var(--ease),transform .2s var(--ease),visibility .2s}
+  .float-nav.on{transform:none}
+  .float-btn{transition:transform .2s var(--ease),background-color .15s}
+  .float-btn:hover,.float-btn:focus-visible{transform:translateY(-3px)}
   .toast.pop{animation:toast-in .2s var(--ease)}
   .toast.closing{animation:fade-out .2s ease-in forwards}
   .history .change{animation:rise .2s var(--ease) both}
@@ -29,8 +30,6 @@
   /* controls */
   button{transition:background-color .15s,border-color .15s,color .15s,transform .1s}
   button:active{transform:scale(.97)}
-  .tab-ink{transition:transform .25s var(--ease)}
-  .tabs button{transition:color .2s var(--ease)}
 }
 /* hover: stubs lift, and the ticket "tears" a little along the perforation */
 @media (prefers-reduced-motion:no-preference) and (hover:hover){

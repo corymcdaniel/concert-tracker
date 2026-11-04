@@ -17,6 +17,11 @@ export function setView(v, section = null){
   state.statsSection = section;
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected', b.dataset.view===state.view));
   $('#logView').hidden = state.view!=='log'; $('#statsView').hidden = state.view!=='stats';
+  // The floating button offers whichever view you're not on
+  let other = 'Stats';
+  if (state.view === 'stats') other = 'Log';
+  $('#toView').textContent = other;
+  $('#toView').setAttribute('aria-label', `Go to ${other}`);
   if (state.view==='stats') renderStatsView();
   try { history.replaceState(null,'', state.view==='stats' ? statsHash() : location.pathname + location.search); } catch {}
 }
@@ -29,13 +34,15 @@ export function openStatsSection(section){
   renderStatsView();
   const tabs = $('.tabs');
   if (tabs.getBoundingClientRect().top < 0) tabs.scrollIntoView();
-  $('#statsView button')?.focus({preventScroll: true});
+  $('#statsView .subnav [aria-current]')?.focus({preventScroll: true});
 }
 export function followHash(){
   const section = sectionFromHash(location.hash);
   if (section === undefined) setView('log');
   else setView('stats', section);
 }
+// A link straight into stats or a Year in review, which need everything loaded first
+export const opensStats = () => sectionFromHash(location.hash) !== undefined || /^#review-d{4}$/.test(location.hash);
 export function followStatsLink(){
   const section = sectionFromHash(location.hash);
   if (section !== undefined) setView('stats', section);

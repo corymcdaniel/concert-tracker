@@ -3,7 +3,7 @@ import { applyAuth, canEdit, initIdentity, openLogin, setState } from './auth.js
 import { startAutoInfo } from './autoinfo.js';
 import { openHistory, undoChange } from './history.js';
 import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit } from './info.js';
-import { filterList, renderStats } from './log.js';
+import { dealIn, filterList, renderStats } from './log.js';
 import { isOpen, motionOK, toast } from './motion.js';
 import { openReview, shareReview, stepReview } from './review.js';
 import { closeSheet, openAdd, openBill, openData, openEdit } from './sheets.js';
@@ -15,7 +15,7 @@ import { fitTo } from './stats/venues.js';
 import { loadSetlists, syncSetlists } from './stats/setlists.js';
 import { showWallTile, updateWall, wallOpts } from './stats/wall.js';
 import { $, store } from './util.js';
-import { followHash, followStatsLink, openStatsSection, render, setView, statsHash } from './view.js';
+import { followHash, followStatsLink, openStatsSection, opensStats, render, setView, statsHash } from './view.js';
 
 /* ---------- events ---------- */
 document.addEventListener('click', e => {
@@ -110,31 +110,59 @@ if (motionOK() && matchMedia('(hover:hover)').matches) {
   });
 }
 
-// The Up button appears 40% of the way down. Filters and tabs change the page height without scrolling, so watch that too.
+// The Up and Stats/Log buttons appear when the year headers start pinning, so they arrive together:
+// in the log, once the first year header pins to the top; in stats, which has no years,
+// once the section links have scrolled off. Filters and tabs move things without scrolling, so watch size too.
 let upFrame = 0;
+function floatNavShown(){
+  if (state.view === 'stats') {
+    const links = $('#statsView .subnav');
+    if (!links) return false;
+    return links.getBoundingClientRect().bottom <= 0;
+  }
+  // Every year header sits in #list, so the first one stays pinned at 0 until the list ends
+  const year = $('#list .year');
+  // A pixel of slack for sub-pixel scroll positions
+  if (year) return year.getBoundingClientRect().top <= 1;
+  return $('#list').getBoundingClientRect().top <= 0;
+}
 function queueUp(){
   if (upFrame) return;
   upFrame = requestAnimationFrame(() => {
     upFrame = 0;
-    const room = document.documentElement.scrollHeight - innerHeight;
-    $('#toTop').classList.toggle('on', room > 0 && scrollY / room >= .4);
+    $('#floatNav').classList.toggle('on', floatNavShown());
   });
 }
 addEventListener('scroll', queueUp, {passive: true});
 addEventListener('resize', queueUp);
 new ResizeObserver(queueUp).observe(document.body);
-$('#toTop').onclick = () => {
+function backToTop(){
   let behavior = 'auto';
   if (motionOK()) behavior = 'smooth';
   window.scrollTo({top: 0, behavior});
-  // The button is about to hide, so keep keyboard focus at the top with the page
+  // The buttons are about to hide, so keep keyboard focus at the top with the page
   $('.tabs button[aria-selected=true]').focus({preventScroll: true});
+}
+$('#toTop').onclick = backToTop;
+// Jumps to the other view (Stats from the log, Log from stats) and starts it at the top
+$('#toView').onclick = () => {
+  let next = 'stats';
+  if (state.view === 'stats') next = 'log';
+  setView(next);
+  backToTop();
 };
 
 load().then(async () => {
+  // The log only needs the shows, so deal it out now rather than after sign-in and the extras.
+  // Signed-out first, so editor buttons don't flash up before sign-in is known.
+  // A link into stats keeps the hand on screen until stats can be drawn, then goes straight there.
+  const toStats = opensStats();
+  applyAuth();
+  if (!toStats) dealIn(render);
   if (state.mode==='netlify') await initIdentity();
   await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
-  render(); applyAuth();
+  if (toStats) render();
+  applyAuth();
   startAutoInfo();
   followStatsLink();
   const reviewYear = /^#review-(\d{4})$/.exec(location.hash);

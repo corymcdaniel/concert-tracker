@@ -85,8 +85,6 @@
   .stat-card{transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
   .stat-card:hover,.stat-card:focus-visible{transform:translateY(-3px)}
 }
-.stats-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
-.stats-head h2{margin:0;font-family:var(--display);font-size:34px;font-weight:800;line-height:1;text-transform:uppercase}
 .bucket-more{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
 .bucket-more .mini{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));column-gap:28px}
 .stub-extra{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);align-items:baseline}

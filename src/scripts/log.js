@@ -48,8 +48,16 @@ export function renderStats(){
   const venues = new Set(past.map(s=>s.venue.toLowerCase()).filter(Boolean));
   const cities = new Set(past.filter(s=>s.city).map(cityKey));
   const totals = [[n.length,'Nights out'],[artists.size,'Artists'],[venues.size,'Venues'],[cities.size,'Cities']];
-  $('#stats').innerHTML = totals.map(([v,l])=>`<div class="stat"><b>${statShown[l] ?? 0}</b><span>${l}</span></div>`).join('');
-  $('#stats').querySelectorAll('b').forEach((b, i) => countTo(b, totals[i][1], totals[i][0]));
+  // Nights go on the ticket's stub, the rest in its main part
+  countTo($('#tNights'), totals[0][1], totals[0][0]);
+  // The stamp on the ticket: first to latest year out
+  const years = n.filter(x => x.date).map(x => x.date.slice(0, 4)).sort();
+  let span = '';
+  if (years.length) span = `${years[0]}–${years.at(-1)}`;
+  $('#tStamp').textContent = span;
+  const rest = totals.slice(1);
+  $('#stats').innerHTML = rest.map(([v,l])=>`<div class="stat"><b>${statShown[l] ?? 0}</b><span>${l}</span></div>`).join('');
+  $('#stats').querySelectorAll('b').forEach((b, i) => countTo(b, rest[i][1], rest[i][0]));
   const reps = [...artists].filter(([,c])=>c>1).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
   const top = state.showAllMost ? reps : reps.slice(0,8);
   $('#most').innerHTML = reps.length ? `<span class="lbl">Seen 2+ times</span>` + top.map(([a,c])=>`<button class="chip" data-q="${esc(a)}" type="button">${esc(a)}<em>×${c}</em></button>`).join('')
@@ -106,6 +114,49 @@ function watchReveals(){
     else { el.classList.replace('reveal', 'in'); revealed.add(el.dataset.k); }
   });
 }
+/* ---------- the loading hand deals out ----------
+   Each blank ticket flies from its place in the hand to one of the first tickets on screen and turns into it,
+   a beat apart, top of the hand first. Everything else on screen fades up behind them. */
+const DEAL_ORDER = [2, 3, 4, 1, 0]; // the deck's cards from the top of the pile down (see .g1-.g5 z-index)
+const DEAL_GAP = 80, DEAL_MS = 700, EASE = 'cubic-bezier(.2,.7,.3,1)';
+function markRevealed(el){
+  if (!el.classList.contains('stub')) return;
+  el.classList.replace('reveal', 'in'); revealed.add(el.dataset.k); revealer?.unobserve(el);
+}
+export function dealIn(draw){
+  const list = $('#list');
+  const ghosts = [...document.querySelectorAll('#deck .ghost')];
+  if (!ghosts.length || !motionOK() || $('#logView').hidden) { draw(); return; }
+  // Where each card is right now, mid-sway: its centre, size and tilt
+  const from = ghosts.map(g => {
+    const r = g.getBoundingClientRect(), m = new DOMMatrixReadOnly(getComputedStyle(g).transform);
+    return {x: r.left + r.width / 2, y: r.top + r.height / 2, w: g.offsetWidth, h: g.offsetHeight, turn: Math.atan2(m.b, m.a) * 180 / Math.PI};
+  });
+  draw();
+  const onScreen = el => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+  const dealt = [...list.querySelectorAll('.stub')].filter(onScreen).slice(0, DEAL_ORDER.length);
+  dealt.forEach((el, i) => {
+    const card = from[DEAL_ORDER[i]], r = el.getBoundingClientRect(), delay = i * DEAL_GAP;
+    markRevealed(el);
+    // Above the pinned year header while it flies
+    el.classList.add('dealing');
+    const flight = el.animate([
+      {transform: `translate(${card.x - (r.left + r.width / 2)}px, ${card.y - (r.top + r.height / 2)}px) rotate(${card.turn}deg) scale(${card.w / r.width}, ${card.h / r.height})`},
+      {transform: 'none'},
+    ], {duration: DEAL_MS, delay, easing: EASE, fill: 'backwards'});
+    flight.finished.finally(() => el.classList.remove('dealing'));
+    // Blank until it lands, then its writing comes through
+    el.querySelectorAll('.date>*, .body>*').forEach(part => part.animate([{opacity: 0}, {opacity: 1}],
+      {duration: 300, delay: delay + DEAL_MS * .55, easing: 'ease-out', fill: 'backwards'}));
+  });
+  const after = dealt.length * DEAL_GAP + DEAL_MS * .4;
+  [...list.children].filter(el => !dealt.includes(el) && onScreen(el)).forEach((el, i) => {
+    markRevealed(el);
+    el.animate([{opacity: 0, transform: 'translateY(10px)'}, {opacity: 1, transform: 'none'}],
+      {duration: 400, delay: after + i * 40, easing: EASE, fill: 'backwards'});
+  });
+}
+
 // Filtering slides stubs to their new places instead of every stub fading up
 export function filterList(){ flip(renderList); }
 // A deleted ticket rips apart before the list closes up. Off-screen, it just goes.
@@ -163,6 +214,8 @@ function countSightings(){
 }
 
 export function renderList(){
+  // Drawing the list replaces the loading hand
+  $('#list').removeAttribute('aria-busy');
   countSightings();
   const all = nights(state.shows.filter(matches));
   if (!all.length){ $('#list').innerHTML = `<div class="empty">No shows match. Clear the search or add one with “+ Add show”.</div>`; return; }

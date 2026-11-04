@@ -4,15 +4,16 @@ import Header from "../components/Header.astro";
 import Tabs from "../components/Tabs.astro";
 import LogView from "../components/LogView.astro";
 import Overlays from "../components/Overlays.astro";
+import Footer from "../components/Footer.astro";
 ---
 <Base>
   <div class="wrap">
     <Header />
-    <section class="stats" id="stats" aria-label="Totals"></section>
     <Tabs />
     <LogView />
     <section id="statsView" class="sv" hidden></section>
   </div>
+  <Footer />
   <Overlays />
   <script src="../scripts/main.js"></script>
 </Base>

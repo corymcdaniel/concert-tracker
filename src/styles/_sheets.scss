@@ -119,8 +119,12 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 .history .diff .arrow{color:var(--muted)}
 .history .meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:6px;z-index:30;font-size:14px}
-.to-top{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;gap:6px;align-items:center;padding:8px 14px 6px;background:var(--ink);color:var(--paper);border-color:var(--ink);font-family:var(--display);font-weight:800;font-size:18px;line-height:1;text-transform:uppercase;box-shadow:0 4px 14px rgb(0 0 0 / .25);opacity:0;visibility:hidden}
-.to-top.on{opacity:1;visibility:visible}
+/* Floating buttons, bottom right: the other view, then Up. They show and hide together. */
+.float-nav{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;gap:8px;opacity:0;visibility:hidden}
+.float-nav.on{opacity:1;visibility:visible}
+.float-btn{display:flex;gap:6px;align-items:center;padding:8px 14px 6px;background:var(--ink);color:var(--paper);border-color:var(--ink);font-family:var(--display);font-weight:800;font-size:18px;line-height:1;text-transform:uppercase;box-shadow:0 4px 14px rgb(0 0 0 / .25)}
+.float-btn.alt{background:var(--paper);color:var(--ink)}
+.float-btn.alt:hover{background:var(--chip)}
 
 
 /* Spotify section of the artist pop-up (stats/spotify.js) */
