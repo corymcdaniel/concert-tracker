@@ -18,6 +18,8 @@ const WINDOW_DAYS = 30; // how far either side of a show counts as "around" it
 const SETTLED_DAYS = 365; // a first show this soon after the history begins can't be called cold
 const LIST_SIZE = 8;
 const TOP_SONGS = 15;
+const ARTIST_MIN_PLAYS = 5; // who gets a Spotify section in their pop-up (listening-artists.json)
+const ARTIST_TOP_SONGS = 5;
 const OBSESSION_MIN_HOURS = 10;
 const COMEBACK_MIN_YEARS = 2;
 const COMEBACK_MIN_PLAYS = 20; // on each side of the gap, so a stray play doesn't count as a comeback
@@ -337,6 +339,56 @@ async function addWikipedia(artists) {
   }
 }
 
+// One record per artist for the pop-up, keyed by matchKey so log spellings find them.
+// Daily play counts let the page work out "around the show" for shows logged after this runs.
+// d is a list of days since 1970: each entry is the gap from the previous day in base 36, then *count if more than one play.
+function artistStats(plays, ranked) {
+  const rank = new Map(ranked.map((a, i) => [a.name, i + 1]));
+  const byName = new Map();
+  for (const p of plays) {
+    const a = byName.get(p.artist) || { ms: 0, plays: 0, first: p.date, last: p.date, years: {}, songs: new Map(), days: new Map() };
+    a.ms += p.ms;
+    a.plays++;
+    if (p.date < a.first) a.first = p.date;
+    if (p.date > a.last) a.last = p.date;
+    const year = p.date.slice(0, 4);
+    a.years[year] = (a.years[year] || 0) + p.ms;
+    // Group "Song" and "Song - Remastered" together, labelled with the most-played spelling
+    const key = p.track && songKey(p.track);
+    if (key) {
+      const song = a.songs.get(key) || { plays: 0, titles: new Map() };
+      song.plays++;
+      song.titles.set(p.track, (song.titles.get(p.track) || 0) + 1);
+      a.songs.set(key, song);
+    }
+    const day = Date.parse(`${p.date}T00:00:00Z`) / 864e5;
+    a.days.set(day, (a.days.get(day) || 0) + 1);
+    byName.set(p.artist, a);
+  }
+  const out = {};
+  // Most-played first, so when two Spotify names tidy to the same key the bigger one wins
+  const names = [...byName.keys()].sort((x, y) => rank.get(x) - rank.get(y));
+  for (const name of names) {
+    const a = byName.get(name), key = matchKey(name);
+    if (a.plays < ARTIST_MIN_PLAYS || out[key]) continue;
+    const songs = [...a.songs.values()].sort((x, y) => y.plays - x.plays).slice(0, ARTIST_TOP_SONGS)
+      .map((song) => [[...song.titles].sort((x, y) => y[1] - x[1])[0][0], song.plays]);
+    let prev = 0;
+    const days = [...a.days].sort((x, y) => x[0] - y[0]).map(([day, n]) => {
+      let entry = (day - prev).toString(36);
+      if (n > 1) entry += "*" + n.toString(36);
+      prev = day;
+      return entry;
+    }).join(",");
+    out[key] = {
+      n: name, r: rank.get(name), h: hours(a.ms), p: a.plays, f: a.first, l: a.last,
+      y: Object.fromEntries(Object.entries(a.years).map(([year, ms]) => [year, hours(ms)])),
+      s: songs, d: days,
+    };
+  }
+  return out;
+}
+
 const files = await exportFiles();
 if (!files.length) {
   console.error(`No streaming history files found in ${folder}. Expected Streaming_History_*.json or StreamingHistory_music_*.json.`);
@@ -382,6 +434,9 @@ await writeFile("public/listening.json", JSON.stringify({
   sightings: rows,
 }));
 await writeFile("public/listening-songs.json", JSON.stringify(songs));
+const perArtist = artistStats(plays, artists);
+await writeFile("public/listening-artists.json", JSON.stringify({ since, until, total: artists.length, window: WINDOW_DAYS, settled: SETTLED_DAYS, artists: perArtist }));
 console.log(`${files.length} file(s), ${plays.length.toLocaleString()} plays, ${artists.length.toLocaleString()} artists, ${since} to ${until}.`);
 console.log(`Wrote the top ${top.length} to public/listening.json, ${top.filter((a) => a.img).length} with photos, and ${rows.length} show rows.`);
+console.log(`Wrote ${Object.keys(perArtist).length.toLocaleString()} artists with ${ARTIST_MIN_PLAYS}+ plays to public/listening-artists.json.`);
 console.log(`Wrote first plays for ${Object.keys(songs).length} seen acts to public/listening-songs.json.`);

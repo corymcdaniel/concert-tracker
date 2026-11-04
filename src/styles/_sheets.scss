@@ -121,3 +121,42 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 .to-top{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;gap:6px;align-items:center;padding:8px 14px 6px;background:var(--ink);color:var(--paper);border-color:var(--ink);font-family:var(--display);font-weight:800;font-size:18px;line-height:1;text-transform:uppercase;box-shadow:0 4px 14px rgb(0 0 0 / .25);opacity:0;visibility:hidden}
 .to-top.on{opacity:1;visibility:visible}
 
+
+/* Spotify section of the artist pop-up (stats/spotify.js) */
+.info .spot{display:grid;gap:14px;min-width:0}
+.info .spot:empty{display:none}
+.info .spot h4{margin:0;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--spotify-ink);display:flex;align-items:center;gap:8px}
+.info .spot h4::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--spotify)}
+.info .spot h5{margin:0 0 8px;font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px}
+.info .spot h5 span{letter-spacing:.04em;text-transform:none;display:inline-flex;align-items:center;gap:5px}
+.info .spot h5 i{width:8px;height:8px;border-radius:2px;background:var(--spotify)}
+.spot-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.spot-tiles div{background:color-mix(in oklab,var(--spotify) 9%,var(--paper));border:1px solid color-mix(in oklab,var(--spotify) 22%,var(--line));border-radius:8px;padding:10px 12px;display:grid;gap:2px;min-width:0;transition:transform .2s var(--ease),border-color .2s}
+.spot-tiles div:hover{transform:translateY(-2px);border-color:var(--spotify)}
+.spot-tiles b{font-family:var(--display);font-size:28px;font-weight:800;line-height:1;color:var(--ink)}
+.spot-tiles span{font-family:var(--mono);font-size:10.5px;color:var(--muted);overflow-wrap:anywhere}
+.spot-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.spot-chart .bar{fill:color-mix(in oklab,var(--spotify) 35%,var(--chip));transform-box:fill-box;transform-origin:bottom;transition:fill .15s}
+.spot-chart .bar.seen{fill:var(--spotify)}
+.spot-chart .mark{fill:var(--ink)}
+.spot-chart text{font-family:var(--mono);font-size:8px;fill:var(--muted);text-anchor:middle}
+.spot-chart .yr:hover .bar{fill:var(--spotify-ink)}
+.spot-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 20px}
+.spot-songs ol{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:14px}
+.spot-songs li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;align-items:center}
+.spot-songs .n{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.spot-songs .song{position:relative;padding:2px 8px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;isolation:isolate}
+.spot-songs .song::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:color-mix(in oklab,var(--spotify) 18%,transparent);transform-origin:left;transition:transform .5s var(--ease)}
+@for $w from 0 through 10{.spot-songs .song[data-w="#{$w}"]::before{transform:scaleX(#{$w * .1})}}
+.spot-lede{margin:0;font-size:14px;color:var(--muted)}
+.spot-lede b{color:var(--ink);font-weight:600}
+.spot-badge{margin:0 0 8px;font-size:13px;background:color-mix(in oklab,var(--gold) 16%,var(--paper));color:var(--gold-ink);border-radius:6px;padding:6px 10px}
+.spot-show .spot-lede{margin-bottom:8px}
+.spot-around{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13px}
+.spot-around li{display:grid;grid-template-columns:96px auto 14px auto;justify-content:start;gap:8px;align-items:baseline;font-variant-numeric:tabular-nums}
+.spot-around time{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.spot-around b{font-weight:600}
+.spot-around .arrow{color:var(--muted);transition:transform .2s var(--ease)}
+.spot-around li.up .arrow{color:var(--spotify-ink);transform:rotate(-25deg)}
+.spot-around li.down .arrow{color:var(--comedy);transform:rotate(25deg)}
+.spot-around .tbd{color:var(--muted);font-style:italic}

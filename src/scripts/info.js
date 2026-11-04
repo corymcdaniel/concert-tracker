@@ -5,6 +5,7 @@ import { closeSheet, openSheet } from './sheets.js';
 import { MONTHS, state } from './state.js';
 import { fmt } from './stats/index.js';
 import { artistSongs } from './stats/setlists.js';
+import { fillSpotify, spotifySlot } from './stats/spotify.js';
 import { $, esc, happened, place, store } from './util.js';
 
 /* ---------- artist & venue info ---------- */
@@ -69,6 +70,7 @@ export function openInfo(kind, key, actId){
       ${rec?.wiki?`<div class="sum loading" id="sum">Loading the Wikipedia summary…</div>`:''}
       ${comingN?`<div class="seen next"><h4>Coming up · ${comingN}</h4><ul>${rows(coming, true).join('')}</ul></div>`:''}
       ${seenN||!comingN?`<div class="seen"><h4>${isA?`You've seen them ${seenN} time${seenN===1?'':'s'}`:`${seenN} night${seenN===1?'':'s'} here`}</h4><ul>${rows(seen).join('')}</ul></div>`:''}
+      ${isA?spotifySlot():''}
       ${isA?artistSongs(key):''}
       <div class="links">${rec?.wiki?`<a href="${wikiUrl(rec.wiki)}" target="_blank" rel="noopener">Read on Wikipedia ↗</a>`:''}
         <span class="spacer"></span>
@@ -78,6 +80,7 @@ export function openInfo(kind, key, actId){
     </div>`;
   show(box); show($('#scrim')); box.querySelector('.x').focus();
   if (rec?.wiki) loadSummary(rec, ++infoReq);
+  if (isA) fillSpotify(title);
 }
 async function loadSummary(rec, req){
   const el = () => req===infoReq ? $('#sum') : null;
