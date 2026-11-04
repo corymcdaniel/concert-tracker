@@ -46,6 +46,10 @@ listening data. Until then a fanned hand of blank tickets fills the space, and w
 the first tickets on screen and becomes it (`dealIn` in `src/scripts/log.js`, styles in `_deck.scss`). A link straight
 into Stats keeps the hand up until Stats can be drawn. With reduced motion on, the log just appears.
 
+**End of the log:** below the last ticket, a year rail (one bar per year, music and comedy stacked; click to jump to
+that year) and a mosaic of recent nights. Each tile shows the headliner's Wikipedia photo for now; click to jump to that
+night's ticket (`src/scripts/endcap.js`).
+
 **Upcoming shows:** add a show with a future date and it's pinned under **Up next** at the top of the log, soonest first.
 Upcoming shows (including tonight's) are left out of every count: header totals, the Stats tab, the year headers and
 the "seen N times" counts in the artist and venue pop-ups. The day after the show, it moves into its year in the log and

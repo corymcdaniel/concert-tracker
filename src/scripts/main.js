@@ -1,6 +1,7 @@
 import { load } from './api.js';
 import { applyAuth, canEdit, initIdentity, openLogin, setState } from './auth.js';
 import { startAutoInfo } from './autoinfo.js';
+import { jumpToNight, jumpToYear, renderEnd } from './endcap.js';
 import { openHistory, undoChange } from './history.js';
 import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit } from './info.js';
 import { dealIn, filterList, renderStats } from './log.js';
@@ -26,6 +27,8 @@ document.addEventListener('click', e => {
   if (t.dataset.review) { openReview(t.dataset.review); return; }
   if (t.dataset.region) { setRegion(t.dataset.region); return; }
   if (t.dataset.vcity !== undefined) { fitTo(t.dataset.vcity); return; }
+  if (t.dataset.year) { jumpToYear(t.dataset.year); return; }
+  if (t.dataset.night) { jumpToNight(t.dataset.night); return; }
   if (t.dataset.wallSort) { wallOpts.sort = t.dataset.wallSort; updateWall(); return; }
   if ('wallClear' in t.dataset) { wallOpts.genre = ''; wallOpts.decade = ''; $('#wallGenre').value = ''; $('#wallDecade').value = ''; updateWall(); return; }
   if (t.id === 'syncSets') { syncSetlists(t); return; }
@@ -162,6 +165,8 @@ load().then(async () => {
   if (state.mode==='netlify') await initIdentity();
   await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
   if (toStats) render();
+  // The mosaic needs the artist photos, which arrive after the log is dealt
+  else renderEnd();
   applyAuth();
   startAutoInfo();
   followStatsLink();

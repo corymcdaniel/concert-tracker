@@ -1,0 +1,65 @@
+/* ---------- end of the log: heading, year rail, mosaic (endcap.js) ---------- */
+.endcap{display:grid;gap:22px;margin-top:34px;padding-top:30px;border-top:2px solid var(--ink)}
+.endcap:empty{display:none}
+.end-head{display:grid;gap:6px}
+.end-k{margin:0;font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.end-head h2{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(36px,7vw,56px);line-height:.95;text-transform:uppercase}
+.end-sub{margin:0;font-size:15px;color:var(--muted)}
+.end-sub b{color:var(--ink);font-weight:600}
+
+// One button per year: a stacked bar (music under comedy), the label underneath
+.rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:3px;align-items:end;height:120px;padding:0 2px}
+.ry{all:unset;box-sizing:border-box;cursor:pointer;height:100%;display:grid;grid-template-rows:1fr auto;gap:5px;justify-items:stretch;border-radius:4px}
+.ry:disabled{cursor:default}
+.ry .stack,.ry .none{align-self:end;display:flex;flex-direction:column-reverse;border-radius:3px 3px 1px 1px;overflow:hidden;transition:transform .2s var(--ease),filter .2s}
+.ry .none{height:3px;background:var(--line)}
+.ry .m{background:var(--music);display:block}
+.ry .c{background:var(--comedy);display:block}
+// Heights in tenths of the busiest year. The stack's height is the year's total; its two parts split it.
+@for $h from 0 through 10{
+  .ry .stack.h#{$h}{height:#{max($h * 10%, 4%)}}
+}
+.ry .stack{min-height:4px}
+.ry .stack .m,.ry .stack .c{flex:0 0 auto}
+// The music and comedy parts split the bar by their night counts
+@for $g from 0 through 40{
+  .ry .stack i.g#{$g}{flex-grow:$g}
+}
+.ry .yl{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;min-height:12px}
+.ry:not(:disabled):hover .stack,.ry:focus-visible .stack{transform:scaleY(1.06);transform-origin:bottom;filter:brightness(1.1)}
+.ry:not(:disabled):hover .yl,.ry:focus-visible .yl{color:var(--ink)}
+.ry:focus-visible{outline:2px solid var(--music);outline-offset:2px}
+
+// Mosaic: dense grid so the big and wide tiles pack without holes
+.mosaic{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:118px;grid-auto-flow:dense;gap:8px}
+// Phones: three across, all the same size, and a multiple of three so the last row is full
+@media (max-width:720px){
+  .mosaic{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:104px}
+  .mosaic .tile.big,.mosaic .tile.wide{grid-column:auto;grid-row:auto}
+  .mosaic .tile:nth-child(16){display:none}
+}
+.tile{position:relative;padding:0;border:0;border-radius:8px;overflow:hidden;background:var(--chip);cursor:pointer;isolation:isolate}
+.tile.big{grid-column:span 2;grid-row:span 2}
+.tile.wide{grid-column:span 2}
+.tile img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s var(--ease),filter .3s}
+.tile .cap{position:absolute;inset:auto 0 0 0;display:grid;gap:1px;padding:22px 10px 8px;text-align:left;color:#fff;background:linear-gradient(transparent,rgb(0 0 0 / .72));opacity:0;transform:translateY(6px);transition:opacity .25s var(--ease),transform .25s var(--ease)}
+.tile .cap b{font-family:var(--display);font-weight:800;font-size:17px;line-height:1.05;text-transform:uppercase}
+.tile .cap small{font-family:var(--mono);font-size:10px;opacity:.85}
+.tile.big .cap b{font-size:24px}
+.tile:hover img,.tile:focus-visible img{transform:scale(1.06)}
+.tile:hover .cap,.tile:focus-visible .cap{opacity:1;transform:none}
+.tile:focus-visible{outline:2px solid var(--music);outline-offset:2px}
+// Touch screens have no hover, so captions stay up
+@media (hover:none){.tile .cap{opacity:1;transform:none}}
+
+// A ticket you jumped to from the mosaic flashes once
+.stub.flash{animation:stub-flash 1.4s var(--ease)}
+@keyframes stub-flash{0%,100%{box-shadow:var(--glow,none)}25%{box-shadow:0 0 0 3px var(--music),0 10px 28px -8px color-mix(in oklab,var(--music) 60%,transparent)}}
+
+@media (prefers-reduced-motion:no-preference){
+  .tile{animation:tile-in .5s var(--ease) both}
+  @for $i from 0 through 16{.tile[data-i="#{$i}"]{animation-delay:#{$i * 35}ms}}
+  .ry .stack{animation:rail-up .6s var(--ease) both}
+}
+@keyframes tile-in{from{opacity:0;transform:scale(.94)}}
+@keyframes rail-up{from{transform:scaleY(0);transform-origin:bottom}}

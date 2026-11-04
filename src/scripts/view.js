@@ -1,3 +1,4 @@
+import { renderEnd } from './endcap.js';
 import { renderList, renderStats } from './log.js';
 import { state } from './state.js';
 import { renderStatsView } from './stats/index.js';
@@ -25,7 +26,7 @@ export function setView(v, section = null){
   if (state.view==='stats') renderStatsView();
   try { history.replaceState(null,'', state.view==='stats' ? statsHash() : location.pathname + location.search); } catch {}
 }
-export function render(){ renderStats(); renderList(); if (state.view==='stats') renderStatsView(); }
+export function render(){ renderStats(); renderList(); renderEnd(); if (state.view==='stats') renderStatsView(); }
 
 // Moving between the cards and a section is a real step, so the browser's back button undoes it
 export function openStatsSection(section){

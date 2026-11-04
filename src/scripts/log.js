@@ -100,7 +100,7 @@ function stub(n){
 }
 // Stubs fade up the first time they scroll into view; ones already seen render in place,
 // so re-rendering after an edit only animates nights that are new or changed.
-const nightKey = n => [n.date||'undated', n.venue, n.city, n.acts.map(a=>a.id).join(',')].join('|').toLowerCase();
+export const nightKey = n => [n.date||'undated', n.venue, n.city, n.acts.map(a=>a.id).join(',')].join('|').toLowerCase();
 const revealed = new Set();
 let revealer = null;
 if ('IntersectionObserver' in window) revealer = new IntersectionObserver(entries => entries.forEach(e => {
@@ -227,7 +227,7 @@ export function renderList(){
   const counts = {}; list.forEach(n => { const y=n.date?n.date.slice(0,4):'Undated'; counts[y]=(counts[y]||0)+1; });
   for (const n of list){
     const y = n.date ? n.date.slice(0,4) : 'Undated';
-    if (y !== yr){ yr=y; html += `<div class="year"><h2>${y}</h2><span>${counts[y]} night${counts[y]>1?'s':''}</span></div>`; }
+    if (y !== yr){ yr=y; html += `<div class="year" id="y-${y}"><h2>${y}</h2><span>${counts[y]} night${counts[y]>1?'s':''}</span></div>`; }
     html += stub(n);
   }
   $('#list').innerHTML = html;
