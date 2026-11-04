@@ -3,7 +3,7 @@ import { applyAuth, canEdit, initIdentity, openLogin, setState } from './auth.js
 import { startAutoInfo } from './autoinfo.js';
 import { openHistory, undoChange } from './history.js';
 import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit } from './info.js';
-import { filterList, renderStats } from './log.js';
+import { dealIn, filterList, renderStats } from './log.js';
 import { isOpen, motionOK, toast } from './motion.js';
 import { openReview, shareReview, stepReview } from './review.js';
 import { closeSheet, openAdd, openBill, openData, openEdit } from './sheets.js';
@@ -15,7 +15,7 @@ import { fitTo } from './stats/venues.js';
 import { loadSetlists, syncSetlists } from './stats/setlists.js';
 import { showWallTile, updateWall, wallOpts } from './stats/wall.js';
 import { $, store } from './util.js';
-import { followHash, followStatsLink, openStatsSection, render, setView, statsHash } from './view.js';
+import { followHash, followStatsLink, openStatsSection, opensStats, render, setView, statsHash } from './view.js';
 
 /* ---------- events ---------- */
 document.addEventListener('click', e => {
@@ -153,9 +153,16 @@ $('#toView').onclick = () => {
 };
 
 load().then(async () => {
+  // The log only needs the shows, so deal it out now rather than after sign-in and the extras.
+  // Signed-out first, so editor buttons don't flash up before sign-in is known.
+  // A link into stats keeps the hand on screen until stats can be drawn, then goes straight there.
+  const toStats = opensStats();
+  applyAuth();
+  if (!toStats) dealIn(render);
   if (state.mode==='netlify') await initIdentity();
   await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
-  render(); applyAuth();
+  if (toStats) render();
+  applyAuth();
   startAutoInfo();
   followStatsLink();
   const reviewYear = /^#review-(\d{4})$/.exec(location.hash);

@@ -41,6 +41,11 @@ night places it after the night's last act; a new show goes to the top.
 name and notes, billing order, and adding or removing acts. **Delete bill** removes every act of the night. Changing a
 night's date or venue to match another night merges the two, since that's what makes acts one night.
 
+**Loading:** the log is drawn as soon as the shows arrive, without waiting for sign-in, artist info, setlists or
+listening data. Until then a fanned hand of blank tickets fills the space, and when the shows land each card flies to one of
+the first tickets on screen and becomes it (`dealIn` in `src/scripts/log.js`, styles in `_deck.scss`). A link straight
+into Stats keeps the hand up until Stats can be drawn. With reduced motion on, the log just appears.
+
 **Upcoming shows:** add a show with a future date and it's pinned under **Up next** at the top of the log, soonest first.
 Upcoming shows (including tonight's) are left out of every count: header totals, the Stats tab, the year headers and
 the "seen N times" counts in the artist and venue pop-ups. The day after the show, it moves into its year in the log and

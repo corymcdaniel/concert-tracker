@@ -41,6 +41,8 @@ export function followHash(){
   if (section === undefined) setView('log');
   else setView('stats', section);
 }
+// A link straight into stats or a Year in review, which need everything loaded first
+export const opensStats = () => sectionFromHash(location.hash) !== undefined || /^#review-d{4}$/.test(location.hash);
 export function followStatsLink(){
   const section = sectionFromHash(location.hash);
   if (section !== undefined) setView('stats', section);
