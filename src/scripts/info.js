@@ -16,7 +16,7 @@ export async function loadInfo(){
   try { const saved = JSON.parse(store.get('show-log-info-v2') || 'null'); if (saved) { state.INFO = saved; return; } } catch {}
   try { const r = await fetch('info.json', {cache:'no-store'}); if (r.ok) state.INFO = await r.json(); } catch {}
 }
-async function saveInfo(kind, key){
+export async function saveInfo(kind, key){
   if (state.mode !== 'netlify'){ store.set('show-log-info-v2', JSON.stringify(state.INFO)); return true; }
   return await api('PUT', '/api/info', {kind, key, info: state.INFO[kind][key]}) !== null;
 }
