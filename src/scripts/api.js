@@ -3,6 +3,7 @@ import { toast } from './motion.js';
 import { API, KEY, state } from './state.js';
 import { $, store, withPlace } from './util.js';
 import { render } from './view.js';
+import { fillMissingArtists } from './autoinfo.js';
 
 export async function load(){ await loadRaw(); state.shows = state.shows.map(withPlace); }
 export async function loadRaw(){
@@ -36,6 +37,8 @@ export async function api(method, url, body){
 // op = {method, url, body} for the database; local mode saves the whole list in this browser.
 // If the database refuses a change, reload so the page shows what's really saved.
 export async function persist(op){
-  if (state.mode !== 'netlify') { store.set(KEY, JSON.stringify(state.shows)); setState('Saved in this browser'); return; }
-  if (await api(op.method, op.url, op.body) === null) { await loadRaw(); state.shows = state.shows.map(withPlace); render(); }
+  if (state.mode !== 'netlify') { store.set(KEY, JSON.stringify(state.shows)); setState('Saved in this browser'); fillMissingArtists(); return; }
+  if (await api(op.method, op.url, op.body) === null) { await loadRaw(); state.shows = state.shows.map(withPlace); render(); return; }
+  // A new artist on this save gets looked up on Wikipedia
+  fillMissingArtists();
 }

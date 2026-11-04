@@ -7,6 +7,7 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { matchKey, songKey } from "../src/scripts/match.js";
+import { MUSICAL, PAGE_SUFFIXES, pageName } from "../src/scripts/wikimatch.js";
 
 const TOP_ARTISTS = 300;
 const TOP_PER_YEAR = 5;
@@ -27,8 +28,6 @@ const COMEBACK_MIN_PLAYS = 20; // on each side of the gap, so a stray play doesn
 const MOVE_DATE = "2021-06-01";
 const ZONE_BEFORE_MOVE = "America/New_York";
 const ZONE_AFTER_MOVE = "America/Phoenix";
-const MUSICAL = /\b(band|(super)?group|musician|singer|rapper|songwriter|dj|producer|composer|(super)?duo|trio|quartet|orchestra|ensemble|guitarist|drummer|pianist|comedian|music|artist)\b/i;
-const PAGE_SUFFIXES = ["", " (band)", " (musician)", " (American band)", " (English band)", " (British band)", " (French band)", " (Canadian band)", " (Australian band)", " (rapper)", " (singer)"];
 
 const folder = process.argv[2];
 const showsUrl = process.argv[3] || "https://cory-concert-tracker.netlify.app/api/shows";
@@ -312,10 +311,6 @@ async function wikiPages(titles) {
 }
 
 // Page titles are case-sensitive after the first letter, so "TOOL (band)" has to be asked for as "Tool (band)"
-const pageName = (name) => {
-  if (name.length > 1 && name === name.toUpperCase()) return name[0] + name.slice(1).toLowerCase();
-  return name;
-};
 
 // Finds each artist's page and free photo: their name first, then "Name (band)" and the like for the misses
 async function addWikipedia(artists) {
