@@ -52,8 +52,12 @@ export default async (req, context) => {
         if (acts.length > order.length) order.push(...await slots(c, night[night.length - 1].id, acts.length - order.length));
         await keepExtras(c, acts);
         const keep = new Set(acts.map((a) => a.id));
-        for (const r of night)
-          if (!keep.has(r.id)) await c.query("DELETE FROM shows WHERE id = $1", [r.id]);
+        const removed = night.filter((r) => !keep.has(r.id)).map((r) => r.id);
+        // Photos on a removed act stay with the night. With no acts left they stay where they are,
+        // hidden, so undoing the delete brings them back.
+        if (removed.length && acts.length)
+          await c.query("UPDATE photos SET show_id = $1 WHERE show_id = ANY($2)", [acts[0].id, removed]);
+        for (const id of removed) await c.query("DELETE FROM shows WHERE id = $1", [id]);
         const orderParam = `$${SHOW_FIELDS.length + 2}`;
         for (const [i, a] of acts.entries()) {
           if (inNight.has(a.id)) {
@@ -121,7 +125,15 @@ export default async (req, context) => {
     }
 
     if (req.method === "DELETE" && id) {
-      const n = await write(user, async (c) => (await c.query("DELETE FROM shows WHERE id = $1", [id])).rowCount);
+      const n = await write(user, async (c) => {
+        // Its photos move to another act of the same night, if there is one
+        const { rows: [other] } = await c.query(
+          `SELECT n.id FROM shows s JOIN shows n
+             ON n.date IS NOT DISTINCT FROM s.date AND lower(n.venue) = lower(s.venue) AND lower(n.city) = lower(s.city)
+           WHERE s.id = $1 AND n.id <> $1 ORDER BY n.sort_order LIMIT 1`, [id]);
+        if (other) await c.query("UPDATE photos SET show_id = $1 WHERE show_id = $2", [other.id, id]);
+        return (await c.query("DELETE FROM shows WHERE id = $1", [id])).rowCount;
+      });
       if (!n) return new Response("Not found", { status: 404 });
       return json({ ok: true });
     }

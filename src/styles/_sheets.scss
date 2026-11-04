@@ -169,5 +169,5 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 /* Keep the page still while a pop-up, sheet or Year in review is open.
    The gutter is reserved all the time so the layout doesn't jump when the scrollbar goes away. */
 html{scrollbar-gutter:stable}
-html:has(#scrim:not([hidden])),html:has(#review[open]){overflow:hidden}
+html:has(#scrim:not([hidden])),html:has(#review[open]),html:has(#viewer[open]){overflow:hidden}
 .info,.sheet,.review{overscroll-behavior:contain}

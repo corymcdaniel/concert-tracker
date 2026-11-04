@@ -1,4 +1,5 @@
 import { persist } from './api.js';
+import { nightPhotos, photosOn, photoUrl } from './photos.js';
 import { flip, motionOK, toast } from './motion.js';
 import { closeSheet } from './sheets.js';
 import { MONTHS, TODAY, filt, state } from './state.js';
@@ -95,12 +96,12 @@ function stub(n){
         <ul class="acts">${n.acts.map((a,i)=>`<li class="${i===0?'first':''}"><button type="button" data-artist="${esc(a.artist)}" data-id="${a.id}" title="About ${esc(a.artist)}">${esc(a.artist)}</button>${act(a)}</li>`).join('')}</ul>
         ${notes.length?`<div class="notes">${notes.map(esc).join(' · ')}</div>`:''}
         ${stubExtra(n)}
-        <div class="tools edit-only"><button class="add-act" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button><button class="add-act" type="button" data-bill="${n.acts[0].id}">Edit bill</button></div>
+        <div class="tools edit-only"><button class="add-act" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button><button class="add-act" type="button" data-bill="${n.acts[0].id}">Edit bill</button>${snapButton(n)}</div>
       </div></article>`;
 }
 // Stubs fade up the first time they scroll into view; ones already seen render in place,
 // so re-rendering after an edit only animates nights that are new or changed.
-const nightKey = n => [n.date||'undated', n.venue, n.city, n.acts.map(a=>a.id).join(',')].join('|').toLowerCase();
+export const nightKey = n => [n.date||'undated', n.venue, n.city, n.acts.map(a=>a.id).join(',')].join('|').toLowerCase();
 const revealed = new Set();
 let revealer = null;
 if ('IntersectionObserver' in window) revealer = new IntersectionObserver(entries => entries.forEach(e => {
@@ -227,11 +228,39 @@ export function renderList(){
   const counts = {}; list.forEach(n => { const y=n.date?n.date.slice(0,4):'Undated'; counts[y]=(counts[y]||0)+1; });
   for (const n of list){
     const y = n.date ? n.date.slice(0,4) : 'Undated';
-    if (y !== yr){ yr=y; html += `<div class="year"><h2>${y}</h2><span>${counts[y]} night${counts[y]>1?'s':''}</span></div>`; }
+    if (y !== yr){ yr=y; html += `<div class="year" id="y-${y}"><h2>${y}</h2><span>${counts[y]} night${counts[y]>1?'s':''}</span></div>`; }
     html += stub(n);
   }
   $('#list').innerHTML = html;
+  paintStubPhotos();
   watchReveals();
+}
+
+/* ---------- photos on tickets ----------
+   Painted onto the tickets already on the page, so photos arriving after the log was dealt don't redraw it.
+   A filter can hide some of a night's acts, so photos are found through the whole night. */
+const STRIP = 3;
+const snapButton = n => {
+  if (!photosOn()) return '';
+  return `<button class="add-act snap" type="button" data-snap="${n.acts[0].id}">+ Photos</button>`;
+};
+export function fullNight(actId){
+  return nights(state.shows).find(n => n.acts.some(a => a.id === actId));
+}
+export function paintStubPhotos(){
+  const byAct = new Map();
+  nights(state.shows).forEach(n => n.acts.forEach(a => byAct.set(a.id, n)));
+  document.querySelectorAll('#list .stub').forEach(el => {
+    el.querySelector('.stub-photos')?.remove();
+    const actId = el.querySelector('[data-id]')?.dataset.id;
+    const n = byAct.get(actId); if (!n) return;
+    const mine = nightPhotos(n); if (!mine.length) return;
+    const thumbs = mine.slice(0, STRIP).map((p, i) =>
+      `<button type="button" class="sp" data-photos-of="${esc(actId)}" data-at="${i}" aria-label="Photo ${i + 1} of ${mine.length}"><img loading="lazy" src="${esc(photoUrl(p))}" alt=""></button>`).join('');
+    let more = '';
+    if (mine.length > STRIP) more = `<button type="button" class="sp more" data-photos-of="${esc(actId)}" data-at="${STRIP}">+${mine.length - STRIP}</button>`;
+    el.querySelector('.body .acts').insertAdjacentHTML('afterend', `<div class="stub-photos">${thumbs}${more}</div>`);
+  });
 }
 // Past shows on today's date, above the log when it isn't filtered
 function onThisDay(){
