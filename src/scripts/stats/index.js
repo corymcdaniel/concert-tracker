@@ -136,12 +136,19 @@ export function renderStatsView(){
   ];
   if (hasListening) cards.push(['listening', 'Listening', listeningBig, listeningLine]);
   const landing = `<div class="stat-cards">${cards.map(([id, name, big, line]) => `<button type="button" class="stat-card" data-stats-section="${id}"><span class="k">${name}</span><b>${big}</b><span class="line">${esc(line)}</span></button>`).join('')}</div>`;
+  // Section links: the same four as the cards, plus a way back to them
+  const links = [['', 'All'], ...cards.map(([id, name]) => [id, name])].map(([id, name]) => {
+    let current = '';
+    if ((state.statsSection || '') === id) current = ' aria-current="page"';
+    return `<button type="button" data-stats-section="${id}"${current}>${name}</button>`;
+  }).join('');
+  const subnav = `<nav class="subnav" aria-label="Stats sections">${links}</nav>`;
   let body = landing;
   if (state.statsSection) {
     const title = cards.find(c => c[0] === state.statsSection)[1];
-    body = `<div class="stats-head"><button type="button" class="back" data-stats-section="">← All stats</button><h2>${title}</h2></div>${sections[state.statsSection]}`;
+    body = `<h2 class="sr-only">${title}</h2>${sections[state.statsSection]}`;
   }
-  $('#statsView').innerHTML = body;
+  $('#statsView').innerHTML = subnav + body;
   runCounters($('#statsView'));
   arrangeWall();
   drawMap();

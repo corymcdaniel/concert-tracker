@@ -29,7 +29,7 @@ export function openStatsSection(section){
   renderStatsView();
   const tabs = $('.tabs');
   if (tabs.getBoundingClientRect().top < 0) tabs.scrollIntoView();
-  $('#statsView button')?.focus({preventScroll: true});
+  $('#statsView .subnav [aria-current]')?.focus({preventScroll: true});
 }
 export function followHash(){
   const section = sectionFromHash(location.hash);

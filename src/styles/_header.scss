@@ -1,0 +1,69 @@
+/* ---------- header: one admission ticket, totals on the face, nights on the stub ---------- */
+.ticket{
+  --notch:26px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  background:var(--paper);border-radius:12px;box-shadow:0 1px 3px rgb(0 0 0 / .08),0 12px 32px -18px rgb(0 0 0 / .25);
+  position:relative;overflow:hidden;
+}
+.t-main{padding:22px 26px 20px;display:grid;gap:12px;min-width:0;border-right:2px dashed var(--line);position:relative}
+// The two half-circle bites where the stub tears off
+.t-main::before,.t-main::after{content:"";position:absolute;right:calc(var(--notch) / -2 - 1px);width:var(--notch);height:var(--notch);border-radius:50%;background:var(--bg);z-index:1}
+.t-main::before{top:calc(var(--notch) / -2)}
+.t-main::after{bottom:calc(var(--notch) / -2)}
+.t-kicker{margin:0;font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.ticket h1{margin:-4px 0 0}
+.t-totals{display:flex;flex-wrap:wrap;gap:10px 0}
+.t-totals .stat{display:grid;gap:2px;padding:0 22px;border-left:1px solid var(--line)}
+.t-totals .stat:first-child{padding-left:0;border-left:0}
+.t-totals .stat b{font-family:var(--display);font-size:30px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.t-totals .stat span{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+.t-stub{min-width:150px;padding:20px 24px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;background:var(--ink);color:var(--paper)}
+.t-no{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+.t-stub b{font-family:var(--display);font-size:clamp(54px,9vw,76px);font-weight:800;line-height:.85;font-variant-numeric:tabular-nums}
+.t-lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+
+@media (max-width:560px){
+  .t-main{padding:18px 18px 16px}
+  .t-stub{min-width:0;padding:16px 18px}
+  .t-totals .stat{padding:0 14px}
+  .t-totals .stat b{font-size:24px}
+}
+
+/* ---------- nav row: view switch on the left, actions on the right ---------- */
+.navrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.navrow .actions{align-items:center}
+
+// The selected tab's background is one shape that slides between the equal-width tabs
+.tabs{--tab:108px;display:inline-flex;position:relative;padding:4px;border-radius:999px;background:var(--chip)}
+.tabs button{width:var(--tab);border:0;border-radius:999px;background:none;padding:7px 0 5px;position:relative;z-index:1;font-family:var(--display);font-weight:800;font-size:21px;line-height:1;text-transform:uppercase;color:var(--muted)}
+.tabs button:hover{color:var(--ink);border:0}
+.tabs button[aria-selected=true]{color:var(--paper)}
+.tab-ink{position:absolute;top:4px;bottom:4px;left:4px;width:var(--tab);border-radius:999px;background:var(--ink);box-shadow:0 2px 8px rgb(0 0 0 / .2)}
+.tabs:has([data-view=stats][aria-selected=true]) .tab-ink{transform:translateX(var(--tab))}
+@supports not selector(:has(*)){.tab-ink{display:none}.tabs button[aria-selected=true]{background:var(--ink)}}
+
+/* ---------- stats sub-nav: each link underlined in its section's card color ---------- */
+.subnav{display:flex;flex-wrap:wrap;gap:4px 22px;border-bottom:1px solid var(--line);padding-bottom:2px}
+.subnav button{--c:var(--ink);position:relative;border:0;border-radius:0;background:none;padding:6px 0 8px;font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.subnav button:nth-child(2){--c:var(--music)}
+.subnav button:nth-child(3){--c:var(--comedy)}
+.subnav button:nth-child(4){--c:var(--upcoming)}
+.subnav button:nth-child(5){--c:var(--gold)}
+.subnav button::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:3px;border-radius:3px;background:var(--c);transform:scaleX(0);transform-origin:left}
+.subnav button:hover{color:var(--ink);border:0}
+.subnav button:hover::after{transform:scaleX(.35)}
+.subnav button[aria-current=page]{color:var(--ink);font-weight:500}
+.subnav button[aria-current=page]::after{transform:scaleX(1)}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+@media (prefers-reduced-motion:no-preference){
+  .tab-ink{transition:transform .3s var(--ease)}
+  .tabs button{transition:color .2s var(--ease)}
+  .subnav button::after{transition:transform .25s var(--ease)}
+  .ticket{animation:ticket-in .5s var(--ease) both}
+  .t-stub{animation:stub-in .6s var(--ease) .1s both}
+}
+@keyframes ticket-in{from{opacity:0;transform:translateY(8px)}}
+@keyframes stub-in{from{opacity:0;transform:translateX(10px)}}

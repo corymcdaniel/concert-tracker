@@ -5,12 +5,6 @@ button.primary{background:var(--ink);color:var(--paper);border-color:var(--ink);
 button.danger{color:var(--comedy);border-color:var(--comedy)}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);border-block:2px solid var(--ink)}
-.stat{padding:12px 14px;border-left:1px dashed var(--line)}
-.stat:first-child{border-left:0}
-.stat b{display:block;font-family:var(--display);font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.stat span{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(3){border-left:0}.stat:nth-child(n+3){border-top:1px dashed var(--line)}}
 
 .most{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
 .most .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:4px}
@@ -24,14 +18,6 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);bord
 .seg button{border:0;border-radius:0;padding:8px 12px}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
 
-.tabs{display:flex;gap:2px;border-bottom:2px solid var(--ink);position:relative}
-.tabs button{border:0;border-radius:6px 6px 0 0;font-family:var(--display);font-weight:800;font-size:22px;text-transform:uppercase;padding:6px 16px 4px;background:none;color:var(--muted);width:112px;position:relative;z-index:1}
-.tabs button:hover{color:var(--ink)}
-.tabs button[aria-selected=true]{color:var(--paper)}
-/* the selected tab's background is one shape that slides between the equal-width tabs */
-.tab-ink{position:absolute;left:0;top:0;bottom:0;width:112px;border-radius:6px 6px 0 0;background:var(--ink)}
-.tabs:has([data-view=stats][aria-selected=true]) .tab-ink{transform:translateX(calc(100% + 2px))}
-@supports not selector(:has(*)){.tab-ink{display:none}.tabs button[aria-selected=true]{background:var(--ink)}}
 .most button.more{background:none;border:1px dashed var(--line);border-radius:999px;padding:3px 10px;font-size:13px;color:var(--muted)}
 .sv{display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
 /* each stats panel is its own card. isolate keeps the rank bars' negative z-index above the card's background */

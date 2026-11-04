@@ -48,8 +48,11 @@ export function renderStats(){
   const venues = new Set(past.map(s=>s.venue.toLowerCase()).filter(Boolean));
   const cities = new Set(past.filter(s=>s.city).map(cityKey));
   const totals = [[n.length,'Nights out'],[artists.size,'Artists'],[venues.size,'Venues'],[cities.size,'Cities']];
-  $('#stats').innerHTML = totals.map(([v,l])=>`<div class="stat"><b>${statShown[l] ?? 0}</b><span>${l}</span></div>`).join('');
-  $('#stats').querySelectorAll('b').forEach((b, i) => countTo(b, totals[i][1], totals[i][0]));
+  // Nights go on the ticket's stub, the rest in its main part
+  countTo($('#tNights'), totals[0][1], totals[0][0]);
+  const rest = totals.slice(1);
+  $('#stats').innerHTML = rest.map(([v,l])=>`<div class="stat"><b>${statShown[l] ?? 0}</b><span>${l}</span></div>`).join('');
+  $('#stats').querySelectorAll('b').forEach((b, i) => countTo(b, rest[i][1], rest[i][0]));
   const reps = [...artists].filter(([,c])=>c>1).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
   const top = state.showAllMost ? reps : reps.slice(0,8);
   $('#most').innerHTML = reps.length ? `<span class="lbl">Seen 2+ times</span>` + top.map(([a,c])=>`<button class="chip" data-q="${esc(a)}" type="button">${esc(a)}<em>×${c}</em></button>`).join('')

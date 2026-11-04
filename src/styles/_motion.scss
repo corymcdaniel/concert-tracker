@@ -29,8 +29,6 @@
   /* controls */
   button{transition:background-color .15s,border-color .15s,color .15s,transform .1s}
   button:active{transform:scale(.97)}
-  .tab-ink{transition:transform .25s var(--ease)}
-  .tabs button{transition:color .2s var(--ease)}
 }
 /* hover: stubs lift, and the ticket "tears" a little along the perforation */
 @media (prefers-reduced-motion:no-preference) and (hover:hover){

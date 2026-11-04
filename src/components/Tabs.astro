@@ -1,5 +1,14 @@
-<nav class="tabs" role="tablist">
-  <span class="tab-ink" aria-hidden="true"></span>
-  <button type="button" role="tab" data-view="log" aria-selected="true">Log</button>
-  <button type="button" role="tab" data-view="stats" aria-selected="false">Stats</button>
-</nav>
+<div class="navrow">
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <span class="tab-ink" aria-hidden="true"></span>
+    <button type="button" role="tab" data-view="log" aria-selected="true">Log</button>
+    <button type="button" role="tab" data-view="stats" aria-selected="false">Stats</button>
+  </nav>
+  <div class="actions">
+    <span class="save-state" id="saveState"></span>
+    <button id="btnAuth" type="button" hidden>Sign in</button>
+    <button id="btnHistory" type="button" data-history="" hidden>History</button>
+    <button id="btnData" type="button">Data</button>
+    <button id="btnAdd" class="primary edit-only" type="button">+ Add show</button>
+  </div>
+</div>

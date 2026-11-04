@@ -70,7 +70,7 @@ Acts with no result are checked again after 30 days. The key stays on the server
 Set `SETLISTFM_API_KEY` in Netlify, and in a git-ignored `.env.dev` locally (see `.env.example`).
 
 ### Stats sections
-The Stats tab opens on four cards: **Overview**, **Artists**, **Places** and **Listening**. Each section has its own link, like
+The Stats tab opens on four cards: **Overview**, **Artists**, **Places** and **Listening**. A row of section links under the Log/Stats switch jumps straight to any of them, or back to the cards with **All**. Each section has its own link, like
 `#stats/listening`, and the browser's back button returns to the cards. Older `#stats` and `#review-YYYY` links still work.
 
 ### Venue map
