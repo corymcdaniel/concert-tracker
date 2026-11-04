@@ -17,7 +17,7 @@ in a history they can browse and undo.
 | `netlify/functions/setlists.mjs` | `GET /api/setlists` (public); look up the next act on setlist.fm (editors). |
 | `public/map-land.json`, `public/hometowns.json` | Static data for the Hometowns map. Rebuild with `node scripts/build-map.mjs`. |
 | `public/venue-coords.json` | Coordinates for venues whose info record has no `coord` (no Wikidata match, or a festival). Add a `"Venue|City"` entry when a new venue doesn't show on the map. |
-| `public/listening.json`, `public/listening-songs.json` | Public Spotify summaries for the listening stats. Rebuild with `node scripts/build-listening.mjs spotify`. |
+| `public/listening.json`, `public/listening-songs.json`, `public/listening-artists.json` | Public Spotify summaries for the listening stats and the artist pop-up. Rebuild with `node scripts/build-listening.mjs spotify`. |
 | `netlify/lib/db.mjs` | Database connection, transactions tagged with the editor, show validation. |
 | `netlify/lib/auth.mjs` | Shared editor check. |
 | `public/shows.json`, `public/info.json` | The data the database was seeded from. Also used in local mode, when there's no API. |
@@ -93,17 +93,23 @@ These come from a Spotify data export, not the API, so there's no login or token
 - **On repeat:** your top artists of the year, in Year in Review.
 - **Your listening:** totals, listening by year next to nights out, the top artist each year, one-year obsessions, longest
   loyalty, comebacks, biggest days, and most-played songs and albums.
+- **In the artist pop-up:** an **On Spotify** section for any artist you've played 5+ times: hours, plays, rank among
+  every artist you've played, first and last play, hours per year (years you saw them marked), your 5 most-played songs,
+  and plays in the 30 days before and after each show you saw, with a badge when you discovered them live. The
+  before/after numbers are worked out in the browser from daily play counts, so shows logged after the script runs get
+  them too. New listening needs a new export and another run.
 - **When you listen:** hours by time of day, weekday and month. Approximate: it assumes Eastern time before `MOVE_DATE` and
   Arizona time after (set in `scripts/build-listening.mjs`), and leaves out plays made outside the US.
 
 1. On [Spotify's privacy page](https://www.spotify.com/account/privacy/), request **Extended streaming history**. It can
    take up to 30 days. The basic **Account data** export also works, but only covers about a year.
 2. Unzip it into `spotify/`, which git ignores. **Never commit the raw files:** every row has an IP address.
-3. Run `node scripts/build-listening.mjs spotify`, then commit the two `public/listening*.json` files and deploy.
+3. Run `node scripts/build-listening.mjs spotify`, then commit the three `public/listening*.json` files and deploy.
 
 The files are public. `listening.json` holds the top 300 artists (name, hours, plays, first year played, a Wikipedia page
 and free photo), each year's top 5, play counts around each show, the summaries above, and your 8 biggest listening days. `listening-songs.json` holds the date you first played
-each song by an act you've seen. Plays under 30 seconds, podcasts and private sessions aren't counted. Photos are matched by
+each song by an act you've seen. `listening-artists.json` holds, for every artist with 5+ plays, totals, hours per year, top 5
+songs and plays per day (no times of day, devices or IPs), and is only fetched when an artist pop-up opens. Plays under 30 seconds, podcasts and private sessions aren't counted. Photos are matched by
 name, so an artist with a common name can occasionally get the wrong page. The per-show numbers use the log at the time the
 script runs, so run it again after a new export. If the log and Spotify spell a name too differently to match, add it to
 `ALIASES` in `src/scripts/match.js`.

@@ -28,6 +28,12 @@
   .heat i{animation:fade-in .35s var(--ease) both;animation-delay:calc(var(--m,0) * 25ms)}
   .pin{animation:pin-in .4s var(--ease) both;animation-delay:calc(var(--i,0) * 12ms)}
   .vpin,.vcluster span{animation:vpin-in .45s var(--ease) both}
+  .spot.ready>*{animation:rise .4s var(--ease) both}
+  .spot.ready>:nth-child(2){animation-delay:60ms}
+  .spot.ready>:nth-child(3){animation-delay:120ms}
+  .spot.ready>:nth-child(4){animation-delay:180ms}
+  .spot.ready .bar{animation:bar-up .5s var(--ease) both}
+  @for $i from 0 through 20{.spot.ready .yr[data-i="#{$i}"] .bar{animation-delay:#{120 + $i * 25}ms}}
   @for $i from 0 through 20{.vpin.d#{$i}{animation-delay:#{$i * 25}ms}}
   .vpin-wrap.on .vpin::after{animation:vpin-ring 1.6s var(--ease) infinite}
   .rv-slide{animation:rv-in .35s var(--ease)}
@@ -40,6 +46,7 @@
 @keyframes stamp-card{30%{transform:scale(.985)}}
 @keyframes stamp{0%{opacity:0;transform:translateY(-50%) rotate(-9deg) scale(2.2)}18%{opacity:.95;transform:translateY(-50%) rotate(-9deg) scale(1)}75%{opacity:.95;transform:translateY(-50%) rotate(-9deg) scale(1)}100%{opacity:0;transform:translateY(-50%) rotate(-9deg) scale(1)}}
 @keyframes pin-in{from{transform:scale(0)}}
+@keyframes bar-up{from{transform:scaleY(0)}}
 @keyframes vpin-in{from{scale:0;opacity:0}}
 @keyframes vpin-ring{0%{opacity:.7;scale:.8}100%{opacity:0;scale:1.6}}
 @keyframes rv-in{from{opacity:.4;transform:scale(1.02)}}
