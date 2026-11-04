@@ -110,25 +110,33 @@ if (motionOK() && matchMedia('(hover:hover)').matches) {
   });
 }
 
-// The Up button appears a fifth of the way down. Filters and tabs change the page height without scrolling, so watch that too.
+// The Up and Stats/Log buttons appear a fifth of the way down. Filters and tabs change the page height without scrolling, so watch that too.
 let upFrame = 0;
 function queueUp(){
   if (upFrame) return;
   upFrame = requestAnimationFrame(() => {
     upFrame = 0;
     const room = document.documentElement.scrollHeight - innerHeight;
-    $('#toTop').classList.toggle('on', room > 0 && scrollY / room >= .2);
+    $('#floatNav').classList.toggle('on', room > 0 && scrollY / room >= .2);
   });
 }
 addEventListener('scroll', queueUp, {passive: true});
 addEventListener('resize', queueUp);
 new ResizeObserver(queueUp).observe(document.body);
-$('#toTop').onclick = () => {
+function backToTop(){
   let behavior = 'auto';
   if (motionOK()) behavior = 'smooth';
   window.scrollTo({top: 0, behavior});
-  // The button is about to hide, so keep keyboard focus at the top with the page
+  // The buttons are about to hide, so keep keyboard focus at the top with the page
   $('.tabs button[aria-selected=true]').focus({preventScroll: true});
+}
+$('#toTop').onclick = backToTop;
+// Jumps to the other view (Stats from the log, Log from stats) and starts it at the top
+$('#toView').onclick = () => {
+  let next = 'stats';
+  if (state.view === 'stats') next = 'log';
+  setView(next);
+  backToTop();
 };
 
 load().then(async () => {

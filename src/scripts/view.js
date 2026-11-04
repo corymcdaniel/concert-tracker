@@ -17,6 +17,11 @@ export function setView(v, section = null){
   state.statsSection = section;
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected', b.dataset.view===state.view));
   $('#logView').hidden = state.view!=='log'; $('#statsView').hidden = state.view!=='stats';
+  // The floating button offers whichever view you're not on
+  let other = 'Stats';
+  if (state.view === 'stats') other = 'Log';
+  $('#toView').textContent = other;
+  $('#toView').setAttribute('aria-label', `Go to ${other}`);
   if (state.view==='stats') renderStatsView();
   try { history.replaceState(null,'', state.view==='stats' ? statsHash() : location.pathname + location.search); } catch {}
 }
