@@ -1,5 +1,6 @@
 import { nightKey, nights } from './log.js';
 import { motionOK } from './motion.js';
+import { mosaicPhotos } from './photos.js';
 import { MONTHS, state } from './state.js';
 import { $, esc, happened } from './util.js';
 
@@ -44,8 +45,8 @@ function rail(dated){
   return `<div class="rail" role="group" aria-label="Jump to a year">${cols.join('')}</div>`;
 }
 
-// The newest uploaded photos, each tile a link to its night, in whole blocks so the grid has no holes.
-// photos: [{n: night, url}] newest first.
+// Uploaded photos, each tile a link to its night, in whole blocks so the grid has no holes.
+// photos: [{n: night, url}], one per night in a random order (photos.js mosaicPhotos)
 function mosaic(photos){
   const tiles = photos.slice(0, BLOCK * MAX_BLOCKS);
   if (!tiles.length) return '';
@@ -73,7 +74,7 @@ export function renderEnd(){
       <p class="end-k">End of the log</p>
       <h2>${span} years, ${all.length} nights</h2>
       <p class="end-sub">It started with <b>${esc(first.acts[0].artist)}</b> at ${esc(first.venue)}, ${longDate(first.date)}.</p>
-    </div>${rail(dated)}${mosaic(state.PHOTOS || [])}`;
+    </div>${rail(dated)}${mosaic(mosaicPhotos(all))}`;
 }
 
 // Scroll so the year's first ticket sits just under its pinned header

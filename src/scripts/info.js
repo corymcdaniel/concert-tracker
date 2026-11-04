@@ -6,6 +6,8 @@ import { MONTHS, state } from './state.js';
 import { fmt } from './stats/index.js';
 import { artistSongs } from './stats/setlists.js';
 import { fillSpotify, spotifySlot } from './stats/spotify.js';
+import { nightPhotos, photoUrl } from './photos.js';
+import { openViewer } from './viewer.js';
 import { $, esc, happened, place, store } from './util.js';
 
 /* ---------- artist & venue info ---------- */
@@ -70,6 +72,7 @@ export function openInfo(kind, key, actId){
       ${rec?.wiki?`<div class="sum loading" id="sum">Loading the Wikipedia summary…</div>`:''}
       ${comingN?`<div class="seen next"><h4>Coming up · ${comingN}</h4><ul>${rows(coming, true).join('')}</ul></div>`:''}
       ${seenN||!comingN?`<div class="seen"><h4>${isA?`You've seen them ${seenN} time${seenN===1?'':'s'}`:`${seenN} night${seenN===1?'':'s'} here`}</h4><ul>${rows(seen).join('')}</ul></div>`:''}
+      ${photoGrid(seen)}
       ${isA?spotifySlot():''}
       ${isA?artistSongs(key):''}
       <div class="links">${rec?.wiki?`<a href="${wikiUrl(rec.wiki)}" target="_blank" rel="noopener">Read on Wikipedia ↗</a>`:''}
@@ -82,6 +85,18 @@ export function openInfo(kind, key, actId){
   if (rec?.wiki) loadSummary(rec, ++infoReq);
   if (isA) fillSpotify(title);
 }
+// Your photos from every night in this pop-up's history, newest night first
+let infoPhotos = [];
+function photoGrid(seen){
+  const ids = new Set(seen.map(s => s.id));
+  infoPhotos = nights(state.shows).filter(n => n.acts.some(a => ids.has(a.id)))
+    .flatMap(n => nightPhotos(n).map(p => ({p, n})));
+  if (!infoPhotos.length) return '';
+  const thumbs = infoPhotos.map(({p}, i) => `<button type="button" data-info-photo="${i}" aria-label="Photo ${i + 1} of ${infoPhotos.length}"><img loading="lazy" src="${esc(photoUrl(p))}" alt=""></button>`).join('');
+  return `<div class="seen info-photos"><h4>Your photos · ${infoPhotos.length}</h4><div class="ip-grid">${thumbs}</div></div>`;
+}
+export function openInfoPhoto(i){ openViewer(infoPhotos, +i); }
+
 async function loadSummary(rec, req){
   const el = () => req===infoReq ? $('#sum') : null;
   try {

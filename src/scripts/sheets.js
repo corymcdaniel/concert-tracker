@@ -1,6 +1,8 @@
 import { persist } from './api.js';
-import { commitDelete, nightVal, nights } from './log.js';
+import { renderEnd } from './endcap.js';
+import { commitDelete, fullNight, nightVal, nights, paintStubPhotos } from './log.js';
 import { hide, isOpen, motionOK, show, toast } from './motion.js';
+import { PER_NIGHT, deletePhoto, nightPhotos, photosOn, photoUrl, uploadPhotos } from './photos.js';
 import { API, TODAY, state } from './state.js';
 import { $, esc, newId, withPlace } from './util.js';
 import { render } from './view.js';
@@ -124,6 +126,41 @@ export function openAdd(base){
   });
 }
 // Edit a whole night in one step: its shared details and its acts (first = headliner)
+/* The night's photos in Edit bill. They upload and delete straight away, separately from Save. */
+function photoBox(){
+  if (!photosOn()) return '';
+  return `<fieldset class="bill-photos"><legend>Photos <span id="billPhotoCount"></span></legend>
+    <div class="bp-grid" id="billPhotos"></div>
+    <label class="bp-drop" id="billDrop"><input type="file" id="billPick" accept="image/*,.heic,.heif" multiple>
+      <b>Add photos</b><span>Drop them here or pick files. Up to ${PER_NIGHT} a night; they save as soon as they upload.</span></label>
+  </fieldset>`;
+}
+function wirePhotos(actId){
+  const grid = $('#billPhotos'); if (!grid) return;
+  const draw = () => {
+    const n = fullNight(actId); if (!n) return;
+    const mine = nightPhotos(n);
+    $('#billPhotoCount').textContent = `${mine.length} / ${PER_NIGHT}`;
+    grid.innerHTML = mine.map(p => `<figure><img src="${esc(photoUrl(p))}" alt="" loading="lazy">
+      <button type="button" class="bp-del" data-photo-del="${esc(p.id)}" aria-label="Delete this photo">✕</button></figure>`).join('');
+    $('#billDrop').hidden = mine.length >= PER_NIGHT;
+  };
+  const after = () => { draw(); paintStubPhotos(); renderEnd(); };
+  draw();
+  const send = files => uploadPhotos(actId, files, after);
+  $('#billPick').addEventListener('change', e => { send(e.target.files); e.target.value = ''; });
+  const drop = $('#billDrop');
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); send(e.dataTransfer.files); });
+  grid.addEventListener('click', async e => {
+    const b = e.target.closest('[data-photo-del]'); if (!b) return;
+    b.disabled = true;
+    if (await deletePhoto(b.dataset.photoDel)) after();
+    else b.disabled = false;
+  });
+}
+
 export function openBill(id){
   const night = nights(state.shows).find(n => n.acts.some(a => a.id === id)); if (!night) return;
   const was = night.acts.map(a => a.id);
@@ -156,10 +193,12 @@ export function openBill(id){
     <div class="foot"><button type="button" id="billAdd">+ Add act</button><button type="button" id="billReverse">Reverse order</button></div>
     ${nightFields({...night, type})}
     ${extraFields({rating:nightVal(night,'rating'), price:nightVal(night,'price'), companions:nightVal(night,'companions')})}
+    ${photoBox()}
     <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button><span class="spacer"></span><button type="button" class="danger" id="del">Delete bill</button></div>
     <div id="confirmBox"></div></form>`);
   $('#billReverse').hidden = order.length < 2;
   wireExtras();
+  wirePhotos(was[0]);
   // Typing doesn't redraw, so the cursor stays put
   $('#billList').addEventListener('input', e => { order[+e.target.dataset.i][e.target.dataset.f] = e.target.value; });
   $('#billList').addEventListener('click', e => {

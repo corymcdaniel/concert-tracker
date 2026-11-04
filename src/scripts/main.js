@@ -3,8 +3,10 @@ import { applyAuth, canEdit, initIdentity, openLogin, setState } from './auth.js
 import { startAutoInfo } from './autoinfo.js';
 import { jumpToNight, jumpToYear, renderEnd } from './endcap.js';
 import { openHistory, undoChange } from './history.js';
-import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit } from './info.js';
-import { dealIn, filterList, renderStats } from './log.js';
+import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit, openInfoPhoto } from './info.js';
+import { dealIn, filterList, fullNight, paintStubPhotos, renderStats } from './log.js';
+import { loadPhotos, nightPhotos, uploadPhotos } from './photos.js';
+import { openViewer, stepViewer } from './viewer.js';
 import { isOpen, motionOK, toast } from './motion.js';
 import { openReview, shareReview, stepReview } from './review.js';
 import { closeSheet, openAdd, openBill, openData, openEdit } from './sheets.js';
@@ -19,6 +21,20 @@ import { $, store } from './util.js';
 import { followHash, followStatsLink, openStatsSection, opensStats, render, setView, statsHash } from './view.js';
 
 /* ---------- events ---------- */
+// The night a ticket's + Photos button is uploading to
+let photoFor = null;
+const photosChanged = () => { paintStubPhotos(); renderEnd(); };
+$('#photoPick').addEventListener('change', e => {
+  if (photoFor) uploadPhotos(photoFor, e.target.files, photosChanged);
+  e.target.value = '';
+});
+// The viewer closes on its backdrop and steps with the arrow keys
+$('#viewer').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+document.addEventListener('keydown', e => {
+  if (!$('#viewer').open) return;
+  if (e.key === 'ArrowRight') stepViewer(1);
+  if (e.key === 'ArrowLeft') stepViewer(-1);
+});
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.dataset.statsSection !== undefined) { openStatsSection(t.dataset.statsSection); return; }
@@ -28,6 +44,11 @@ document.addEventListener('click', e => {
   if (t.dataset.region) { setRegion(t.dataset.region); return; }
   if (t.dataset.vcity !== undefined) { fitTo(t.dataset.vcity); return; }
   if (t.dataset.year) { jumpToYear(t.dataset.year); return; }
+  if (t.dataset.snap) { photoFor = t.dataset.snap; $('#photoPick').click(); return; }
+  if (t.dataset.photosOf) { const n = fullNight(t.dataset.photosOf); if (n) openViewer(nightPhotos(n).map(p => ({p, n})), +t.dataset.at); return; }
+  if (t.dataset.infoPhoto !== undefined) { openInfoPhoto(t.dataset.infoPhoto); return; }
+  if (t.dataset.vwStep) { stepViewer(+t.dataset.vwStep); return; }
+  if ('vwClose' in t.dataset) { $('#viewer').close(); return; }
   if (t.dataset.night) { jumpToNight(t.dataset.night); return; }
   if (t.dataset.wallSort) { wallOpts.sort = t.dataset.wallSort; updateWall(); return; }
   if ('wallClear' in t.dataset) { wallOpts.genre = ''; wallOpts.decade = ''; $('#wallGenre').value = ''; $('#wallDecade').value = ''; updateWall(); return; }
@@ -163,10 +184,10 @@ load().then(async () => {
   applyAuth();
   if (!toStats) dealIn(render);
   if (state.mode==='netlify') await initIdentity();
-  await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
+  await Promise.all([loadInfo(), loadSetlists(), loadListening(), loadPhotos()]);
   if (toStats) render();
-  // The mosaic needs the artist photos, which arrive after the log is dealt
-  else renderEnd();
+  // Photos arrive after the log is dealt: paint them onto the tickets and into the mosaic
+  else photosChanged();
   applyAuth();
   startAutoInfo();
   followStatsLink();

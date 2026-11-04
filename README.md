@@ -14,6 +14,7 @@ in a history they can browse and undo.
 | `netlify/functions/shows.mjs` | `GET /api/shows` (public); add, edit, delete, save a whole bill and bulk replace (editors). |
 | `netlify/functions/info.mjs` | `GET /api/info` (public); save one artist or venue record (editors). |
 | `netlify/functions/changes.mjs` | Change history and undo (editors). |
+| `netlify/functions/photos.mjs` | `GET /api/photos` and `/api/photos/:id` (public); upload and delete photos (editors). |
 | `netlify/functions/setlists.mjs` | `GET /api/setlists` (public); look up the next act on setlist.fm (editors). |
 | `public/map-land.json`, `public/hometowns.json` | Static data for the Hometowns map. Rebuild with `node scripts/build-map.mjs`. |
 | `public/venue-coords.json` | Coordinates for venues whose info record has no `coord` (no Wikidata match, or a festival). Add a `"Venue|City"` entry when a new venue doesn't show on the map. |
@@ -33,6 +34,7 @@ The data lives in Netlify Database (Postgres). Five tables:
 | `artists` | `name` → `info` (jsonb Wikipedia/Wikidata details, or `NULL` when no match was found). |
 | `venues` | `key` (`venue|city`) → `info`, same as artists. |
 | `changes` | Every insert, update and delete on the three tables above. |
+| `photos` | Your photos: which act (and so which night) each belongs to, its size and type. The images are in Netlify Blobs. |
 
 Acts sharing a date + venue + city are shown as one night, billed in `sort_order` (headliner first). Adding an act to a
 night places it after the night's last act; a new show goes to the top.
@@ -78,6 +80,20 @@ Set per night from **Edit bill** or when adding a show. Only editors can set the
 Ratings are public. Price and companions are left out of `GET /api/shows` unless the request comes from an editor, and
 their panels only appear when there's data to show. They're also in `changes`, which only editors can read.
 If a save leaves these fields out, the saved values are kept, so a page loaded before signing in can't blank them.
+
+### Photos
+Editors add photos to a night from **Edit bill** (drop them in or pick files) or the ticket's **+ Photos** button, up to 6 a
+night. Before upload the page redraws each photo on a canvas: it's resized to at most 1600px and saved as WebP (JPEG where the
+browser can't make WebP), which also drops all its metadata, location included. HEIC from an iPhone opens in Safari; other
+browsers need it as JPEG. Photos upload straight away, separately from **Save**.
+
+They show as a strip on the night's ticket, in the artist and venue pop-ups, in a viewer (arrow keys step through), and in the
+mosaic at the end of the log, one per night in a random order each visit.
+
+A photo hangs off one act and belongs to whatever night that act is in, so it follows the bill when the date or venue changes.
+Removing that act from the bill moves its photos to another act of the night. Deleting a whole night keeps its photos, hidden, so
+undoing the delete in History brings them back. There's deliberately no foreign key for that reason.
+The images live in the Netlify Blobs store `photos`, keyed by photo id; `netlify dev` keeps a local copy for development.
 
 ### Setlists
 **Check setlist.fm** in the Stats tab (editors) looks up each past music act, one request at a time. Comedy is skipped.
@@ -193,6 +209,7 @@ and saves edits to the browser only. Opening a file straight from disk no longer
 |---|---|
 | `@netlify/database` | Connects functions to Netlify Database; picks the right driver for local dev vs. production. |
 | `@netlify/identity` | Sign-in for editors, and the server-side check that a request comes from one. |
+| `@netlify/blobs` | Stores your uploaded photos. Same Netlify account as the site, so no other service to set up. |
 | `astro` | Builds the static site: splits the page into components and bundles the scripts and styles. No adapter, since the API is plain Netlify Functions. Held at version 6 because version 7 needs Node 22.23.4 or newer. |
 | `sass` | Compiles the SCSS partials. |
 | `leaflet` | The venue map: a real, zoomable street map with OpenStreetMap tiles. Small (about 40 KB gzipped), no API key, and loaded only on the Places section. |
