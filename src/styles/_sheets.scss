@@ -160,3 +160,9 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 .spot-around li.up .arrow{color:var(--spotify-ink);transform:rotate(-25deg)}
 .spot-around li.down .arrow{color:var(--comedy);transform:rotate(25deg)}
 .spot-around .tbd{color:var(--muted);font-style:italic}
+
+/* Keep the page still while a pop-up, sheet or Year in review is open.
+   The gutter is reserved all the time so the layout doesn't jump when the scrollbar goes away. */
+html{scrollbar-gutter:stable}
+html:has(#scrim:not([hidden])),html:has(#review[open]){overflow:hidden}
+.info,.sheet,.review{overscroll-behavior:contain}
