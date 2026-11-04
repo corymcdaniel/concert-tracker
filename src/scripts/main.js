@@ -110,14 +110,27 @@ if (motionOK() && matchMedia('(hover:hover)').matches) {
   });
 }
 
-// The Up and Stats/Log buttons appear a fifth of the way down. Filters and tabs change the page height without scrolling, so watch that too.
+// The Up and Stats/Log buttons appear when the year headers start pinning, so they arrive together:
+// in the log, once the first year header pins to the top; in stats, which has no years,
+// once the section links have scrolled off. Filters and tabs move things without scrolling, so watch size too.
 let upFrame = 0;
+function floatNavShown(){
+  if (state.view === 'stats') {
+    const links = $('#statsView .subnav');
+    if (!links) return false;
+    return links.getBoundingClientRect().bottom <= 0;
+  }
+  // Every year header sits in #list, so the first one stays pinned at 0 until the list ends
+  const year = $('#list .year');
+  // A pixel of slack for sub-pixel scroll positions
+  if (year) return year.getBoundingClientRect().top <= 1;
+  return $('#list').getBoundingClientRect().top <= 0;
+}
 function queueUp(){
   if (upFrame) return;
   upFrame = requestAnimationFrame(() => {
     upFrame = 0;
-    const room = document.documentElement.scrollHeight - innerHeight;
-    $('#floatNav').classList.toggle('on', room > 0 && scrollY / room >= .2);
+    $('#floatNav').classList.toggle('on', floatNavShown());
   });
 }
 addEventListener('scroll', queueUp, {passive: true});
