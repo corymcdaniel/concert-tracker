@@ -89,7 +89,7 @@
 .bucket-more .mini{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));column-gap:28px}
 .stub-extra{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);align-items:baseline}
 .stub-extra .rated{color:var(--gold-ink);letter-spacing:.08em}
-.otd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;border:1px dashed var(--gold);border-radius:8px;padding:8px 12px;font-size:14px;background:color-mix(in oklab,var(--gold) 8%,var(--paper))}
+.otd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;border:1px dashed var(--gold);border-radius:8px;padding:8px 12px;font-size:14px;background:var(--bronze)}
 .otd .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-ink)}
 .rv-cta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .rv-cta button{padding:4px 12px}
@@ -116,7 +116,7 @@
 .venuemap .leaflet-bar a:hover{background:var(--chip)}
 .maphint{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .vpin-wrap,.vcluster{width:0;height:0}
-.vpin{position:absolute;translate:-50% -50%;display:grid;place-items:center;border-radius:50%;background:var(--comedy);color:#fff;border:2px solid var(--paper);box-shadow:0 1px 4px rgb(0 0 0 / .35);font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;transition:scale .2s var(--ease),background .2s}
+.vpin{position:absolute;translate:-50% -50%;display:grid;place-items:center;border-radius:50%;background:var(--comedy);color:var(--on-accent);border:2px solid var(--paper);box-shadow:0 1px 4px rgb(0 0 0 / .35);font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;transition:scale .2s var(--ease),background .2s}
 .vpin.s1{width:14px;height:14px}
 .vpin.s2{width:20px;height:20px}
 .vpin.s3{width:26px;height:26px}
@@ -126,8 +126,8 @@
 .vpin-wrap.on{z-index:1000 !important}
 .vpin-wrap.on .vpin{background:var(--ink);color:var(--paper);scale:1.2}
 .vpin-wrap.on .vpin::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--ink);opacity:0}
-.vcluster span{position:absolute;translate:-50% -50%;display:grid;place-items:center;align-content:center;width:54px;height:54px;gap:2px;border-radius:50%;background:color-mix(in oklab,var(--music) 88%,transparent);color:#fff;border:3px solid color-mix(in oklab,var(--paper) 70%,transparent);box-shadow:0 2px 8px rgb(0 0 0 / .3);cursor:pointer;line-height:1;transition:scale .2s var(--ease)}
-.vcluster span b{font-family:var(--display);font-size:18px;font-weight:800}
+.vcluster span{position:absolute;translate:-50% -50%;display:grid;place-items:center;align-content:center;width:72px;height:72px;gap:3px;border-radius:50%;background:color-mix(in oklab,var(--music) 88%,transparent);color:var(--on-accent);border:3px solid color-mix(in oklab,var(--paper) 70%,transparent);box-shadow:0 2px 8px rgb(0 0 0 / .3);cursor:pointer;line-height:1;transition:scale .2s var(--ease)}
+.vcluster span b{font-family:var(--display);font-size:21px;font-weight:800}
 .vcluster span i{font-style:normal;font-family:var(--mono);font-size:9px;opacity:.9;white-space:nowrap}
 .vcluster:hover span{scale:1.1}
 .venueinfo{margin-top:12px;display:grid;gap:8px}
@@ -140,10 +140,8 @@
 .vnights li{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:baseline;font-size:13px}
 .vnights time{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .vnights li span{display:flex;flex-wrap:wrap;gap:4px}
-// Dark theme: darken the light tiles rather than load a second tile set
-@mixin dark-tiles{.venuemap .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.6)}}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){@include dark-tiles}}
-:root[data-theme="dark"]{@include dark-tiles}
+// Darken the light map tiles to sit on navy, rather than load a second tile set
+:root:not([data-theme="light"]) .venuemap .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9) saturate(.6)}
 
 /* ---------- same day, different year (stats/sameday.js) ---------- */
 .sd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}

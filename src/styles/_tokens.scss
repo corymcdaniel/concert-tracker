@@ -1,17 +1,43 @@
 /* Layout: a running ticket-stub ledger, grouped by year, with a stats strip up top and an edit sheet that slides in */
+/* One navy scheme for everyone. Every text colour passes WCAG AA on --bg, --paper and --chip, and music,
+   comedy and upcoming differ in lightness as well as hue, so they stay apart with colour blindness. */
 :root{
-  --bg:#e9ecf1; --paper:#fbfcfd; --ink:#16192b; --muted:#646a82; --line:#cdd2dd;
-  --music:#2a46e8; --comedy:#c4176b; --upcoming:#0f8a5f; --chip:#dfe3ec; --gold:#c99a06; --gold-ink:#7a5a00; --spotify:#1db954; --spotify-ink:#117a37; --band:#16192b; --band-ink:#e7e9f2;
+  --bg:#0b1430; --paper:#1b2a5a; --ink:#f2f4fa; --muted:#a9b3cf; --line:#38497f;
+  --music:#93d4ff; --comedy:#f76fa3; --upcoming:#c4f07a; --chip:#24346a; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; --band:#060c20; --band-ink:#c9d1ea;
+  // Text on a fill of music, comedy, upcoming or gold
+  --on-accent:#0b1430;
+  // A gold-tinted surface: gold mixed into navy turns grey, so this is a dark bronze of gold's own hue
+  --bronze:oklch(.27 .03 85);
+  // The Stamped heading's ink
+  --stamp:var(--gold);
+  // Ranking bars (top venues, cities): a sky tint that stands off the panel, with white text still at 4.8:1
+  --bar:color-mix(in oklab,var(--music) 42%,var(--paper));
   --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0e1019; --paper:#171a27; --ink:#e7e9f2; --muted:#9097b1; --line:#2c3145;
-  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; --band:#07080d; --band-ink:#c9cde0; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0e1019; --paper:#171a27; --ink:#e7e9f2; --muted:#9097b1; --line:#2c3145;
-  --music:#7d93ff; --comedy:#ff6aae; --upcoming:#45d19c; --chip:#242838; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; --band:#07080d; --band-ink:#c9cde0; color-scheme:dark}
+/* Light: the original pale scheme, picked with the toggle in the nav and remembered in this browser (main.js).
+   Muted, comedy and upcoming are a touch darker than the original so they pass AA on the page. */
+:root[data-theme="light"]{
+  --bg:#e9ecf1; --paper:#fbfcfd; --ink:#16192b; --muted:#5a6078; --line:#cdd2dd;
+  --music:#2a46e8; --comedy:#c4176b; --upcoming:#0b7a53; --chip:#dfe3ec; --gold:#c99a06; --gold-ink:#6e5000; --spotify:#1db954; --spotify-ink:#117a37; --band:#16192b; --band-ink:#e7e9f2;
+  --on-accent:#fff; --bronze:color-mix(in oklab,var(--gold) 10%,var(--paper)); --stamp:#8a6400;
+  --bar:color-mix(in oklab,var(--music) 32%,var(--paper));
+  color-scheme:light;
+}
+
+/* Tickets are light grey paper with dark ink on the navy page, so the gold repeat tints have something bright to shine on.
+   Inside a ticket the accents darken to suit: every text colour stays at 5:1 or better, even on the deepest gold.
+   The notches still cut through to the navy page, since --bg isn't changed here. */
+@mixin light-ticket{
+  --paper:#e8ebf1; --chip:#d6dbe5; --ink:#121526; --muted:#454b62; --line:#c2c8d6;
+  --music:#1f36c4; --comedy:#9c0f4c; --upcoming:#08583c; --gold:#d9a800; --gold-ink:#5a4100; --on-accent:#fff;
+  color:var(--ink);
+}
+.stub,.ghost,.later li,.ticket{@include light-ticket}
+// On the light page the tickets go back to the original white paper; the darker ticket accents stay, so gold steps still pass
+:root[data-theme="light"] :is(.stub,.ghost,.later li,.ticket){--paper:#fbfcfd; --chip:#dfe3ec; --line:#cdd2dd}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
 .wrap{max-width:980px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}

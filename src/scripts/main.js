@@ -134,6 +134,81 @@ if (motionOK() && matchMedia('(hover:hover)').matches) {
   });
 }
 
+// Navy by default; the light scheme is remembered in this browser. Base.astro sets it before the page paints.
+function setTheme(light){
+  const root = document.documentElement;
+  if (light) root.dataset.theme = 'light';
+  else delete root.dataset.theme;
+  $('#btnTheme').setAttribute('aria-pressed', String(light));
+  let saved = 'navy';
+  if (light) saved = 'light';
+  store.set('show-log-theme', saved);
+}
+$('#btnTheme').setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'light'));
+$('#btnTheme').onclick = () => {
+  const light = document.documentElement.dataset.theme !== 'light';
+  // Cross-fade the whole page between schemes where the browser can
+  if (motionOK() && document.startViewTransition) { document.startViewTransition(() => setTheme(light)); return; }
+  setTheme(light);
+};
+
+// Goodnight: the footer's switch fades the house lights out, leaving a follow-spot at the mouse (or wherever you tap).
+// Flip it again or press Esc to bring them back. Not remembered, so every visit starts with the lights up.
+{
+  const sw = $('#lightSwitch'), dark = $('#houseLights');
+  let frame = 0, fx = 0, fy = 0;
+  const follow = e => {
+    fx = e.clientX; fy = e.clientY;
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      dark.style.setProperty('--fx', `${fx}px`);
+      dark.style.setProperty('--fy', `${fy}px`);
+    });
+  };
+  const setLights = out => {
+    document.documentElement.classList.toggle('lights-out', out);
+    sw.setAttribute('aria-pressed', String(out));
+    let label = 'Lights out';
+    if (out) label = 'Lights up';
+    sw.setAttribute('aria-label', label);
+    sw.title = label;
+    if (out) {
+      document.addEventListener('pointermove', follow, {passive: true});
+      document.addEventListener('pointerdown', follow, {passive: true});
+    } else {
+      document.removeEventListener('pointermove', follow);
+      document.removeEventListener('pointerdown', follow);
+    }
+  };
+  sw.addEventListener('click', e => {
+    // From the keyboard there's no pointer, so the follow-spot starts on the switch itself
+    let at = e;
+    if (e.detail === 0) { const r = sw.getBoundingClientRect(); at = {clientX: r.left + r.width / 2, clientY: r.top + r.height / 2}; }
+    follow(at);
+    setLights(sw.getAttribute('aria-pressed') !== 'true');
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sw.getAttribute('aria-pressed') === 'true') setLights(false); });
+}
+
+// A soft light follows the mouse around the whole page: on while the pointer is in the window, off when it leaves
+if (motionOK() && matchMedia('(hover:hover)').matches) {
+  const spot = $('#spotlight');
+  let frame = 0, x = 0, y = 0;
+  document.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    x = e.clientX; y = e.clientY;
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      spot.style.setProperty('--sx', `${x}px`);
+      spot.style.setProperty('--sy', `${y}px`);
+      spot.classList.add('on');
+    });
+  }, {passive: true});
+  document.documentElement.addEventListener('pointerleave', () => spot.classList.remove('on'));
+}
+
 // The Up and Stats/Log buttons appear when the year headers start pinning, so they arrive together:
 // in the log, once the first year header pins to the top; in stats, which has no years,
 // once the section links have scrolled off. Filters and tabs move things without scrolling, so watch size too.

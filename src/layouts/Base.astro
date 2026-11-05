@@ -10,8 +10,14 @@ import "../styles/global.scss";
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<!-- Set the theme before the page paints, so a light-mode visitor never sees a flash of navy (main.js keeps it in sync) -->
+<script is:inline>try { if (localStorage.getItem('show-log-theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch {}</script>
 </head>
 <body>
+<!-- A soft light that follows the mouse around the page (main.js) -->
+<div class="spotlight" id="spotlight" aria-hidden="true"></div>
+<!-- The house lights: fades in over the page when the footer's switch is flipped, with a follow-spot at the mouse (main.js) -->
+<div class="house-lights" id="houseLights" aria-hidden="true"></div>
 <slot />
 </body>
 </html>

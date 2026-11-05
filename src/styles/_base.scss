@@ -49,7 +49,7 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);bord
 .rank{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .rank li{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:8px;align-items:center;font-size:14px}
 .rank .lab{min-width:0;position:relative;padding:3px 8px;border-radius:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.rank .lab::before{content:"";position:absolute;inset:0;width:var(--w);background:var(--chip);z-index:-1}
+.rank .lab::before{content:"";position:absolute;inset:0;width:var(--w);background:var(--bar);z-index:-1}
 .rank .lab{isolation:isolate}
 .rank .c{font-family:var(--mono);font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
 .era{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:var(--bg);border-radius:8px;overflow:hidden}
@@ -81,6 +81,37 @@ table.rep button:hover{color:var(--music);text-decoration:underline}
 .year::after{content:"";flex:1;border-top:2px solid var(--ink);align-self:center}
 .year.next h2{color:var(--upcoming);text-transform:uppercase}
 .year.next::after{border-top-color:var(--upcoming)}
+// A section heading like Up next, but it doesn't pin: the year headers under it do
+.section-head{display:flex;align-items:baseline;gap:12px}
+.section-head h2{font-family:var(--display);font-weight:800;font-size:44px;margin:0;line-height:1;text-transform:uppercase}
+.section-head span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.section-head::after{content:"";flex:1;border-top:2px solid var(--ink);align-self:center}
+// Room between what's coming up and what you've been to
+.later+.stamped,.stub+.stamped{margin-top:64px}
+// The same space above Up next, from the strip or controls above it (the view already leaves 28px under the controls)
+.otd+.year.next{margin-top:64px}
+.list>.year.next:first-child{margin-top:46px}
+
+// Stamped: a gold rubber stamp, like the one on the header ticket, with worn ink.
+// The wear is a noise mask that knocks small specks out of the ink.
+$stamp-wear: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -3.2 0 0 0 2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23w%29'/%3E%3C/svg%3E";
+.stamped{padding-block:8px 4px;gap:18px}
+.stamped h2{
+  padding:6px 14px 2px;border:3px solid currentColor;border-radius:6px;outline:1.5px solid currentColor;outline-offset:4px;
+  font-size:38px;letter-spacing:.08em;color:var(--stamp);
+  transform:rotate(-4deg);transform-origin:left center;
+  mask-image:url($stamp-wear);mask-size:160px;
+  transition:transform .3s var(--ease);
+}
+.stamped:hover h2{transform:rotate(-2deg) scale(1.03)}
+.stamped span{color:var(--gold-ink)}
+// The stamp stands on its own, without the rule the other headings have
+.stamped::after{content:none}
+// Pressed onto the page the first time it's drawn (log.js adds .press once)
+@media (prefers-reduced-motion:no-preference){
+  .stamped.press h2{animation:stamp-press .5s var(--ease) both}
+}
+@keyframes stamp-press{from{opacity:0;transform:rotate(-4deg) scale(1.6)}}
 .list{display:grid;gap:10px}
 
 .stub{display:grid;grid-template-columns:104px 1fr;border-radius:8px;position:relative;overflow:hidden}

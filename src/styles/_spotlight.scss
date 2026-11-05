@@ -1,0 +1,19 @@
+/* ---------- a soft follow-spot that tracks the mouse across the page (main.js) ----------
+   A fixed circle moved with transform, so following the mouse never repaints the page.
+   Screen blending only ever lightens, so text under it keeps (or gains) contrast. */
+.spotlight{
+  --sx:50vw;--sy:-100vh;
+  position:fixed;left:0;top:0;z-index:50;width:380px;height:380px;margin:-190px 0 0 -190px;border-radius:50%;
+  pointer-events:none;mix-blend-mode:screen;opacity:0;
+  background:radial-gradient(circle,rgb(255 255 255 / .065) 0%,rgb(255 255 255 / .03) 30%,transparent 65%);
+  transform:translate3d(var(--sx),var(--sy),0);
+  transition:opacity .6s var(--ease);
+}
+.spotlight.on{opacity:1}
+// Touch screens have no cursor to follow, and reduced motion keeps the page still
+@media (hover:none),(prefers-reduced-motion:reduce){.spotlight{display:none}}
+// On the light page a glow over the content would wash it out, so it sits behind the cards and lights the page itself
+:root[data-theme="light"] .spotlight{
+  z-index:-1;mix-blend-mode:normal;
+  background:radial-gradient(circle,rgb(255 255 255 / .75) 0%,rgb(255 255 255 / .35) 30%,transparent 65%);
+}

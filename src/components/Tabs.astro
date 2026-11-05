@@ -6,6 +6,11 @@
   </nav>
   <div class="actions">
     <span class="save-state" id="saveState"></span>
+    <!-- Navy by default; pressed = the light scheme. The icon shows the scheme you'd switch to. -->
+    <button id="btnTheme" class="theme-btn" type="button" aria-pressed="false" aria-label="Light mode" title="Light mode">
+      <svg class="ic-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+      <svg class="ic-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
     <button id="btnAuth" type="button" hidden>Sign in</button>
     <button id="btnHistory" type="button" data-history="" hidden>History</button>
     <button id="btnAdd" class="primary edit-only" type="button">+ Add show</button>
