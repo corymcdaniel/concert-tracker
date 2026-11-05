@@ -59,7 +59,9 @@ function yearAt(f){
 }
 
 // Dragging: the pointer's place on the track becomes the page's place in the list
+let grip = 0;   // where on the pill it was grabbed, so taking hold of it doesn't move the page
 function scrubTo(clientY){
+  clientY -= grip;
   const r = track.getBoundingClientRect();
   const f = clamp01((clientY - r.top) / r.height);
   const box = listBox();
@@ -90,20 +92,48 @@ export function initYearRail(){
   new ResizeObserver(refreshYearRail).observe(document.body);
   addEventListener('resize', refreshYearRail);
 
+  // Keyboard only: a focused year label pressed with Enter or Space. Mouse presses are handled below, since the
+  // track captures the pointer and a mouse click wouldn't reach the label.
   rail.addEventListener('click', e => {
     const b = e.target.closest('[data-rail-year]');
-    if (b) jumpToYear(b.dataset.railYear);
+    if (b && e.detail === 0) jumpToYear(b.dataset.railYear);
   });
+  // A press anywhere on the track, labels included, never starts a text selection. Pressing between the labels
+  // scrubs straight away; pressing on a label scrubs once the pointer moves a few pixels, and otherwise jumps to
+  // that year when released.
+  let pressedYear = null, startY = 0;
   track.addEventListener('pointerdown', e => {
-    if (e.target.closest('[data-rail-year]')) return;
+    if (e.button !== 0) return;
+    e.preventDefault();
+    track.setPointerCapture(e.pointerId);
+    startY = e.clientY;
+    pressedYear = e.target.closest('[data-rail-year]')?.dataset.railYear || null;
+    if (pressedYear) return;
+    // Grabbing the pill holds it where it is; pressing elsewhere on the track jumps the pill there
+    const pill = $('#yearThumb').getBoundingClientRect();
+    grip = 0;
+    if (e.clientY >= pill.top - 4 && e.clientY <= pill.bottom + 4) grip = e.clientY - (pill.top + pill.height / 2);
     dragging = true;
     rail.classList.add('dragging');
-    track.setPointerCapture(e.pointerId);
-    scrubTo(e.clientY);
+    if (!grip) scrubTo(e.clientY);
   });
-  track.addEventListener('pointermove', e => { if (dragging) scrubTo(e.clientY); });
-  const stop = () => { dragging = false; rail.classList.remove('dragging'); };
+  track.addEventListener('pointermove', e => {
+    if (!track.hasPointerCapture(e.pointerId)) return;
+    if (pressedYear && Math.abs(e.clientY - startY) > 4) {
+      pressedYear = null;
+      grip = 0;
+      dragging = true;
+      rail.classList.add('dragging');
+    }
+    if (dragging) scrubTo(e.clientY);
+  });
+  const stop = () => {
+    if (pressedYear) jumpToYear(pressedYear);
+    pressedYear = null;
+    dragging = false;
+    rail.classList.remove('dragging');
+  };
   track.addEventListener('pointerup', stop);
-  track.addEventListener('pointercancel', stop);
+  track.addEventListener('pointercancel', () => { pressedYear = null; dragging = false; rail.classList.remove('dragging'); });
   refreshYearRail();
 }
