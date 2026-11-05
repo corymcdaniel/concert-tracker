@@ -25,4 +25,12 @@ import Summary from "./Summary.astro";
     <Summary />
   </main>
   <section class="endcap" id="endcap" aria-label="End of the log"></section>
+  <!-- Desktop year scroller down the right edge (yearRail.js): drag to scrub, click a year to jump -->
+  <nav class="yr-rail" id="yearRail" aria-label="Jump to a year" hidden>
+    <div class="yr-track" id="yearTrack">
+      <span class="yr-line" aria-hidden="true"></span>
+      <div class="yr-marks" id="yearMarks"></div>
+      <span class="yr-thumb" id="yearThumb" aria-hidden="true"></span>
+    </div>
+  </nav>
 </div>

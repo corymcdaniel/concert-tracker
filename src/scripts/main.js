@@ -1,5 +1,6 @@
 import { analyticsReady, initAnalytics, track } from './analytics.js';
 import { openTrackPrompt } from './trackPrompt.js';
+import { initYearRail } from './yearRail.js';
 import { load } from './api.js';
 import { applyAuth, canEdit, initIdentity, openLogin, setState } from './auth.js';
 import { startAutoInfo } from './autoinfo.js';
@@ -91,6 +92,7 @@ $('#q').addEventListener('change', e => { const term = e.target.value.trim(); if
 $('#btnAdd').onclick = () => openAdd(null);
 $('#btnData').onclick = openData;
 $('#btnTrack').onclick = openTrackPrompt;
+initYearRail();
 initAnalytics();
 
 // Map pins aren't buttons, so they get their own click and keyboard handling

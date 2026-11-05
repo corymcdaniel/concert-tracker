@@ -1,0 +1,39 @@
+/* ---------- the year scroller down the right edge of the log, on desktop (yearRail.js) ---------- */
+.yr-rail{
+  position:fixed;right:max(10px,env(safe-area-inset-right,0px));top:96px;bottom:96px;width:72px;z-index:15;
+  // Always there but quiet, so nothing flickers as you scroll; it brightens when you reach for it.
+  // (Fading it out after scrolling stops would need a timer: a mouse wheel fires scrollend after every notch.)
+  opacity:.55;transition:opacity .2s var(--ease);
+}
+.yr-rail:hover,.yr-rail.dragging,.yr-rail:focus-within{opacity:1}
+.yr-rail[hidden]{display:none}
+// Only where there's room beside the log, and a mouse or trackpad to drag with
+@media not ((min-width:1180px) and (any-hover:hover)){.yr-rail{display:none}}
+
+// No text selection: a drag along the labels would otherwise highlight them and fight the scroll
+.yr-rail{user-select:none;-webkit-user-select:none}
+.yr-track{position:absolute;inset:0;cursor:grab;touch-action:none}
+.yr-rail.dragging .yr-track{cursor:grabbing}
+.yr-line{position:absolute;right:13px;top:0;bottom:0;width:2px;border-radius:2px;background:var(--line);transition:background-color .2s}
+.yr-rail:hover .yr-line,.yr-rail.dragging .yr-line{background:color-mix(in oklab,var(--muted) 60%,var(--line))}
+.yr-marks{position:absolute;inset:0}
+// Year labels at their places in the log
+.yr-label{position:absolute;right:26px;transform:translateY(-50%);padding:1px 6px;border:0;border-radius:4px;background:var(--bg);
+  font-family:var(--mono);font-size:11px;line-height:1.4;color:var(--muted);cursor:pointer;transition:color .15s,background-color .15s}
+.yr-label:hover,.yr-label:focus-visible{color:var(--ink);background:var(--chip);border:0}
+.yr-label:focus-visible{outline:2px solid var(--music);outline-offset:1px}
+// A tick on the line at each year's exact place (its label may be nudged a little to stay clear of its neighbours)
+.yr-tick{position:absolute;right:11px;width:6px;height:2px;margin-top:-1px;border-radius:1px;background:var(--muted);opacity:.8}
+// Half-percent steps. A number times a %, not "#{$i}%": interpolating then adding % compiles to "70 %", which
+// browsers ignore
+@for $i from 0 through 200{.yr-marks .q#{$i}{top:$i * .5%}}
+
+// The handle, with the year you're at in a bubble beside it
+.yr-thumb{position:absolute;right:5px;top:calc(var(--pos,0) * 100%);width:18px;height:30px;margin-top:-15px;border-radius:9px;
+  background:var(--gold);box-shadow:0 2px 8px rgb(0 0 0 / .35);pointer-events:none}
+.yr-thumb::after{content:attr(data-year);position:absolute;right:64px;top:50%;transform:translateY(-50%);padding:5px 10px 3px;border-radius:6px;
+  background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:800;font-size:20px;line-height:1;white-space:nowrap;
+  box-shadow:0 6px 16px rgb(0 0 0 / .35);opacity:0;transition:opacity .2s}
+.yr-rail:hover .yr-thumb::after,.yr-rail.dragging .yr-thumb::after{opacity:1}
+
+@media (prefers-reduced-motion:reduce){.yr-rail{transition:none}}
