@@ -17,14 +17,16 @@
 .yr-line{position:absolute;right:13px;top:0;bottom:0;width:2px;border-radius:2px;background:var(--line);transition:background-color .2s}
 .yr-rail:hover .yr-line,.yr-rail.dragging .yr-line{background:color-mix(in oklab,var(--muted) 60%,var(--line))}
 .yr-marks{position:absolute;inset:0}
-// Year labels at their places in the log, and dots where years are too close together to label
+// Year labels at their places in the log
 .yr-label{position:absolute;right:26px;transform:translateY(-50%);padding:1px 6px;border:0;border-radius:4px;background:var(--bg);
   font-family:var(--mono);font-size:11px;line-height:1.4;color:var(--muted);cursor:pointer;transition:color .15s,background-color .15s}
 .yr-label:hover,.yr-label:focus-visible{color:var(--ink);background:var(--chip);border:0}
 .yr-label:focus-visible{outline:2px solid var(--music);outline-offset:1px}
-.yr-dot{position:absolute;right:12px;width:4px;height:4px;margin-top:-2px;border-radius:50%;background:var(--muted);opacity:.7}
-// A number times 1%, not "#{$i}%": interpolating then adding % compiles to "70 %", which browsers ignore
-@for $i from 0 through 100{.yr-marks .p#{$i}{top:$i * 1%}}
+// A tick on the line at each year's exact place (its label may be nudged a little to stay clear of its neighbours)
+.yr-tick{position:absolute;right:11px;width:6px;height:2px;margin-top:-1px;border-radius:1px;background:var(--muted);opacity:.8}
+// Half-percent steps. A number times a %, not "#{$i}%": interpolating then adding % compiles to "70 %", which
+// browsers ignore
+@for $i from 0 through 200{.yr-marks .q#{$i}{top:$i * .5%}}
 
 // The handle, with the year you're at in a bubble beside it
 .yr-thumb{position:absolute;right:5px;top:calc(var(--pos,0) * 100%);width:18px;height:30px;margin-top:-15px;border-radius:9px;

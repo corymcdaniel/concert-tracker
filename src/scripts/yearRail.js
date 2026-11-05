@@ -7,7 +7,7 @@ import { $ } from './util.js';
    nothing about it changes while you scroll except the handle's place.
    Positions are fractions of the scroll from the list's top to the end of the page (past the end-of-log section, so
    the oldest years, which all fit on the last screen of the list, still get their own places). Labels and the handle use the same scale, so the handle is on a year when that year is at the top. */
-const MIN_GAP = 18;   // px between year labels on the track; years closer than this show as dots
+const MIN_GAP = 17;   // px between year labels, so neighbours never overlap
 let rail = null, track = null, years = [], frame = 0, dragging = false;
 
 // Wide enough that the scroller sits in the empty space beside the 980px log, and something to point with
@@ -31,15 +31,29 @@ function measure(){
 
 // Year labels at their places on the track (positions are 0-100% classes, so there are no inline styles).
 // Labels too close to the one above become dots, so a crowded stretch stays readable.
+// Every year gets a label. Each sits at its year's place unless that would overlap the one above, in which case
+// it's nudged down just enough (and, near the bottom, the stack is nudged back up to fit). A tick on the line marks
+// each year's exact place. Positions are half-percent classes (q0-q200), so there are no inline styles.
 function drawLabels(){
   const h = track.clientHeight;
-  let lastPx = -Infinity;
-  const marks = years.map(({year, at}) => {
-    const px = at * h, pct = Math.round(at * 100);
-    if (px - lastPx < MIN_GAP) return `<i class="yr-dot p${pct}" aria-hidden="true"></i>`;
-    lastPx = px;
-    return `<button type="button" class="yr-label p${pct}" data-rail-year="${year}" aria-label="Jump to ${year}">${year}</button>`;
+  const ideal = years.map(y => y.at * h);
+  // Down the track: no label closer than MIN_GAP below the one above it
+  const pos = [];
+  ideal.forEach((px, i) => {
+    let lowest = 0;
+    if (i > 0) lowest = pos[i - 1] + MIN_GAP;
+    pos.push(Math.max(px, lowest));
   });
+  // Back up from the bottom: the last label stays on the track, and the ones above make room for it
+  for (let i = pos.length - 1; i >= 0; i--) {
+    let highest = h;
+    if (i < pos.length - 1) highest = pos[i + 1] - MIN_GAP;
+    pos[i] = Math.min(pos[i], highest);
+  }
+  const q = px => Math.min(Math.max(Math.round(px / h * 200), 0), 200);
+  const marks = years.map(({year}, i) =>
+    `<i class="yr-tick q${q(ideal[i])}" aria-hidden="true"></i>` +
+    `<button type="button" class="yr-label q${q(pos[i])}" data-rail-year="${year}" aria-label="Jump to ${year}">${year}</button>`);
   $('#yearMarks').innerHTML = marks.join('');
 }
 
