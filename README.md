@@ -201,6 +201,11 @@ npx netlify database status             # what's applied and pending
 npx netlify database reset              # wipe the local database (then apply again)
 ```
 
+To get production's latest data locally, run `node scripts/pull-prod.mjs` while `npm run dev` is running. It replaces
+the local shows, artists, venues and photos with production's and copies the photo images into the local blob store.
+It reads production's public API, so price and companions (editor-only) don't come over, and it clears the local
+change history.
+
 `npm run build` then `npm run preview` serves the built site without the functions. With no API it runs in "local" mode
 and saves edits to the browser only. Opening a file straight from disk no longer works, since the site needs a server.
 

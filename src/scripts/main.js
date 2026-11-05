@@ -4,7 +4,7 @@ import { startAutoInfo } from './autoinfo.js';
 import { jumpToNight, jumpToYear, renderEnd } from './endcap.js';
 import { openHistory, undoChange } from './history.js';
 import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit, openInfoPhoto } from './info.js';
-import { dealIn, filterList, fullNight, paintStubPhotos, renderStats } from './log.js';
+import { dealIn, filterList, fullNight, paintStubPhotos } from './log.js';
 import { loadPhotos, nightPhotos, uploadPhotos } from './photos.js';
 import { openViewer, stepViewer } from './viewer.js';
 import { isOpen, motionOK, toast } from './motion.js';
@@ -67,7 +67,7 @@ document.addEventListener('click', e => {
   else if ('close' in t.dataset) closeSheet();
   else if (t.dataset.q !== undefined){ closeInfo(); $('#q').value = t.dataset.q; filt.q = t.dataset.q; setView('log'); filterList(); window.scrollTo({top:0}); }
   else if (t.dataset.view){ setView(t.dataset.view); }
-  else if (t.id==='moreBtn'){ state.showAllMost=!state.showAllMost; renderStats(); }
+  else if (t.id==='moreBtn'){ state.showAllMost=!state.showAllMost; renderStatsView(); }
   else if (t.dataset.type !== undefined){ filt.type = t.dataset.type; document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', b===t)); filterList(); }
 });
 document.addEventListener('change', e => {
