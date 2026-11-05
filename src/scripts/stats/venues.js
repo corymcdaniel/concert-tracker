@@ -8,25 +8,34 @@ import { $, esc, happened, place } from '../util.js';
 let L = null, FALLBACK = null, map = null, cluster = null, picked = null;
 const markers = new Map();
 
-async function loadLib(){
-  if (L) return;
-  const mod = await import('leaflet');
-  L = mod.default;
-  // The cluster plugin extends the global L
-  window.L = L;
-  await Promise.all([
-    import('leaflet.markercluster'),
-    import('leaflet/dist/leaflet.css'),
-    import('leaflet.markercluster/dist/MarkerCluster.css'),
-  ]);
+// One shared load for every caller. The map is often drawn twice in quick succession (page load, then a redraw),
+// and L must not count as ready until the cluster plugin has loaded too, or the second draw finds
+// L.markerClusterGroup missing and stops halfway. A failed load is forgotten, so the next visit tries again.
+let libLoading = null;
+function loadLib(){
+  if (!libLoading) libLoading = (async () => {
+    const lib = (await import('leaflet')).default;
+    // The cluster plugin extends the global L
+    window.L = lib;
+    await Promise.all([
+      import('leaflet.markercluster'),
+      import('leaflet/dist/leaflet.css'),
+      import('leaflet.markercluster/dist/MarkerCluster.css'),
+    ]);
+    L = lib;
+  })().catch(e => { libLoading = null; throw e; });
+  return libLoading;
 }
-async function loadFallback(){
-  if (FALLBACK) return;
-  try {
-    const r = await fetch('venue-coords.json');
-    if (!r.ok) throw 0;
-    FALLBACK = await r.json();
-  } catch { FALLBACK = {}; }
+let fallbackLoading = null;
+function loadFallback(){
+  if (!fallbackLoading) fallbackLoading = (async () => {
+    try {
+      const r = await fetch('venue-coords.json');
+      if (!r.ok) throw 0;
+      FALLBACK = await r.json();
+    } catch { FALLBACK = {}; }
+  })();
+  return fallbackLoading;
 }
 
 const day = d => { const [y, m, dd] = d.split('-'); return `${MONTHS[+m-1]} ${+dd}, ${y}`; };
