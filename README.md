@@ -158,8 +158,8 @@ script runs, so run it again after a new export. If the log and Spotify spell a 
 - **Spotlight:** a soft light follows the mouse across the page (`src/styles/_spotlight.scss`). It's off on touch
   screens and with reduced motion.
 - **Goodnight:** the little light switch next to the footer's big "Goodnight" fades the house lights out over the page,
-  leaving a follow-spot at the mouse (or wherever you tap). Flip it again or press Esc to bring them up. It isn't
-  remembered between visits (`src/styles/_lights.scss`).
+  leaving a follow-spot at the mouse. Flip it again or press Esc to bring them up. It isn't remembered between visits,
+  and it's hidden on phones and tablets, which have no cursor to follow (`src/styles/_lights.scss`).
 
 ### Analytics
 
@@ -174,6 +174,20 @@ Google Analytics 4, only with the visitor's consent (`src/scripts/analytics.js`)
   `/stats/artists`, `/stats/places`, `/stats/listening`.
 - **Events:** `open_artist` and `open_venue` (name), `search` (term, once it's committed), `filter` (type or city),
   `open_review` (year), `share` (year review), `theme_change` (light or navy), `house_lights` (out or up).
+
+### Search and link previews
+
+The site is kept out of search on purpose: every page has `<meta name="robots" content="noindex">`, and `netlify.toml`
+sends `X-Robots-Tag: noindex` for every file, including the JSON data. `robots.txt` lets crawlers in, since one that's
+blocked can't see the noindex. To allow indexing later, remove both.
+
+- **Live at build time:** `src/lib/site-data.mjs` fetches the shows from the production API once per build (falling
+  back to `public/shows.json`), and the description, share image and summary all use its totals.
+- **Link previews:** title, description, and a 1200×630 ticket-style share image (`/og.png`, drawn by
+  `src/pages/og.png.js` with `satori` and `sharp` from the fonts in `src/og/fonts`).
+- **Icons:** `public/favicon.svg`, and a 180×180 home-screen icon drawn from it (`src/pages/apple-touch-icon.png.js`).
+- **Without JavaScript:** a readable summary (`src/components/Summary.astro`): totals, upcoming shows, recent nights and
+  most-seen artists. With JavaScript it's hidden from the first paint and replaced by the app.
 
 ### Change history
 A database trigger writes a row to `changes` for every insert, update and delete, with the row as it was
@@ -249,6 +263,8 @@ and saves edits to the browser only. Opening a file straight from disk no longer
 | `sass` | Compiles the SCSS partials. |
 | `leaflet` | The venue map: a real, zoomable street map with OpenStreetMap tiles. Small (about 40 KB gzipped), no API key, and loaded only on the Places section. |
 | `leaflet.markercluster` | Groups nearby venue pins (16 are in metro Atlanta) into clusters that split apart as you zoom, and fans out venues at the same spot. |
+| `satori` | Lays out the share image and draws its text as shapes from the bundled fonts, so it looks the same on any build machine. |
+| `sharp` | Turns the share image's SVG into a PNG, and draws the home-screen icon. Astro already uses it; listed so the build can rely on it. |
 
 No charting or animation libraries: the charts and the hometowns map are plain HTML and SVG, and the motion is CSS plus browser
 features (view transitions and scroll timelines, where supported). All of it respects `prefers-reduced-motion`.

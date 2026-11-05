@@ -1,0 +1,45 @@
+---
+// A readable summary baked into the page at build time (src/lib/site-data.mjs), for anyone without JavaScript.
+// It sits inside the log list, so the app replaces it as it loads; with JavaScript it's hidden from the first paint.
+import { siteData, longDate, place } from "../lib/site-data.mjs";
+
+const { totals, span, upcoming, recent, repeats } = await siteData();
+const headliner = n => n.acts[0].artist;
+const more = n => {
+  if (n.acts.length < 2) return "";
+  return ` + ${n.acts.length - 1} more`;
+};
+const where = n => {
+  if (!n.venue) return place(n);
+  return `${n.venue}, ${place(n)}`;
+};
+---
+<section class="prerender" aria-label="Summary of the log">
+  <h2>{totals.nights} nights out{span && `, ${span}`}</h2>
+  <p class="pr-lede">{totals.artists} artists at {totals.venues} venues in {totals.cities} cities: every concert and stand-up show Cory has been to.</p>
+
+  {upcoming.length > 0 && (
+    <>
+      <h3>Up next</h3>
+      <ul>
+        {upcoming.map(n => <li><time datetime={n.date}>{longDate(n.date)}</time> <b>{headliner(n)}</b>{more(n)} at {where(n)}</li>)}
+      </ul>
+    </>
+  )}
+
+  <h3>Recently stamped</h3>
+  <ul>
+    {recent.map(n => <li><time datetime={n.date}>{longDate(n.date)}</time> <b>{headliner(n)}</b>{more(n)} at {where(n)}</li>)}
+  </ul>
+
+  {repeats.length > 0 && (
+    <>
+      <h3>Seen the most</h3>
+      <ul class="pr-cols">
+        {repeats.map(([name, times]) => <li><b>{name}</b> ×{times}</li>)}
+      </ul>
+    </>
+  )}
+
+  <p class="pr-note">Turn on JavaScript for the full log, the stats and the maps.</p>
+</section>

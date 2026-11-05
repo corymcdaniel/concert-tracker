@@ -34,3 +34,8 @@
 @media (prefers-reduced-motion:reduce){
   .house-lights,.lights-out .house-lights{transition-duration:.3s}
 }
+// Not on phones and tablets: with no cursor to follow, the dark has nothing to light. Detected by a touch-only
+// pointer rather than screen width, so a narrow desktop window still gets the switch.
+@media (hover:none) and (pointer:coarse){
+  .site-foot .light-switch{display:none}
+}

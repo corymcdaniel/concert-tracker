@@ -13,3 +13,9 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# Keep the whole site, including the JSON data files, out of search results
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
