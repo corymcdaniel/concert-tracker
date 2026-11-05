@@ -141,7 +141,7 @@ function wirePhotos(actId){
     const n = fullNight(actId); if (!n) return;
     const mine = nightPhotos(n);
     $('#billPhotoCount').textContent = `${mine.length} / ${PER_NIGHT}`;
-    grid.innerHTML = mine.map(p => `<figure><img src="${esc(photoUrl(p))}" alt="" loading="lazy">
+    grid.innerHTML = mine.map(p => `<figure><img src="${esc(photoUrl(p, 200))}" alt="" loading="lazy">
       <button type="button" class="bp-del" data-photo-del="${esc(p.id)}" aria-label="Delete this photo">✕</button></figure>`).join('');
     $('#billDrop').hidden = mine.length >= PER_NIGHT;
   };

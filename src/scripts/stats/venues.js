@@ -2,6 +2,19 @@ import { nights } from '../log.js';
 import { MONTHS, state } from '../state.js';
 import { plural } from './panels.js';
 import { $, esc, happened, place } from '../util.js';
+// The map's stylesheets as plain URLs, added to the page only when Places opens. Imported as CSS, the build would
+// put them in the page head, where they hold up the first paint of every page.
+import leafletCss from 'leaflet/dist/leaflet.css?url';
+import clusterCss from 'leaflet.markercluster/dist/MarkerCluster.css?url';
+
+function addStylesheet(href){
+  return new Promise((resolve, reject) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet'; link.href = href;
+    link.onload = resolve; link.onerror = reject;
+    document.head.append(link);
+  });
+}
 
 /* Venue map: Leaflet with OpenStreetMap tiles, loaded only when the Places section opens.
    Coordinates come from each venue's info record (coord: [lat, lon]), then public/venue-coords.json for the rest. */
@@ -19,8 +32,8 @@ function loadLib(){
     window.L = lib;
     await Promise.all([
       import('leaflet.markercluster'),
-      import('leaflet/dist/leaflet.css'),
-      import('leaflet.markercluster/dist/MarkerCluster.css'),
+      addStylesheet(leafletCss),
+      addStylesheet(clusterCss),
     ]);
     L = lib;
   })().catch(e => { libLoading = null; throw e; });

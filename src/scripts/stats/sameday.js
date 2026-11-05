@@ -12,7 +12,7 @@ const dayLabel = md => `${MONTHS[+md.slice(0, 2) - 1]} ${+md.slice(3, 5)}`;
 function thumb(n){
   const own = nightPhotos(n)[0];
   let src = '';
-  if (own) src = photoUrl(own);
+  if (own) src = photoUrl(own, 80);
   else {
     const img = state.INFO.artists?.[n.acts[0].artist]?.img;
     if (img) src = imgUrl(img, 160);

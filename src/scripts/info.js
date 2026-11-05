@@ -97,7 +97,7 @@ function photoGrid(seen){
   infoPhotos = nights(state.shows).filter(n => n.acts.some(a => ids.has(a.id)))
     .flatMap(n => nightPhotos(n).map(p => ({p, n})));
   if (!infoPhotos.length) return '';
-  const thumbs = infoPhotos.map(({p}, i) => `<button type="button" data-info-photo="${i}" aria-label="Photo ${i + 1} of ${infoPhotos.length}"><img loading="lazy" src="${esc(photoUrl(p))}" alt=""></button>`).join('');
+  const thumbs = infoPhotos.map(({p}, i) => `<button type="button" data-info-photo="${i}" aria-label="Photo ${i + 1} of ${infoPhotos.length}"><img loading="lazy" src="${esc(photoUrl(p, 200))}" alt=""></button>`).join('');
   return `<div class="seen info-photos"><h4>Your photos · ${infoPhotos.length}</h4><div class="ip-grid">${thumbs}</div></div>`;
 }
 export function openInfoPhoto(i){ openViewer(infoPhotos, +i); }
