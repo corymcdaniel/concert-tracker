@@ -1,3 +1,4 @@
+import { track } from './analytics.js';
 import { api } from './api.js';
 import { nights } from './log.js';
 import { hide, isOpen, motionOK, show, toast } from './motion.js';
@@ -29,6 +30,10 @@ export const yr = d => d ? String(d).slice(0,4) : '';
 const fmtFull = d => { if(!d) return ''; const p=String(d).split('-'); return p.length===3 ? fmt(d) : p.length===2 ? `${MONTHS[+p[1]-1]} ${p[0]}` : p[0]; };
 let infoReq = 0;
 export function openInfo(kind, key, actId){
+  // Venue keys are "name|city"; GA gets the readable name
+  let item = 'artist';
+  if (kind !== 'artists') item = 'venue';
+  track(`open_${item}`, {name: key.split('|')[0]});
   const isA = kind==='artists';
   // Bucket list artists aren't in the log, so their page and photo come from listening.json
   let rec = state.INFO[kind]?.[key] || null;

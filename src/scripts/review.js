@@ -1,3 +1,4 @@
+import { track } from './analytics.js';
 import { imgUrl } from './info.js';
 import { nightVal, nights, statShown } from './log.js';
 import { MONTHS, state } from './state.js';
@@ -73,6 +74,7 @@ export function openReview(year){
   const d = $('#review');
   const s = reviewStats(year);
   if (!s.ns.length) return;
+  track('open_review', {year});
   rv = {year, slides:reviewSlides(s), i:0, s};
   ['rv-nights','rv-new','rv-bill'].forEach(k => delete statShown[k]);
   if (!d.open) d.showModal();
@@ -96,6 +98,7 @@ export function stepReview(by){
   drawReview();
 }
 export async function shareReview(btn){
+  track('share', {content_type: 'year_review', item_id: String(rv.year)});
   const s = rv.s;
   const text = `My ${s.year} in shows: ${plural(s.ns.length,'night')} out, ${plural(s.fresh.length,'new act')}, and ${s.artist[0]} most of all.`;
   const url = `${location.origin}${location.pathname}#review-${s.year}`;

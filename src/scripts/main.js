@@ -1,3 +1,4 @@
+import { analyticsReady, initAnalytics, track } from './analytics.js';
 import { load } from './api.js';
 import { applyAuth, canEdit, initIdentity, openLogin, setState } from './auth.js';
 import { startAutoInfo } from './autoinfo.js';
@@ -68,7 +69,7 @@ document.addEventListener('click', e => {
   else if (t.dataset.q !== undefined){ closeInfo(); $('#q').value = t.dataset.q; filt.q = t.dataset.q; setView('log'); filterList(); window.scrollTo({top:0}); }
   else if (t.dataset.view){ setView(t.dataset.view); }
   else if (t.id==='moreBtn'){ state.showAllMost=!state.showAllMost; renderStatsView(); }
-  else if (t.dataset.type !== undefined){ filt.type = t.dataset.type; document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', b===t)); filterList(); }
+  else if (t.dataset.type !== undefined){ track('filter', {filter: 'type', value: t.dataset.type || 'all'}); filt.type = t.dataset.type; document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', b===t)); filterList(); }
 });
 document.addEventListener('change', e => {
   if (e.target.id === 'wallGenre') { wallOpts.genre = e.target.value; updateWall(); }
@@ -83,9 +84,12 @@ addEventListener('popstate', followHash);
 document.addEventListener('keydown', e => { if (e.key==='Escape') { if (isOpen($('#sheet'))) closeSheet(); else if (isOpen($('#info'))) closeInfo(); } });
 $('#q').addEventListener('input', e => { filt.q = e.target.value.trim(); filterList(); });
 document.addEventListener('change', e => { if (e.target.id==='f-move' && e.target.value){ store.set('show-log-move', e.target.value); renderStatsView(); } });
-$('#city').addEventListener('change', e => { filt.city = e.target.value; filterList(); });
+$('#city').addEventListener('change', e => { filt.city = e.target.value; filterList(); track('filter', {filter: 'city', value: e.target.value || 'all'}); });
+// A search counts once it's committed (Enter, or leaving the box), not on every keystroke
+$('#q').addEventListener('change', e => { const term = e.target.value.trim(); if (term) track('search', {search_term: term}); });
 $('#btnAdd').onclick = () => openAdd(null);
 $('#btnData').onclick = openData;
+initAnalytics();
 
 // Map pins aren't buttons, so they get their own click and keyboard handling
 $('#statsView').addEventListener('click', e => { const p = e.target.closest('[data-pin]'); if (p) showPin(p.dataset.pin); });
@@ -143,6 +147,7 @@ function setTheme(light){
   let saved = 'navy';
   if (light) saved = 'light';
   store.set('show-log-theme', saved);
+  track('theme_change', {theme: saved});
 }
 $('#btnTheme').setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'light'));
 $('#btnTheme').onclick = () => {
@@ -173,6 +178,9 @@ $('#btnTheme').onclick = () => {
     if (out) label = 'Lights up';
     sw.setAttribute('aria-label', label);
     sw.title = label;
+    let lights = 'up';
+    if (out) lights = 'out';
+    track('house_lights', {lights});
     if (out) {
       document.addEventListener('pointermove', follow, {passive: true});
       document.addEventListener('pointerdown', follow, {passive: true});
@@ -259,6 +267,8 @@ load().then(async () => {
   applyAuth();
   if (!toStats) dealIn(render);
   if (state.mode==='netlify') await initIdentity();
+  // Sign-in is known now, so analytics can tell your visits from everyone else's
+  analyticsReady();
   await Promise.all([loadInfo(), loadSetlists(), loadListening(), loadPhotos()]);
   if (toStats) render();
   // Photos arrive after the log is dealt: paint them onto the tickets and into the mosaic
