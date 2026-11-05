@@ -38,12 +38,12 @@ body>.wrap{flex:1 0 auto;width:100%;align-content:start}
 
 @media (prefers-reduced-motion:no-preference){
   // The hand sways and each card breathes a little wider and back, out of step with its neighbours
-  .deck .ghost{animation:ghost-in .5s var(--ease) both,breathe 2.4s ease-in-out .5s infinite}
-  .deck .g1{animation-delay:0ms,.5s}
-  .deck .g2{animation-delay:40ms,.65s}
-  .deck .g3{animation-delay:80ms,.8s}
-  .deck .g4{animation-delay:120ms,.95s}
-  .deck .g5{animation-delay:160ms,1.1s}
+  .deck .ghost{animation:ghost-in .8s var(--ease) both,breathe 3.2s ease-in-out .8s infinite}
+  .deck .g1{animation-delay:0ms,.8s}
+  .deck .g2{animation-delay:70ms,1s}
+  .deck .g3{animation-delay:140ms,1.2s}
+  .deck .g4{animation-delay:210ms,1.4s}
+  .deck .g5{animation-delay:280ms,1.6s}
   .ghost .gb b{background:linear-gradient(90deg,var(--chip) 30%,color-mix(in oklab,var(--chip) 40%,var(--paper)) 50%,var(--chip) 70%) 0 0/300% 100%;animation:ghost-shine 1.8s linear infinite}
 }
 @keyframes ghost-in{from{opacity:0;transform:rotate(0deg) translateY(30px)}}

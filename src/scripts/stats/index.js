@@ -2,6 +2,7 @@ import { nights } from '../log.js';
 import { reviewPanel } from '../review.js';
 import { MONTHS, state } from '../state.js';
 import { aroundPanel } from './around.js';
+import { sameDayPanel } from './sameday.js';
 import { bucketPanel } from './bucket.js';
 import { eraPanel } from './era.js';
 import { companionPanel, extrasHint, ratingPanel, spendingPanel } from './extras.js';
@@ -88,6 +89,7 @@ export function renderStatsView(){
         <div class="panel"><h3>By month</h3><div class="bars" style="height:120px">${mb}</div></div>
         ${dayPanel(nd)}
       </div>
+      ${sameDayPanel(nd)}
       ${gapPanel(nd)}
       ${ratingPanel(nd)}
       ${spendingPanel(nd)}

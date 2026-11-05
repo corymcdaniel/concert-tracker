@@ -74,7 +74,33 @@ export function renderEnd(){
       <p class="end-k">End of the log</p>
       <h2>${span} years, ${all.length} nights</h2>
       <p class="end-sub">It started with <b>${esc(first.acts[0].artist)}</b> at ${esc(first.venue)}, ${longDate(first.date)}.</p>
-    </div>${rail(dated)}${mosaic(mosaicPhotos(all))}`;
+    </div>${rail(dated)}<div class="mosaic-slot"></div>`;
+  fillMosaic(box.querySelector('.mosaic-slot'), all);
+}
+
+/* The mosaic is only built once the end of the log nears the screen, so its photos don't download
+   and decode while the log is being dealt in. Its tiles play in when it actually scrolls into view. */
+let mosaicSeen = false, nearObs = null, inObs = null;
+function fillMosaic(slot, all){
+  nearObs?.disconnect(); inObs?.disconnect();
+  const build = () => {
+    slot.innerHTML = mosaic(mosaicPhotos(all));
+    const grid = slot.firstElementChild; if (!grid) return;
+    // Rebuilt after an upload or edit: it's already been seen, so show it straight away
+    if (mosaicSeen || !inObs) { grid.classList.add('in'); return; }
+    inObs.observe(grid);
+  };
+  if (!('IntersectionObserver' in window)) { build(); return; }
+  inObs = new IntersectionObserver(entries => {
+    if (!entries.some(e => e.isIntersecting)) return;
+    entries[0].target.classList.add('in'); mosaicSeen = true; inObs.disconnect();
+  }, {threshold: .15});
+  if (mosaicSeen) { build(); return; }
+  nearObs = new IntersectionObserver(entries => {
+    if (!entries.some(e => e.isIntersecting)) return;
+    nearObs.disconnect(); build();
+  }, {rootMargin: '0px 0px 600px 0px'});
+  nearObs.observe(slot);
 }
 
 // Scroll so the year's first ticket sits just under its pinned header

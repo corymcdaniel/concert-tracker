@@ -119,7 +119,8 @@ function watchReveals(){
    Each blank ticket flies from its place in the hand to one of the first tickets on screen and turns into it,
    a beat apart, top of the hand first. Everything else on screen fades up behind them. */
 const DEAL_ORDER = [2, 3, 4, 1, 0]; // the deck's cards from the top of the pile down (see .g1-.g5 z-index)
-const DEAL_GAP = 80, DEAL_MS = 700, EASE = 'cubic-bezier(.2,.7,.3,1)';
+// Slow enough to follow each card, with a gentle ease-out so they glide in rather than snap
+const DEAL_GAP = 160, DEAL_MS = 1150, EASE = 'cubic-bezier(.25,.8,.3,1)';
 function markRevealed(el){
   if (!el.classList.contains('stub')) return;
   el.classList.replace('reveal', 'in'); revealed.add(el.dataset.k); revealer?.unobserve(el);
@@ -148,13 +149,13 @@ export function dealIn(draw){
     flight.finished.finally(() => el.classList.remove('dealing'));
     // Blank until it lands, then its writing comes through
     el.querySelectorAll('.date>*, .body>*').forEach(part => part.animate([{opacity: 0}, {opacity: 1}],
-      {duration: 300, delay: delay + DEAL_MS * .55, easing: 'ease-out', fill: 'backwards'}));
+      {duration: 450, delay: delay + DEAL_MS * .55, easing: 'ease-out', fill: 'backwards'}));
   });
   const after = dealt.length * DEAL_GAP + DEAL_MS * .4;
   [...list.children].filter(el => !dealt.includes(el) && onScreen(el)).forEach((el, i) => {
     markRevealed(el);
     el.animate([{opacity: 0, transform: 'translateY(10px)'}, {opacity: 1, transform: 'none'}],
-      {duration: 400, delay: after + i * 40, easing: EASE, fill: 'backwards'});
+      {duration: 650, delay: after + i * 70, easing: EASE, fill: 'backwards'});
   });
 }
 
