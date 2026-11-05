@@ -30,6 +30,6 @@ export function wristband(shows, n){
   if (!name) return '';
   let day = '';
   const label = dayLabel(shows, name, n.date);
-  if (label) day = `<i>${label}</i>`;
+  if (label) day = `<i><span class="sr-only">, </span>${label}</i>`;
   return `<p class="fest"><span class="sr-only">Festival: </span><b>${esc(name)}</b>${day}</p>`;
 }

@@ -33,7 +33,7 @@ export function festivalPanel(nd, shows){
       const heads = list.map(n => {
         let day = '';
         const {day: d, of} = festivalDay(shows, f.name, n.date);
-        if (of > 1 && d) day = `<i>Day ${d}</i>`;
+        if (of > 1 && d) day = `<i>Day ${d}</i> `;
         return `<span>${day}<button type="button" data-artist="${esc(n.acts[0].artist)}">${esc(n.acts[0].artist)}</button></span>`;
       }).join('');
       const yearActs = list.reduce((t, n) => t + n.acts.length, 0);

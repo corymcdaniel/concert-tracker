@@ -26,7 +26,7 @@ $band-ink:#1a1300;
 .fc-yr{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .fc-what{display:grid;min-width:0;line-height:1.3}
 .fc-heads{display:flex;flex-wrap:wrap;gap:2px 12px}
-.fc-heads i{margin-right:5px;font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.fc-heads i{margin-right:1px;font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .fc-heads button{border:0;background:none;padding:0;font-weight:600;text-align:left;cursor:pointer;color:var(--ink);transition:color .15s}
 .fc-heads button:hover,.fc-heads button:focus-visible{color:var(--music)}
 .fc-what small{font-size:12px;color:var(--muted)}
