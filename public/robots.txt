@@ -1,0 +1,5 @@
+# This site asks not to be indexed with a noindex tag on every page (and an X-Robots-Tag header).
+# Crawlers are allowed in on purpose: a crawler that's blocked here can't see the noindex,
+# and could still list the address from links elsewhere.
+User-agent: *
+Allow: /

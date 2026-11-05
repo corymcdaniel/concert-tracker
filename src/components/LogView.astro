@@ -1,3 +1,6 @@
+---
+import Summary from "./Summary.astro";
+---
 <div id="logView" class="sv">
   <div class="filters">
     <input type="search" id="q" placeholder="Search artist, venue, city…" aria-label="Search">
@@ -19,6 +22,7 @@
       <div class="ghost g4"><i class="gd"></i><i class="gb"><b></b><b></b><b></b></i></div>
       <div class="ghost g5"><i class="gd"></i><i class="gb"><b></b><b></b><b></b></i></div>
     </div>
+    <Summary />
   </main>
   <section class="endcap" id="endcap" aria-label="End of the log"></section>
 </div>

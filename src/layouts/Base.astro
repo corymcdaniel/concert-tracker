@@ -1,17 +1,48 @@
 ---
 import "../styles/global.scss";
+import { siteData } from "../lib/site-data.mjs";
+
+// Link previews and the page description use the live totals from this build
+const { site, description, totals } = await siteData();
+const title = "Cory's Show Log";
+const image = `${site}/og.png`;
+const imageAlt = `An admission ticket reading Show Log: ${totals.nights} nights out, ${totals.artists} artists, ${totals.venues} venues, ${totals.cities} cities.`;
 ---
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cory's Show Log</title>
+<title>{title}</title>
+<meta name="description" content={description}>
+<!-- Kept out of search on purpose; netlify.toml sends the same as a header for every file -->
+<meta name="robots" content="noindex">
+<link rel="canonical" href={`${site}/`}>
+<meta name="theme-color" content="#0b1430">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Link previews (iMessage, Slack, social sites) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content={title}>
+<meta property="og:title" content={title}>
+<meta property="og:description" content={description}>
+<meta property="og:url" content={`${site}/`}>
+<meta property="og:image" content={image}>
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content={imageAlt}>
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content={title}>
+<meta name="twitter:description" content={description}>
+<meta name="twitter:image" content={image}>
+<meta name="twitter:image:alt" content={imageAlt}>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<!-- Set the theme before the page paints, so a light-mode visitor never sees a flash of navy (main.js keeps it in sync) -->
-<script is:inline>try { if (localStorage.getItem('show-log-theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch {}</script>
+<!-- Before the page paints: mark that JavaScript runs (so the pre-rendered summary hides itself), and set the theme,
+     so a light-mode visitor never sees a flash of navy (main.js keeps it in sync) -->
+<script is:inline>document.documentElement.classList.add('js'); try { if (localStorage.getItem('show-log-theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch {}</script>
 </head>
 <body>
 <!-- A soft light that follows the mouse around the page (main.js) -->

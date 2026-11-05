@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- A gold admission ticket on navy, with the stub's perforation and notches -->
+  <rect width="64" height="64" rx="14" fill="#0b1430"/>
+  <path fill="#f2c14e" d="M8 20a4 4 0 0 1 4-4h40a4 4 0 0 1 4 4v6a6 6 0 0 0 0 12v6a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4v-6a6 6 0 0 0 0-12z"/>
+  <path stroke="#0b1430" stroke-width="2.5" stroke-dasharray="3 3" d="M42 19v26"/>
+  <rect x="15" y="25" width="20" height="4" rx="2" fill="#0b1430"/>
+  <rect x="15" y="33" width="14" height="4" rx="2" fill="#0b1430" opacity=".55"/>
+</svg>

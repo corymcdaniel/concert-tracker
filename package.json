@@ -14,6 +14,8 @@
     "astro": "^6.4.8",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
-    "sass": "^1.107.1"
+    "sass": "^1.107.1",
+    "satori": "^0.63.2",
+    "sharp": "^0.35.5"
   }
 }
