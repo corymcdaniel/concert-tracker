@@ -155,6 +155,10 @@ script runs, so run it again after a new export. If the log and Spotify spell a 
 - **Accessibility:** every text colour passes WCAG AA (4.5:1) on the page, cards and every gold step, in both schemes.
   Music and comedy differ in lightness as well as hue, so they stay distinguishable with colour blindness, and labels
   ("Music", "Comedy", "Upcoming") mean colour is never the only cue.
+- **Effects toggle:** the "FX" button next to the theme toggle. Off is the simple view: no page spotlight, ticket
+  tilt or cursor glow, gold foil shimmer or glow, Goodnight switch, or hover motion (lifts, slides, zooms, shadows).
+  Animations, colours, layout and hover colour changes stay the same.
+  On by default, remembered in the browser, and set before the page paints (`src/styles/_effects.scss`).
 - **Spotlight:** a soft light follows the mouse across the page (`src/styles/_spotlight.scss`). It's off on touch
   screens and with reduced motion.
 - **Goodnight:** the little light switch next to the footer's big "Goodnight" fades the house lights out over the page,

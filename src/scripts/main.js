@@ -8,7 +8,7 @@ import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit, openInfoPhoto }
 import { dealIn, filterList, fullNight, paintStubPhotos } from './log.js';
 import { loadPhotos, nightPhotos, uploadPhotos } from './photos.js';
 import { openViewer, stepViewer } from './viewer.js';
-import { isOpen, motionOK, toast } from './motion.js';
+import { effectsOn, isOpen, motionOK, toast } from './motion.js';
 import { openReview, shareReview, stepReview } from './review.js';
 import { closeSheet, openAdd, openBill, openData, openEdit } from './sheets.js';
 import { filt, state } from './state.js';
@@ -121,6 +121,7 @@ $('#review').addEventListener('close', () => {
 if (motionOK() && matchMedia('(hover:hover)').matches) {
   let frame = 0, last = null;
   $('#list').addEventListener('pointermove', e => {
+    if (!effectsOn()) return;
     last = e;
     if (frame) return;
     frame = requestAnimationFrame(() => {
@@ -156,6 +157,22 @@ $('#btnTheme').onclick = () => {
   if (motionOK() && document.startViewTransition) { document.startViewTransition(() => setTheme(light)); return; }
   setTheme(light);
 };
+
+// Effects on by default; off is the simple view (see _effects.scss), remembered in this browser.
+// Base.astro sets it before the page paints. The light switch disappears with effects off, so the lights come back up.
+let lightsUp = () => {};
+function setEffects(on){
+  const root = document.documentElement;
+  if (on) delete root.dataset.effects;
+  else { root.dataset.effects = 'off'; lightsUp(); $('#spotlight').classList.remove('on'); }
+  $('#btnEffects').setAttribute('aria-pressed', String(on));
+  let saved = 'off';
+  if (on) saved = 'on';
+  store.set('show-log-effects', saved);
+  track('effects_change', {effects: saved});
+}
+$('#btnEffects').setAttribute('aria-pressed', String(effectsOn()));
+$('#btnEffects').onclick = () => setEffects(!effectsOn());
 
 // Goodnight: the footer's switch fades the house lights out, leaving a follow-spot at the mouse (or wherever you tap).
 // Flip it again or press Esc to bring them back. Not remembered, so every visit starts with the lights up.
@@ -197,6 +214,7 @@ $('#btnTheme').onclick = () => {
     setLights(sw.getAttribute('aria-pressed') !== 'true');
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && sw.getAttribute('aria-pressed') === 'true') setLights(false); });
+  lightsUp = () => { if (sw.getAttribute('aria-pressed') === 'true') setLights(false); };
 }
 
 // A soft light follows the mouse around the whole page: on while the pointer is in the window, off when it leaves
@@ -204,7 +222,7 @@ if (motionOK() && matchMedia('(hover:hover)').matches) {
   const spot = $('#spotlight');
   let frame = 0, x = 0, y = 0;
   document.addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse') return;
+    if (e.pointerType !== 'mouse' || !effectsOn()) return;
     x = e.clientX; y = e.clientY;
     if (frame) return;
     frame = requestAnimationFrame(() => {

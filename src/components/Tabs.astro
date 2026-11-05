@@ -6,6 +6,10 @@
   </nav>
   <div class="actions">
     <span class="save-state" id="saveState"></span>
+    <!-- Effects on by default; pressed = on. Off is the simple view: no spotlight, ticket tilt or glow, foil shimmer or light switch -->
+    <button id="btnEffects" class="fx-btn" type="button" aria-pressed="true" aria-label="Effects" title="Effects">
+      <span class="fx-label" aria-hidden="true">FX</span>
+    </button>
     <!-- Navy by default; pressed = the light scheme. The icon shows the scheme you'd switch to. -->
     <button id="btnTheme" class="theme-btn" type="button" aria-pressed="false" aria-label="Light mode" title="Light mode">
       <svg class="ic-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
