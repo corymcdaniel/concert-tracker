@@ -2,7 +2,12 @@
   <div class="t-main">
     <p class="t-kicker">Cory's Concert &amp; Stand-Up</p>
     <h1>Show Log</h1>
-    <div class="t-totals" id="stats" aria-label="Totals"></div>
+    <!-- Drawn at 0 so the ticket is its final height before the shows load; log.js renderStats counts them up -->
+    <div class="t-totals" id="stats" aria-label="Totals">
+      <div class="stat"><b>0</b><span>Artists</span></div>
+      <div class="stat"><b>0</b><span>Venues</span></div>
+      <div class="stat"><b>0</b><span>Cities</span></div>
+    </div>
     <span class="t-stamp" id="tStamp" aria-hidden="true"></span>
   </div>
   <div class="t-stub">

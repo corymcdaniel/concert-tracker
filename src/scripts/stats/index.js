@@ -77,6 +77,21 @@ export function renderStatsView(){
   const tbl = `<table class="rep"><thead><tr><th>Artist</th><th class="num">Times</th><th>First</th><th>Latest</th><th class="num">Span</th></tr></thead><tbody>
     ${reps.map(a=>`<tr><td><button type="button" data-artist="${esc(a.name)}">${esc(a.name)}</button></td><td class="num">${a.times}</td>
       <td>${a.dates[0]?fmt(a.dates[0]):'—'}</td><td>${a.dates.length?fmt(a.dates.at(-1)):'—'}</td><td class="num">${a.span?a.span.toFixed(0)+' yr':'—'}</td></tr>`).join('')}</tbody></table>`;
+  // Seen 2+ times: the most-seen acts as chips that open the artist pop-up, eight until you ask for all
+  let most = '';
+  if (reps.length) {
+    const byCount = [...reps].sort((a, b) => b.times - a.times || a.name.localeCompare(b.name));
+    let chips = byCount;
+    if (!state.showAllMost) chips = byCount.slice(0, 8);
+    let toggle = '';
+    if (byCount.length > 8) {
+      let label = `All ${byCount.length} →`;
+      if (state.showAllMost) label = 'Show fewer';
+      toggle = `<button type="button" class="more" id="moreBtn">${label}</button>`;
+    }
+    most = `<div class="panel"><h3>Seen 2+ times <span>${byCount.length} artists</span></h3><div class="most">${chips.map(a =>
+      `<button class="chip" type="button" data-artist="${esc(a.name)}">${esc(a.name)}<em>×${a.times}</em></button>`).join('')}${toggle}</div></div>`;
+  }
 
   const sections = {
     overview: `
@@ -96,6 +111,7 @@ export function renderStatsView(){
       ${companionPanel(ns)}
       ${extrasHint(nd)}`,
     artists: `
+      ${most}
       ${wallPanel(past)}
       <div class="panel"><h3>Seen more than once <span>${reps.length} artists</span></h3><div class="tbl-wrap">${tbl}</div></div>
       ${genrePanel(dated, rank)}

@@ -7,9 +7,12 @@ button.danger{color:var(--comedy);border-color:var(--comedy)}
 
 
 .most{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
-.most .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:4px}
 .chip{background:var(--chip);border:0;border-radius:999px;padding:3px 10px;font-size:13px}
 .chip em{font-style:normal;font-family:var(--mono);color:var(--muted);margin-left:4px}
+.most .chip{transition:background-color .15s var(--ease),transform .15s var(--ease)}
+.most .chip:hover,.most .chip:focus-visible{background:color-mix(in oklab,var(--music) 22%,var(--chip));transform:translateY(-1px)}
+.most button.more{transition:color .15s,border-color .15s}
+.most button.more:hover{color:var(--ink);border-color:var(--ink)}
 
 .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .filters input[type=search]{flex:1 1 220px;min-width:0}

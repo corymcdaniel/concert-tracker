@@ -59,16 +59,46 @@ export function renderStats(){
   const rest = totals.slice(1);
   $('#stats').innerHTML = rest.map(([v,l])=>`<div class="stat"><b>${statShown[l] ?? 0}</b><span>${l}</span></div>`).join('');
   $('#stats').querySelectorAll('b').forEach((b, i) => countTo(b, rest[i][1], rest[i][0]));
-  const reps = [...artists].filter(([,c])=>c>1).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
-  const top = state.showAllMost ? reps : reps.slice(0,8);
-  $('#most').innerHTML = reps.length ? `<span class="lbl">Seen 2+ times</span>` + top.map(([a,c])=>`<button class="chip" data-q="${esc(a)}" type="button">${esc(a)}<em>×${c}</em></button>`).join('')
-    + (reps.length>8 ? `<button type="button" class="more" id="moreBtn">${state.showAllMost?'Show fewer':`All ${reps.length} →`}</button>` : '') : '';
   const sel = $('#city'), cur = sel.value;
   const allCities = [...new Set(state.shows.filter(s=>s.city).map(cityKey))].sort();
   sel.innerHTML = '<option value="">All cities</option>' + allCities.map(c=>`<option ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
 }
 
-function stub(n){
+/* ---------- up next: how long until a show ---------- */
+const daysUntil = d => Math.round((new Date(d + 'T12:00') - new Date(TODAY + 'T12:00')) / 86400000);
+const plural = (v, word) => { if (v === 1) return `1 ${word}`; return `${v} ${word}s`; };
+// "Tonight", "In 3 days", "In 2 weeks", "In 7 months"
+function countdown(days){
+  if (days <= 0) return 'Tonight';
+  if (days === 1) return 'Tomorrow';
+  if (days < 14) return `In ${days} days`;
+  if (days < 60) return `In ${Math.round(days / 7)} weeks`;
+  return `In ${plural(Math.round(days / 30.44), 'month')}`;
+}
+// The same, short enough for a row: "3 days", "2 wk", "7 mo"
+function shortCountdown(days){
+  if (days <= 0) return 'Tonight';
+  if (days === 1) return 'Tomorrow';
+  if (days < 14) return `${days} days`;
+  if (days < 60) return `${Math.round(days / 7)} wk`;
+  return `${Math.round(days / 30.44)} mo`;
+}
+const weekday = d => new Date(d + 'T12:00').toLocaleDateString(undefined, {weekday: 'long', month: 'short', day: 'numeric'});
+const shortDate = d => `${MONTHS[+d.slice(5, 7) - 1]} ${+d.slice(8, 10)} '${d.slice(2, 4)}`;
+
+// A later show as one line: date, headliner (+ how many more), venue, how long until it
+function laterRow(n){
+  let more = '';
+  if (n.acts.length > 1) more = `<i class="lt-more">+${n.acts.length - 1} more</i>`;
+  let venue = '<small>Unknown venue</small>';
+  if (n.venue) venue = `<button type="button" class="lt-venue" data-venue="${esc(n.venue + '|' + n.city)}">${esc(n.venue)}</button><small>${esc(place(n))}</small>`;
+  return `<li><span class="lt-date">${shortDate(n.date)}</span>
+    <span class="lt-what"><button type="button" class="lt-artist" data-artist="${esc(n.acts[0].artist)}" data-id="${n.acts[0].id}">${esc(n.acts[0].artist)}</button>${more}${venue}</span>
+    <span class="lt-in">${shortCountdown(daysUntil(n.date))}</span>
+    <button class="add-act edit-only" type="button" data-bill="${n.acts[0].id}">Edit</button></li>`;
+}
+
+function stub(n, hero = false){
   const up = !happened(n), isToday = n.date === TODAY;
   const [Y,M,D] = n.date ? n.date.split('-') : [];
   const types = [...new Set(n.acts.map(a=>a.type))];
@@ -87,9 +117,14 @@ function stub(n){
   };
   let stamped = '';
   if (n.acts.some(a => a.id === state.stampId)) stamped = 'stamped';
-  return `<article class="stub ${up?'is-up':''} ${seen} ${glow} ${stamped}" data-k="${esc(k)}">
+  let heroClass = '', countdownBand = '';
+  if (hero) {
+    heroClass = 'hero';
+    countdownBand = `<div class="countdown"><b>${countdown(daysUntil(n.date))}</b><span>${weekday(n.date)}</span></div>`;
+  }
+  return `<article class="stub ${up?'is-up':''} ${heroClass} ${seen} ${glow} ${stamped}" data-k="${esc(k)}">
       <div class="date">${n.date ? `<span class="m">${MONTHS[+M-1]}</span><span class="d">${+D}</span><span class="y">${Y}</span>` : `<span class="m">Date</span><span class="d">?</span>`}</div>
-      <div class="body">
+      <div class="body">${countdownBand}
         <div class="where"><strong>${n.venue?`<button type="button" class="vbtn" data-venue="${esc(n.venue+'|'+n.city)}">${esc(n.venue)}</button>`:'Unknown venue'}</strong><span>${esc(place(n))}</span>
           ${types.map(t=>`<span class="tag ${t.toLowerCase()}">${esc(t)}</span>`).join('')}
           ${isToday?'<span class="tag up">Tonight</span>':up?'<span class="tag up">Upcoming</span>':''}</div>
@@ -225,7 +260,12 @@ export function renderList(){
   const next = all.filter(n=>!happened(n)).sort((a,b)=>a.date.localeCompare(b.date) || a.idx-b.idx);
   const list = all.filter(happened);
   let html=onThisDay(), yr=null;
-  if (next.length) html +=`<div class="year next"><h2>Up next</h2><span>${next.length} show${next.length>1?'s':''}</span></div>` + next.map(stub).join('');
+  // The soonest show is a full ticket with a countdown; the rest are one-line rows underneath
+  if (next.length) {
+    const [soonest, ...later] = next;
+    html += `<div class="year next"><h2>Up next</h2><span>${next.length} show${next.length>1?'s':''}</span></div>` + stub(soonest, true);
+    if (later.length) html += `<div class="later"><p class="later-k">Later</p><ol>${later.map(laterRow).join('')}</ol></div>`;
+  }
   const counts = {}; list.forEach(n => { const y=n.date?n.date.slice(0,4):'Undated'; counts[y]=(counts[y]||0)+1; });
   for (const n of list){
     const y = n.date ? n.date.slice(0,4) : 'Undated';

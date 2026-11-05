@@ -44,6 +44,44 @@ body.readonly .edit-only{display:none}
 .bill .star{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--upcoming)}
 @media (prefers-reduced-motion:no-preference){.bill li.moved{animation:rise .2s var(--ease)}}
 .stub.is-up{outline:2px solid var(--upcoming);outline-offset:-2px}
+
+/* ---------- up next: the soonest show as a big ticket, later ones as rows (log.js renderList) ---------- */
+.stub.hero{grid-template-columns:136px 1fr;box-shadow:0 14px 34px -18px color-mix(in oklab,var(--upcoming) 70%,transparent)}
+.stub.hero .date{background-color:var(--upcoming);color:#fff;border-right-color:color-mix(in oklab,#fff 45%,transparent)}
+.stub.hero .date .m,.stub.hero .date .y{color:rgb(255 255 255 / .8)}
+.stub.hero .date .d{font-size:64px}
+.stub.hero .body{padding:16px 20px;gap:8px}
+.stub.hero .acts li.first button{font-size:38px;line-height:1}
+.countdown{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.countdown b{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--upcoming)}
+// A live dot, like an on-air light
+.countdown b::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.countdown span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+.later{display:grid;gap:8px}
+.later-k{margin:4px 0 0;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.later ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.later li{display:grid;grid-template-columns:84px minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:10px 16px;border-radius:8px;background:var(--paper);border-left:3px solid var(--upcoming);box-shadow:0 1px 3px rgb(0 0 0 / .06);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.later li:hover{transform:translateX(4px);box-shadow:0 8px 20px -12px rgb(0 0 0 / .35)}
+.lt-date{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.lt-what{min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.lt-artist{border:0;background:none;padding:0;font-family:var(--display);font-weight:800;font-size:22px;line-height:1.1;text-align:left;color:var(--ink);transition:color .15s}
+.lt-more{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.lt-venue{border:0;background:none;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--ink);transition:color .15s}
+.lt-what small{font-size:13px;color:var(--muted)}
+.lt-artist:hover,.lt-artist:focus-visible,.lt-venue:hover,.lt-venue:focus-visible{color:var(--music);text-decoration:underline;text-underline-offset:3px}
+.lt-in{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--upcoming);white-space:nowrap}
+@media (max-width:480px){
+  .stub.hero{grid-template-columns:92px 1fr}
+  .stub.hero .date .d{font-size:44px}
+  .stub.hero .acts li.first button{font-size:28px}
+  .later li{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+  .lt-date{grid-column:1 / -1}
+}
+@media (prefers-reduced-motion:no-preference){
+  .countdown b::before{animation:live-dot 2s ease-in-out infinite}
+}
+@keyframes live-dot{50%{opacity:.25}}
 @media (max-width:480px){.stub{grid-template-columns:78px 1fr}.stub .date .d{font-size:32px}.acts button{font-size:19px}}
 .empty{padding:28px;text-align:center;color:var(--muted);border:2px dashed var(--line);border-radius:8px}
 
