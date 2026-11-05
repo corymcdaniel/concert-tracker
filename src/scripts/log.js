@@ -1,4 +1,5 @@
 import { persist } from './api.js';
+import { wristband } from './festivals.js';
 import { nightPhotos, photosOn, photoUrl } from './photos.js';
 import { flip, motionOK, toast } from './motion.js';
 import { closeSheet } from './sheets.js';
@@ -23,7 +24,7 @@ export function nights(list){
 function matches(s){
   if (filt.type && s.type !== filt.type) return false;
   if (filt.city && cityKey(s) !== filt.city) return false;
-  if (filt.q){ const q=filt.q.toLowerCase(); return [s.artist,s.venue,place(s),s.notes].some(v=>(v||'').toLowerCase().includes(q)); }
+  if (filt.q){ const q=filt.q.toLowerCase(); return [s.artist,s.venue,place(s),s.notes,s.festival].some(v=>(v||'').toLowerCase().includes(q)); }
   return true;
 }
 
@@ -124,7 +125,7 @@ function stub(n, hero = false){
   }
   return `<article class="stub ${up?'is-up':''} ${heroClass} ${seen} ${glow} ${stamped}" data-k="${esc(k)}">
       <div class="date">${n.date ? `<span class="m">${MONTHS[+M-1]}</span><span class="d">${+D}</span><span class="y">${Y}</span>` : `<span class="m">Date</span><span class="d">?</span>`}</div>
-      <div class="body">${countdownBand}
+      <div class="body">${wristband(state.shows, n)}${countdownBand}
         <div class="where"><strong>${n.venue?`<button type="button" class="vbtn" data-venue="${esc(n.venue+'|'+n.city)}">${esc(n.venue)}</button>`:'Unknown venue'}</strong><span>${esc(place(n))}</span>
           ${types.map(t=>`<span class="tag ${t.toLowerCase()}">${esc(t)}</span>`).join('')}
           ${isToday?'<span class="tag up">Tonight</span>':up?'<span class="tag up">Upcoming</span>':''}</div>

@@ -1,5 +1,6 @@
 import { track } from './analytics.js';
 import { api } from './api.js';
+import { dayLabel } from './festivals.js';
 import { nights } from './log.js';
 import { hide, isOpen, motionOK, show, toast } from './motion.js';
 import { closeSheet, openSheet } from './sheets.js';
@@ -29,6 +30,14 @@ const wikiUrl = t => `https://en.wikipedia.org/wiki/${encodeURIComponent(t.repla
 export const yr = d => d ? String(d).slice(0,4) : '';
 const fmtFull = d => { if(!d) return ''; const p=String(d).split('-'); return p.length===3 ? fmt(d) : p.length===2 ? `${MONTHS[+p[1]-1]} ${p[0]}` : p[0]; };
 let infoReq = 0;
+// A sighting at a festival: its name (and day, for a run of several) ahead of the venue
+function festTag(s){
+  if (!s.festival) return '';
+  let day = '';
+  const label = dayLabel(state.shows, s.festival, s.date);
+  if (label) day = ` · ${label}`;
+  return `<b class="fest-tag">${esc(s.festival)}${day}</b> `;
+}
 export function openInfo(kind, key, actId){
   // Venue keys are "name|city"; GA gets the readable name
   let item = 'artist';
@@ -60,7 +69,7 @@ export function openInfo(kind, key, actId){
   const mine = state.shows.filter(s => isA ? s.artist===key : (s.venue===vName && s.city===vCity))
     .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const rows = (list, soonestFirst) => isA
-    ? list.map(s=>`<li><span>${s.date?fmt(s.date):'No date'}</span><span>${esc(s.venue)}, ${esc(place(s))}</span></li>`)
+    ? list.map(s=>`<li><span>${s.date?fmt(s.date):'No date'}</span><span>${festTag(s)}${esc(s.venue)}, ${esc(place(s))}</span></li>`)
     : (soonestFirst ? nights(list).reverse() : nights(list)).map(n=>`<li><span>${n.date?fmt(n.date):'No date'}</span><span>${n.acts.map(a=>esc(a.artist)).join(' / ')}</span></li>`);
   const seen = mine.filter(happened), coming = mine.filter(s=>!happened(s)).reverse();
   const seenN = isA ? seen.length : nights(seen).length, comingN = isA ? coming.length : nights(coming).length;

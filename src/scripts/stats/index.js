@@ -5,6 +5,7 @@ import { aroundPanel } from './around.js';
 import { sameDayPanel } from './sameday.js';
 import { bucketPanel } from './bucket.js';
 import { eraPanel } from './era.js';
+import { festivalPanel } from './festivals.js';
 import { companionPanel, extrasHint, ratingPanel, spendingPanel } from './extras.js';
 import { drawMap } from './map.js';
 import { drawVenueMap } from './venues.js';
@@ -104,6 +105,7 @@ export function renderStatsView(){
         <div class="panel"><h3>By month</h3><div class="bars" style="height:120px">${mb}</div></div>
         ${dayPanel(nd)}
       </div>
+      ${festivalPanel(nd, state.shows)}
       ${sameDayPanel(nd)}
       ${gapPanel(nd)}
       ${ratingPanel(nd)}

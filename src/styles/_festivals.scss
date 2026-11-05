@@ -1,0 +1,33 @@
+/* ---------- festivals (festivals.js, stats/festivals.js) ---------- */
+// A woven gold wristband across the top of a festival night's stub: the name, and the day for a run of several.
+// Dark text on the gold, so it reads on both themes.
+$band-ink:#1a1300;
+@mixin weave{background:repeating-linear-gradient(-45deg,rgb(255 255 255 / .16) 0 2px,transparent 2px 7px),var(--gold)}
+.stub .fest{
+  margin:-12px -16px 0;padding:4px 16px 3px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;
+  @include weave;color:$band-ink;font-family:var(--mono);font-size:11px;line-height:1.4;letter-spacing:.14em;text-transform:uppercase;
+}
+.stub.hero .fest{margin:-16px -20px 0;padding-inline:20px}
+.fest b{font-weight:700;overflow-wrap:anywhere}
+.fest i{font-style:normal;opacity:.78}
+
+// The same band, small, ahead of the venue in an artist's pop-up
+.fest-tag{display:inline-block;margin-right:4px;padding:1px 6px 0;border-radius:3px;@include weave;color:$band-ink;
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;vertical-align:1px}
+
+// Stats: one card per festival, a row for each year you went
+.fests{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.fest-card{border-radius:8px;overflow:hidden;background:color-mix(in oklab,var(--chip) 55%,var(--paper))}
+.fc-name{margin:0;padding:8px 14px 7px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 10px;@include weave;color:$band-ink}
+.fc-name b{font-family:var(--display);font-weight:800;font-size:22px;line-height:1.05;text-transform:uppercase}
+.fc-name span{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+.fest-card ol{list-style:none;margin:0;padding:10px 14px 12px;display:grid;gap:8px}
+.fest-card li{display:grid;grid-template-columns:40px minmax(0,1fr);gap:8px;align-items:baseline}
+.fc-yr{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.fc-what{display:grid;min-width:0;line-height:1.3}
+.fc-heads{display:flex;flex-wrap:wrap;gap:2px 12px}
+.fc-heads i{margin-right:5px;font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.fc-heads button{border:0;background:none;padding:0;font-weight:600;text-align:left;cursor:pointer;color:var(--ink);transition:color .15s}
+.fc-heads button:hover,.fc-heads button:focus-visible{color:var(--music)}
+.fc-what small{font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.fest-card{animation:rise .45s var(--ease) both}}
