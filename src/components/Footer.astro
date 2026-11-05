@@ -1,18 +1,18 @@
 <footer class="site-foot">
   <div class="foot-in">
-    <!-- Goodnight, with a little light switch at the end of the word: flip it and the house lights fade out (main.js) -->
-    <div class="foot-mark-row">
-      <span class="foot-mark" aria-hidden="true">Goodnight</span>
-      <button type="button" class="light-switch" id="lightSwitch" aria-pressed="false" aria-label="Lights out" title="Lights out">
-        <span class="ls-plate" aria-hidden="true"><i class="ls-screw"></i><span class="ls-toggle"></span><i class="ls-screw"></i></span>
-      </button>
-    </div>
+    <span class="foot-mark" aria-hidden="true">Goodnight</span>
     <div class="foot-row">
-      <p class="foot-name">Show Log <span>· every night out since 2002</span></p>
+      <div class="foot-id">
+        <!-- A little light switch: flip it and the house lights fade out (main.js) -->
+        <button type="button" class="light-switch" id="lightSwitch" aria-pressed="false" aria-label="Lights out" title="Lights out">
+          <span class="ls-plate" aria-hidden="true"><i class="ls-screw"></i><span class="ls-toggle"></span><i class="ls-screw"></i></span>
+        </button>
+        <p class="foot-name">Show Log <span>· every night out since 2002</span></p>
+      </div>
       <div class="foot-btns">
-        <!-- Reopens the analytics choice; shown only where analytics can run (analytics.js) -->
         <!-- A prompt for any AI chat that helps someone start their own log (trackPrompt.js) -->
         <button id="btnTrack" type="button">Track your own shows</button>
+        <!-- Reopens the analytics choice; shown only where analytics can run (analytics.js) -->
         <button id="btnAnalytics" type="button" hidden>Analytics</button>
         <button id="btnData" class="edit-only" type="button">Data</button>
       </div>
