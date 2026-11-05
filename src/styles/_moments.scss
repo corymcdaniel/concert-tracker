@@ -11,7 +11,7 @@
 .stub::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .2s;background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgb(255 255 255 / .22),transparent 70%)}
 .stub.rep::before{background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),color-mix(in oklab,var(--gold) 40%,transparent),transparent 70%)}
 .vt-name{view-transition-name:vt-name}
-@media (prefers-reduced-motion:no-preference) and (hover:hover){
+@media (prefers-reduced-motion:no-preference) and (any-hover:hover){
   .stub:hover{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-2px)}
   .stub:hover::before{opacity:1}
 }

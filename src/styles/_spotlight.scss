@@ -11,7 +11,8 @@
 }
 .spotlight.on{opacity:1}
 // Touch screens have no cursor to follow, and reduced motion keeps the page still
-@media (hover:none),(prefers-reduced-motion:reduce){.spotlight{display:none}}
+// Hidden only when nothing on the device can hover, so touch-screen laptops with a mouse or trackpad still get it
+@media (any-hover:none),(prefers-reduced-motion:reduce){.spotlight{display:none}}
 // On the light page a glow over the content would wash it out, so it sits behind the cards and lights the page itself
 :root[data-theme="light"] .spotlight{
   z-index:-1;mix-blend-mode:normal;

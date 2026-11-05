@@ -118,7 +118,7 @@ $('#review').addEventListener('close', () => {
 });
 
 // Stubs tilt toward the cursor and the foil follows it, a little more on repeat sightings
-if (motionOK() && matchMedia('(hover:hover)').matches) {
+if (motionOK() && matchMedia('(any-hover:hover)').matches) {
   let frame = 0, last = null;
   $('#list').addEventListener('pointermove', e => {
     if (!effectsOn()) return;
@@ -218,7 +218,7 @@ $('#btnEffects').onclick = () => setEffects(!effectsOn());
 }
 
 // A soft light follows the mouse around the whole page: on while the pointer is in the window, off when it leaves
-if (motionOK() && matchMedia('(hover:hover)').matches) {
+if (motionOK() && matchMedia('(any-hover:hover)').matches) {
   const spot = $('#spotlight');
   let frame = 0, x = 0, y = 0;
   document.addEventListener('pointermove', e => {
