@@ -63,7 +63,7 @@ function downloadTemplate(){
 export function openTrackPrompt(){
   openSheet(`<h3>Track your own shows</h3>
     <div class="track">
-      <p class="track-lede">Paste this into Claude, ChatGPT or Gemini. It turns your notes into a spreadsheet Show Log can import later, or interviews you to build one from scratch.</p>
+      <p class="track-lede">Paste this into Claude, ChatGPT or Gemini. It turns your notes into a spreadsheet Show Log can import later, or interviews you to build one from scratch. I will build to support this as an import if there is interest, but it's good practice!</p>
       <textarea id="trackPromptText" class="track-prompt" readonly aria-label="The prompt">${esc(TRACK_PROMPT)}</textarea>
       <div class="foot">
         <button type="button" class="primary" id="trackCopy">Copy prompt</button>
