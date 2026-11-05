@@ -178,7 +178,16 @@ Google Analytics 4, only with the visitor's consent (`src/scripts/analytics.js`)
 - **Page views:** the site is one page, so each view is sent as its own path: `/` (Log), `/stats`, `/stats/overview`,
   `/stats/artists`, `/stats/places`, `/stats/listening`.
 - **Events:** `open_artist` and `open_venue` (name), `search` (term, once it's committed), `filter` (type or city),
-  `open_review` (year), `share` (year review), `theme_change` (light or navy), `house_lights` (out or up).
+  `open_review` (year), `share` (year review), `theme_change` (light or navy), `house_lights` (out or up), `effects_change` (on or off),
+  `track_prompt` (open, copy, open_claude, template).
+
+### Track your own shows
+
+The footer's **Track your own shows** button opens a prompt for any AI chat (Claude, ChatGPT, Gemini) that helps
+someone start a log of their own: it converts a list they already have, or interviews them show by show, into a CSV
+Show Log can import later. It follows `docs/tracking-guide.md`. The panel has **Copy prompt**, **Open in Claude**
+(a new chat with the prompt filled in) and a download of the spreadsheet template. The template and the prompt's
+example rows both come from `docs/show-log-template.csv`, so they can't drift apart (`src/scripts/trackPrompt.js`).
 
 ### Search and link previews
 

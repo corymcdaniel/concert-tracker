@@ -1,0 +1,13 @@
+/* ---------- Track your own shows: the prompt panel opened from the footer (trackPrompt.js) ---------- */
+.track{display:grid;gap:12px}
+.track-lede{margin:0;font-size:14px;color:var(--muted)}
+.track-prompt{width:100%;min-height:320px;resize:vertical;font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px}
+.track-prompt:focus-visible{outline:2px solid var(--music);outline-offset:2px}
+.track-more{margin:4px 0 0;font-size:13px;color:var(--muted)}
+// A link that looks like the buttons beside it
+.sheet a.btn{display:inline-flex;align-items:center;padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;transition:border-color .15s,transform .15s var(--ease)}
+.sheet a.btn:hover{border-color:var(--ink)}
+.sheet a.btn:focus-visible{outline:2px solid var(--music);outline-offset:2px}
+// A button that reads as an inline link
+.linkish{border:0;background:none;padding:0;font:inherit;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.linkish:hover{color:var(--music);border:0}
