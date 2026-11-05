@@ -83,29 +83,22 @@ export function renderEnd(){
   fillMosaic(box.querySelector('.mosaic-slot'), all);
 }
 
-/* The mosaic is only built once the end of the log nears the screen, so its photos don't download
-   and decode while the log is being dealt in. Its tiles play in when it actually scrolls into view. */
-let mosaicSeen = false, nearObs = null, inObs = null;
+/* The mosaic is built straight away, so the page is its full height from the start: building it late made the page
+   suddenly grow near the bottom, which moved everything measured against the page's height (the year scroller).
+   Its photos still only download as they near the screen (loading="lazy"), and they're small resized copies.
+   The tiles play in when the mosaic actually scrolls into view. */
+let mosaicSeen = false, inObs = null;
 function fillMosaic(slot, all){
-  nearObs?.disconnect(); inObs?.disconnect();
-  const build = () => {
-    slot.innerHTML = mosaic(mosaicPhotos(all));
-    const grid = slot.firstElementChild; if (!grid) return;
-    // Rebuilt after an upload or edit: it's already been seen, so show it straight away
-    if (mosaicSeen || !inObs) { grid.classList.add('in'); return; }
-    inObs.observe(grid);
-  };
-  if (!('IntersectionObserver' in window)) { build(); return; }
+  inObs?.disconnect();
+  slot.innerHTML = mosaic(mosaicPhotos(all));
+  const grid = slot.firstElementChild; if (!grid) return;
+  // Rebuilt after an upload or edit: it's already been seen, so show it straight away
+  if (mosaicSeen || !('IntersectionObserver' in window)) { grid.classList.add('in'); return; }
   inObs = new IntersectionObserver(entries => {
     if (!entries.some(e => e.isIntersecting)) return;
-    entries[0].target.classList.add('in'); mosaicSeen = true; inObs.disconnect();
+    grid.classList.add('in'); mosaicSeen = true; inObs.disconnect();
   }, {threshold: .15});
-  if (mosaicSeen) { build(); return; }
-  nearObs = new IntersectionObserver(entries => {
-    if (!entries.some(e => e.isIntersecting)) return;
-    nearObs.disconnect(); build();
-  }, {rootMargin: '0px 0px 600px 0px'});
-  nearObs.observe(slot);
+  inObs.observe(grid);
 }
 
 // Scroll so the year's first ticket sits just under its pinned header
