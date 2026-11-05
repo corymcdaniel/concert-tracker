@@ -1,9 +1,9 @@
-/* ---------- house lights: the footer's light switch fades the page out like a stage (main.js) ---------- */
+/* ---------- house lights: the footer's light switch, left of the name, fades the page out like a stage (main.js) ---------- */
 
 // A small wall switch: a plate with two screws and a toggle that's up when the lights are on
 .site-foot .light-switch{
-  // Up by the top of the letters, clear of the floating Up and Stats/Log buttons at the bottom of the screen
-  position:relative;z-index:61;flex:none;align-self:flex-start;margin-top:clamp(10px,2vw,22px);padding:0;border:0;border-radius:6px;background:none;cursor:pointer;
+  // Above the dark when the lights are down, so it's always there to flip back
+  position:relative;z-index:61;flex:none;padding:0;border:0;border-radius:6px;background:none;cursor:pointer;
   transition:transform .2s var(--ease),filter .3s;
 }
 .site-foot .light-switch:hover{background:none;transform:translateY(-2px)}
