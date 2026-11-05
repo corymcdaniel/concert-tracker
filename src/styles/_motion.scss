@@ -32,7 +32,7 @@
   button:active{transform:scale(.97)}
 }
 /* hover: stubs lift, and the ticket "tears" a little along the perforation */
-@media (prefers-reduced-motion:no-preference) and (hover:hover){
+@media (prefers-reduced-motion:no-preference) and (any-hover:hover){
   .stub .body{transform-origin:left center;transition:transform .2s var(--ease)}
   .stub:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgb(0 0 0 / .1),var(--glow,0 0 0 transparent)}
   .stub:hover .body{transform:translateX(3px) rotate(.4deg)}
