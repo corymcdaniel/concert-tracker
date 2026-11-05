@@ -1,0 +1,36 @@
+/* ---------- house lights: the footer's light switch fades the page out like a stage (main.js) ---------- */
+
+// A small wall switch: a plate with two screws and a toggle that's up when the lights are on
+.site-foot .light-switch{
+  // Up by the top of the letters, clear of the floating Up and Stats/Log buttons at the bottom of the screen
+  position:relative;z-index:61;flex:none;align-self:flex-start;margin-top:clamp(10px,2vw,22px);padding:0;border:0;border-radius:6px;background:none;cursor:pointer;
+  transition:transform .2s var(--ease),filter .3s;
+}
+.site-foot .light-switch:hover{background:none;transform:translateY(-2px)}
+.site-foot .light-switch:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.ls-plate{display:grid;justify-items:center;align-content:space-between;width:30px;height:46px;padding:5px 0;border-radius:5px;
+  background:linear-gradient(160deg,#eef0f4,#c9ced9);box-shadow:inset 0 0 0 1px rgb(255 255 255 / .6),0 2px 6px rgb(0 0 0 / .45)}
+.ls-screw{display:block;width:4px;height:4px;border-radius:50%;background:#8e95a6;box-shadow:inset 0 1px 0 rgb(0 0 0 / .25)}
+.ls-toggle{position:relative;display:block;width:12px;height:20px;border-radius:3px;background:#dde1e9;box-shadow:inset 0 0 0 1px #a7adbc}
+// The lever: on (up) catches the light on top; off (down) on the bottom
+.ls-toggle::before{content:"";position:absolute;left:1px;right:1px;top:1px;height:10px;border-radius:2px;
+  background:linear-gradient(#fff,#cfd4de);box-shadow:0 1px 2px rgb(0 0 0 / .35);transition:transform .18s var(--ease)}
+.light-switch[aria-pressed="true"] .ls-toggle::before{transform:translateY(8px);background:linear-gradient(#cfd4de,#fff);box-shadow:0 -1px 2px rgb(0 0 0 / .35)}
+// In the dark the switch keeps a faint glow, like the exit signs, so you can find your way back
+.lights-out .site-foot .light-switch{filter:drop-shadow(0 0 10px color-mix(in oklab,var(--gold) 70%,transparent))}
+
+// The dark: a layer over everything that fades in slowly, with a soft follow-spot cut out of it at the mouse.
+// It never takes clicks, so the page still works with the lights down.
+.house-lights{
+  --fx:-500px;--fy:-500px;
+  position:fixed;inset:0;z-index:60;pointer-events:none;opacity:0;visibility:hidden;
+  background:rgb(2 4 12 / .95);
+  mask-image:radial-gradient(circle 340px at var(--fx) var(--fy),transparent 0,transparent 35%,#000 100%);
+  transition:opacity 2.2s cubic-bezier(.45,0,.25,1),visibility 0s linear 2.2s;
+}
+.lights-out .house-lights{opacity:1;visibility:visible;transition:opacity 2.2s cubic-bezier(.45,0,.25,1),visibility 0s}
+// The follow-spot does the spotlight's job while the lights are down
+.lights-out .spotlight{opacity:0}
+@media (prefers-reduced-motion:reduce){
+  .house-lights,.lights-out .house-lights{transition-duration:.3s}
+}

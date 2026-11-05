@@ -145,6 +145,22 @@ name, so an artist with a common name can occasionally get the wrong page. The p
 script runs, so run it again after a new export. If the log and Spotify spell a name too differently to match, add it to
 `ALIASES` in `src/scripts/match.js`.
 
+### Look and feel
+
+- **Two schemes:** navy by default, and the original light scheme from the sun/moon button next to Sign in. The choice is
+  saved in the browser and applied before the page paints (`src/layouts/Base.astro`), so there's no flash. Colours are
+  tokens in `src/styles/_tokens.scss`.
+- **Tickets** are light paper with dark ink in both schemes, with their own darker accents, so the gold repeat steps
+  (×2 to ×5+) have something bright to shine on.
+- **Accessibility:** every text colour passes WCAG AA (4.5:1) on the page, cards and every gold step, in both schemes.
+  Music and comedy differ in lightness as well as hue, so they stay distinguishable with colour blindness, and labels
+  ("Music", "Comedy", "Upcoming") mean colour is never the only cue.
+- **Spotlight:** a soft light follows the mouse across the page (`src/styles/_spotlight.scss`). It's off on touch
+  screens and with reduced motion.
+- **Goodnight:** the little light switch next to the footer's big "Goodnight" fades the house lights out over the page,
+  leaving a follow-spot at the mouse (or wherever you tap). Flip it again or press Esc to bring them up. It isn't
+  remembered between visits (`src/styles/_lights.scss`).
+
 ### Change history
 A database trigger writes a row to `changes` for every insert, update and delete, with the row as it was
 (`before`) and as it became (`after`), when, and which editor (`changed_by`). Because it's a trigger, nothing can

@@ -250,6 +250,7 @@ function countSightings(){
   }
 }
 
+let stampPressed = false;
 export function renderList(){
   // Drawing the list replaces the loading hand
   $('#list').removeAttribute('aria-busy');
@@ -267,6 +268,15 @@ export function renderList(){
     if (later.length) html += `<div class="later"><p class="later-k">Later</p><ol>${later.map(laterRow).join('')}</ol></div>`;
   }
   const counts = {}; list.forEach(n => { const y=n.date?n.date.slice(0,4):'Undated'; counts[y]=(counts[y]||0)+1; });
+  // The shows you've been to, under their own heading so they sit apart from what's coming up
+  if (list.length) {
+    let nightsLabel = `${list.length} nights`;
+    if (list.length === 1) nightsLabel = '1 night';
+    // It presses onto the page once; later redraws (filters, edits) just show it
+    let press = '';
+    if (!stampPressed) { press = ' press'; stampPressed = true; }
+    html += `<div class="section-head stamped${press}"><h2>Stamped</h2><span>${nightsLabel}</span></div>`;
+  }
   for (const n of list){
     const y = n.date ? n.date.slice(0,4) : 'Undated';
     if (y !== yr){ yr=y; html += `<div class="year" id="y-${y}"><h2>${y}</h2><span>${counts[y]} night${counts[y]>1?'s':''}</span></div>`; }

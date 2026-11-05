@@ -1,9 +1,11 @@
-/* repeat sightings: gold foil that deepens each time you see an act again (rep-5 = 5th time or more) */
-.stub.rep-2{--stub-bg:color-mix(in oklab,var(--gold) 8%,var(--paper))}
-.stub.rep-3{--stub-bg:color-mix(in oklab,var(--gold) 15%,var(--paper))}
-.stub.rep-4{--stub-bg:color-mix(in oklab,var(--gold) 24%,var(--paper));--glow:0 0 0 1px color-mix(in oklab,var(--gold) 45%,transparent)}
-.stub.rep-5{--stub-bg:color-mix(in oklab,var(--gold) 34%,var(--paper));--glow:0 0 0 1px color-mix(in oklab,var(--gold) 70%,transparent),0 4px 18px color-mix(in oklab,var(--gold) 30%,transparent)}
-.stub.rep{box-shadow:var(--glow,none)}
+/* repeat sightings: gold foil that deepens each time you see an act again (rep-5 = 5th time or more).
+   The ticket tints toward gold and its gold edge strengthens; the top step glows and shimmers. */
+.stub.rep-2{--stub-bg:color-mix(in oklab,var(--gold) 12%,var(--paper));--ring:color-mix(in oklab,var(--gold) 50%,transparent)}
+.stub.rep-3{--stub-bg:color-mix(in oklab,var(--gold) 22%,var(--paper));--ring:color-mix(in oklab,var(--gold) 70%,transparent)}
+.stub.rep-4{--stub-bg:color-mix(in oklab,var(--gold) 34%,var(--paper));--ring:var(--gold);--glow:0 4px 18px -4px color-mix(in oklab,var(--gold) 45%,transparent)}
+.stub.rep-5{--stub-bg:color-mix(in oklab,var(--gold) 48%,var(--paper));--ring:var(--gold);--ring-w:2px;--glow:0 0 0 1px color-mix(in oklab,var(--gold) 40%,transparent),0 8px 28px -6px color-mix(in oklab,var(--gold) 65%,transparent)}
+// The gold edge is an outline so it draws over the ticket's two halves; an upcoming ticket's own outline wins
+.stub.rep{box-shadow:var(--glow,none);outline:var(--ring-w,1px) solid var(--ring);outline-offset:calc(var(--ring-w,1px) * -1)}
 .stub.rep-5 .body{background-image:linear-gradient(115deg,transparent 35%,rgb(255 255 255 / .28) 48%,transparent 60%);background-size:260% 100%;background-position:100% 0;background-repeat:no-repeat}
 .nth{display:inline-block;margin-left:5px;vertical-align:3px;font-family:var(--mono);font-size:10.5px;line-height:1.5;padding:0 6px;border-radius:999px;color:var(--gold-ink);border:1px solid color-mix(in oklab,var(--gold) 60%,transparent);background:color-mix(in oklab,var(--gold) 14%,transparent)}
 .stub .date{padding:14px 12px;border-right:2px dashed var(--line);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;position:relative}
@@ -20,7 +22,7 @@
 .acts{display:flex;flex-wrap:wrap;gap:4px 6px;margin:0;padding:0;list-style:none}
 .acts button{border:0;background:none;padding:2px 0;font-family:var(--display);font-weight:600;font-size:22px;line-height:1.1;text-align:left;border-radius:3px}
 .acts button:hover{color:var(--music);text-decoration:underline;text-underline-offset:3px}
-.acts li:not(:last-child)::after{content:"/";font-family:var(--display);font-size:22px;color:var(--line);margin-left:6px}
+.acts li:not(:last-child)::after{content:"/";font-family:var(--display);font-size:22px;color:var(--muted);margin-left:6px}
 .acts li.first button{font-weight:800}
 body.readonly .edit-only{display:none}
 .notes{font-size:13px;color:var(--muted);font-style:italic}
@@ -47,8 +49,8 @@ body.readonly .edit-only{display:none}
 
 /* ---------- up next: the soonest show as a big ticket, later ones as rows (log.js renderList) ---------- */
 .stub.hero{grid-template-columns:136px 1fr;box-shadow:0 14px 34px -18px color-mix(in oklab,var(--upcoming) 70%,transparent)}
-.stub.hero .date{background-color:var(--upcoming);color:#fff;border-right-color:color-mix(in oklab,#fff 45%,transparent)}
-.stub.hero .date .m,.stub.hero .date .y{color:rgb(255 255 255 / .8)}
+.stub.hero .date{background-color:var(--upcoming);color:var(--on-accent);border-right-color:color-mix(in oklab,var(--on-accent) 35%,transparent)}
+.stub.hero .date .m,.stub.hero .date .y{color:color-mix(in oklab,var(--on-accent) 80%,transparent)}
 .stub.hero .date .d{font-size:64px}
 .stub.hero .body{padding:16px 20px;gap:8px}
 .stub.hero .acts li.first button{font-size:38px;line-height:1}
@@ -193,7 +195,7 @@ textarea.json{width:100%;min-height:260px;font-family:var(--mono);font-size:12px
 @for $w from 0 through 10{.spot-songs .song[data-w="#{$w}"]::before{transform:scaleX(#{$w * .1})}}
 .spot-lede{margin:0;font-size:14px;color:var(--muted)}
 .spot-lede b{color:var(--ink);font-weight:600}
-.spot-badge{margin:0 0 8px;font-size:13px;background:color-mix(in oklab,var(--gold) 16%,var(--paper));color:var(--gold-ink);border-radius:6px;padding:6px 10px}
+.spot-badge{margin:0 0 8px;font-size:13px;background:var(--bronze);color:var(--gold-ink);border-radius:6px;padding:6px 10px}
 .spot-show .spot-lede{margin-bottom:8px}
 .spot-around{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13px}
 .spot-around li{display:grid;grid-template-columns:96px auto 14px auto;justify-content:start;gap:8px;align-items:baseline;font-variant-numeric:tabular-nums}
