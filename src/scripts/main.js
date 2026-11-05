@@ -7,7 +7,7 @@ import { jumpToNight, jumpToYear, renderEnd } from './endcap.js';
 import { openHistory, undoChange } from './history.js';
 import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit, openInfoPhoto } from './info.js';
 import { dealIn, filterList, fullNight, paintStubPhotos } from './log.js';
-import { loadPhotos, nightPhotos, uploadPhotos } from './photos.js';
+import { loadPhotos, nightPhotos, prefetchPhotos, uploadPhotos } from './photos.js';
 import { openViewer, stepViewer } from './viewer.js';
 import { effectsOn, isOpen, motionOK, toast } from './motion.js';
 import { openReview, shareReview, stepReview } from './review.js';
@@ -279,7 +279,10 @@ $('#toView').onclick = () => {
   backToTop();
 };
 
+// The photo list starts loading with the shows, so the first drawing of the log has its photos (photos.js)
+prefetchPhotos();
 load().then(async () => {
+  await loadPhotos();
   // The log only needs the shows, so deal it out now rather than after sign-in and the extras.
   // Signed-out first, so editor buttons don't flash up before sign-in is known.
   // A link into stats keeps the hand on screen until stats can be drawn, then goes straight there.
@@ -289,10 +292,9 @@ load().then(async () => {
   if (state.mode==='netlify') await initIdentity();
   // Sign-in is known now, so analytics can tell your visits from everyone else's
   analyticsReady();
-  await Promise.all([loadInfo(), loadSetlists(), loadListening(), loadPhotos()]);
+  await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
+  // Photos were loaded before the log was dealt, so only a link straight into stats needs drawing now
   if (toStats) render();
-  // Photos arrive after the log is dealt: paint them onto the tickets and into the mosaic
-  else photosChanged();
   applyAuth();
   startAutoInfo();
   followStatsLink();

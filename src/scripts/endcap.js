@@ -1,6 +1,6 @@
 import { nightKey, nights } from './log.js';
 import { motionOK } from './motion.js';
-import { mosaicPhotos } from './photos.js';
+import { mosaicPhotos, photoUrl } from './photos.js';
 import { MONTHS, state } from './state.js';
 import { $, esc, happened } from './util.js';
 
@@ -46,18 +46,23 @@ function rail(dated){
 }
 
 // Uploaded photos, each tile a link to its night, in whole blocks so the grid has no holes.
-// photos: [{n: night, url}], one per night in a random order (photos.js mosaicPhotos)
+// photos: [{n: night, p: photo}], one per night in a random order (photos.js mosaicPhotos)
+// Photo widths for the tiles, about twice their size on screen: big and wide tiles span two columns
+function tileWidth(size){
+  if (size === 'big' || size === 'wide') return 720;
+  return 360;
+}
 function mosaic(photos){
   const tiles = photos.slice(0, BLOCK * MAX_BLOCKS);
   if (!tiles.length) return '';
   // Fewer than one block: plain singles. Otherwise drop the leftovers.
   const blocks = Math.floor(tiles.length / BLOCK);
   if (blocks) tiles.length = blocks * BLOCK;
-  return `<div class="mosaic">${tiles.map(({n, url}, i) => {
+  return `<div class="mosaic">${tiles.map(({n, p}, i) => {
     let size = '';
     if (blocks) size = BLOCK_SIZES[Math.floor(i / BLOCK) % 2][i % BLOCK] || '';
     return `<button type="button" class="tile ${size}" data-night="${esc(nightKey(n))}" data-i="${Math.min(i, 16)}">
-      <img loading="lazy" src="${esc(url)}" alt="" onerror="this.closest('.tile').remove()">
+      <img loading="lazy" src="${esc(photoUrl(p, tileWidth(size)))}" alt="" onerror="this.closest('.tile').remove()">
       <span class="cap"><b>${esc(n.acts[0].artist)}</b><small>${esc(n.venue)} · ${longDate(n.date)}</small></span></button>`;
   }).join('')}</div>`;
 }

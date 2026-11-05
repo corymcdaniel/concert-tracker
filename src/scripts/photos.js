@@ -12,16 +12,35 @@ const MAX_SIDE = 1600;
 const QUALITY = .82;
 
 // The photos list, newest last. Local mode has no server to keep them, so none.
-export async function loadPhotos(){
-  state.PHOTOS = [];
-  if (state.mode !== 'netlify') return;
+// It's fetched alongside the shows (prefetchPhotos, from main.js), so the log's first drawing already has its
+// photo strips; strips added afterwards would grow the tickets on screen and shift the page.
+let early = null;
+async function fetchPhotos(){
   try {
     const r = await fetch('/api/photos', {cache: 'no-store'});
-    if (r.ok) state.PHOTOS = await r.json();
+    if (r.ok) return await r.json();
   } catch {}
+  return [];
+}
+export function prefetchPhotos(){ early = fetchPhotos(); }
+export async function loadPhotos(){
+  state.PHOTOS = [];
+  const pending = early;
+  early = null;
+  if (state.mode !== 'netlify') return;
+  if (pending) { state.PHOTOS = await pending; return; }
+  state.PHOTOS = await fetchPhotos();
 }
 export const photosOn = () => state.mode === 'netlify';
-export const photoUrl = p => `/api/photos/${encodeURIComponent(p.id)}`;
+// The full photo, or with a width, a copy resized by Netlify's image CDN (a ticket thumbnail drops from ~200 KB to
+// ~2 KB). Widths are about twice the size on screen, for sharp high-density displays. Local dev has no image CDN,
+// so it gets the full photo.
+const imageCdn = !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+export function photoUrl(p, width){
+  const full = `/api/photos/${encodeURIComponent(p.id)}`;
+  if (!width || !imageCdn) return full;
+  return `/.netlify/images?url=${encodeURIComponent(full)}&w=${width}`;
+}
 export function nightPhotos(n){
   const ids = new Set(n.acts.map(a => a.id));
   return (state.PHOTOS || []).filter(p => ids.has(p.show_id));
@@ -37,7 +56,7 @@ export function mosaicPhotos(all){
     const mine = nightPhotos(n);
     if (!mine.length) return;
     const p = [...mine].sort((a, b) => rand(a.id) - rand(b.id))[0];
-    picks.push({n, p, url: photoUrl(p)});
+    picks.push({n, p});
   });
   return picks.sort((a, b) => rand(a.p.id) - rand(b.p.id));
 }

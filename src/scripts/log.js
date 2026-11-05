@@ -307,7 +307,7 @@ export function paintStubPhotos(){
     const n = byAct.get(actId); if (!n) return;
     const mine = nightPhotos(n); if (!mine.length) return;
     const thumbs = mine.slice(0, STRIP).map((p, i) =>
-      `<button type="button" class="sp" data-photos-of="${esc(actId)}" data-at="${i}" aria-label="Photo ${i + 1} of ${mine.length}"><img loading="lazy" src="${esc(photoUrl(p))}" alt=""></button>`).join('');
+      `<button type="button" class="sp" data-photos-of="${esc(actId)}" data-at="${i}" aria-label="Photo ${i + 1} of ${mine.length}"><img loading="lazy" src="${esc(photoUrl(p, 96))}" alt=""></button>`).join('');
     let more = '';
     if (mine.length > STRIP) more = `<button type="button" class="sp more" data-photos-of="${esc(actId)}" data-at="${STRIP}">+${mine.length - STRIP}</button>`;
     el.querySelector('.body .acts').insertAdjacentHTML('afterend', `<div class="stub-photos">${thumbs}${more}</div>`);

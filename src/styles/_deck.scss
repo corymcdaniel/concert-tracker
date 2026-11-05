@@ -5,6 +5,9 @@ body{min-height:100svh;display:flex;flex-direction:column}
 // align-content: a grid this tall would otherwise spread its rows out to fill it, and the header would jump when the log arrives
 body>.wrap{flex:1 0 auto;width:100%;align-content:start}
 
+// While the log loads, it fills the screen, so the footer starts below the fold: when the tickets arrive and the
+// list grows, nothing in view moves (an on-screen footer jumping down counts as layout shift)
+.list[aria-busy="true"]{min-height:100svh}
 .deck{position:relative;height:clamp(300px,56svh,540px);display:grid;place-items:center;overflow:hidden;
   // Narrower than a real ticket so they read as a hand of cards; they grow to full size as they're dealt
   --gw:min(62%,340px);--gh:96px}
