@@ -13,7 +13,7 @@
 // Without JavaScript: hide what can't work (the loading hand, controls, the light switch) and the header's
 // totals, which only fill in with JavaScript; the summary carries the numbers instead
 html:not(.js){
-  .deck,.navrow,.filters,.light-switch,.t-totals,.t-stub,.edit-only{display:none}
+  .deck,.navrow,.filters,.light-switch,.t-totals,.t-stub,.edit-only,#btnTrack{display:none}
   .t-main::before,.t-main::after{display:none}
   .ticket{grid-template-columns:minmax(0,1fr)}
   .t-main{border-right:0}
