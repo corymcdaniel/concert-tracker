@@ -35,9 +35,9 @@
   --music:#1f36c4; --comedy:#9c0f4c; --upcoming:#08583c; --gold:#d9a800; --gold-ink:#5a4100; --on-accent:#fff;
   color:var(--ink);
 }
-.stub,.ghost,.later li,.ticket{@include light-ticket}
+.stub,.ghost,.later li,.ticket,.stat-card{@include light-ticket}
 // On the light page the tickets go back to the original white paper; the darker ticket accents stay, so gold steps still pass
-:root[data-theme="light"] :is(.stub,.ghost,.later li,.ticket){--paper:#fbfcfd; --chip:#dfe3ec; --line:#cdd2dd}
+:root[data-theme="light"] :is(.stub,.ghost,.later li,.ticket,.stat-card){--paper:#fbfcfd; --chip:#dfe3ec; --line:#cdd2dd}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
 .wrap{max-width:980px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}

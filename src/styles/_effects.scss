@@ -27,7 +27,8 @@
   .ry:not(:disabled):hover .stack,.ry:focus-visible .stack{transform:none;filter:none}
   .tile:hover img,.tile:focus-visible img{transform:none}
   // Stats: cards, the artist wall, bucket list, heatmap, same-day cards, Spotify tiles, map pins, chips
-  .stat-card:hover,.stat-card:focus-visible{transform:none;box-shadow:0 1px 3px rgb(0 0 0 / .08)}
+  .stat-card:hover,.stat-card:focus-visible{transform:none;box-shadow:0 1px 3px rgb(0 0 0 / .08),0 12px 28px -18px rgb(0 0 0 / .35)}
+  .stat-card:hover .sc-stub,.stat-card:focus-visible .sc-stub{transform:none}
   .wall button:hover,.wall button:focus-visible{transform:none;box-shadow:none}
   .bucket button:hover,.bucket button:focus-visible{transform:none;box-shadow:none}
   .wall button:hover img,.bucket button:hover img{transform:none}
