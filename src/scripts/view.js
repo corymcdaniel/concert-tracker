@@ -1,3 +1,4 @@
+import { trackView } from './analytics.js';
 import { renderEnd } from './endcap.js';
 import { renderList, renderStats } from './log.js';
 import { state } from './state.js';
@@ -25,6 +26,7 @@ export function setView(v, section = null){
   $('#toView').setAttribute('aria-label', `Go to ${other}`);
   if (state.view==='stats') renderStatsView();
   try { history.replaceState(null,'', state.view==='stats' ? statsHash() : location.pathname + location.search); } catch {}
+  trackView();
 }
 export function render(){ renderStats(); renderList(); renderEnd(); if (state.view==='stats') renderStatsView(); }
 
@@ -36,6 +38,7 @@ export function openStatsSection(section){
   const tabs = $('.tabs');
   if (tabs.getBoundingClientRect().top < 0) tabs.scrollIntoView();
   $('#statsView .subnav [aria-current]')?.focus({preventScroll: true});
+  trackView();
 }
 export function followHash(){
   const section = sectionFromHash(location.hash);

@@ -161,6 +161,20 @@ script runs, so run it again after a new export. If the log and Spotify spell a 
   leaving a follow-spot at the mouse (or wherever you tap). Flip it again or press Esc to bring them up. It isn't
   remembered between visits (`src/styles/_lights.scss`).
 
+### Analytics
+
+Google Analytics 4, only with the visitor's consent (`src/scripts/analytics.js`).
+
+- **Setup:** set `PUBLIC_GA_ID` (your `G-XXXXXXXXXX` Measurement ID) in Netlify's environment variables and redeploy.
+  It's read at build time. With no ID, nothing about analytics appears.
+- **Consent:** a small banner asks once (Allow / No thanks). Nothing loads or is sent before Allow, and the footer's
+  **Analytics** button reopens the choice. Google signals and ad personalisation are off.
+- **Not counted:** localhost, deploy previews and branch deploys, and anyone signed in as an editor.
+- **Page views:** the site is one page, so each view is sent as its own path: `/` (Log), `/stats`, `/stats/overview`,
+  `/stats/artists`, `/stats/places`, `/stats/listening`.
+- **Events:** `open_artist` and `open_venue` (name), `search` (term, once it's committed), `filter` (type or city),
+  `open_review` (year), `share` (year review), `theme_change` (light or navy), `house_lights` (out or up).
+
 ### Change history
 A database trigger writes a row to `changes` for every insert, update and delete, with the row as it was
 (`before`) and as it became (`after`), when, and which editor (`changed_by`). Because it's a trigger, nothing can
