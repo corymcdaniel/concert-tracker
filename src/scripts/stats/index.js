@@ -153,7 +153,14 @@ export function renderStatsView(){
     ['places', 'Places', `${venueCount} venues`, `${cityCount} cities on a map, where the bands came from, and before and after the move`],
   ];
   if (hasListening) cards.push(['listening', 'Listening', listeningBig, listeningLine]);
-  const landing = `<div class="stat-cards">${cards.map(([id, name, big, line]) => `<button type="button" class="stat-card" data-stats-section="${id}"><span class="k">${name}</span><b>${big}</b><span class="line">${esc(line)}</span></button>`).join('')}</div>`;
+  // Each section is a ticket: the face says what's inside, and the tear-off stub carries its section number and a barcode
+  const landing = `<div class="stat-cards">${cards.map(([id, name, big, line], i) => {
+    const no = String(i + 1).padStart(2, '0');
+    return `<button type="button" class="stat-card" data-stats-section="${id}">
+      <span class="sc-face"><span class="k"><span aria-hidden="true">Sec ${no} · </span>${name}</span><b>${big}</b><span class="line">${esc(line)}</span></span>
+      <span class="sc-stub" aria-hidden="true"><span class="sc-adm">Admit one</span><span class="sc-no">${no}</span><i class="sc-code"></i></span>
+    </button>`;
+  }).join('')}</div>`;
   // Section links: the same four as the cards, plus a way back to them
   const links = [['', 'All'], ...cards.map(([id, name]) => [id, name])].map(([id, name]) => {
     let current = '';

@@ -73,18 +73,43 @@
 /* the stats landing page: one ticket per section */
 .stat-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 @media (max-width:560px){.stat-cards{grid-template-columns:minmax(0,1fr)}}
-.stat-card{--c:var(--music);display:grid;gap:6px;align-content:start;padding:20px 22px;text-align:left;background:var(--paper);border:0;border-left:6px solid var(--c);border-radius:8px;box-shadow:0 1px 3px rgb(0 0 0 / .08)}
+// Light paper like the log's stubs (light-ticket in _tokens), with a tear-off stub on the right
+.stat-card{
+  --c:var(--music);--notch:18px;
+  display:grid;grid-template-columns:minmax(0,1fr) 78px;padding:0;text-align:left;
+  background:var(--paper);border:0;border-radius:10px;overflow:hidden;position:relative;
+  box-shadow:0 1px 3px rgb(0 0 0 / .08),0 12px 28px -18px rgb(0 0 0 / .35);
+}
 .stat-card:nth-child(2){--c:var(--comedy)}
 .stat-card:nth-child(3){--c:var(--upcoming)}
-.stat-card:nth-child(4){--c:var(--gold)}
-.stat-card .k{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.stat-card b{font-family:var(--display);font-size:clamp(38px,7vw,52px);font-weight:800;line-height:1;text-transform:uppercase}
+.stat-card:nth-child(4){--c:var(--gold-ink)}
+// The face: a coloured band along the top, the section, its big number and what's inside
+.sc-face{display:grid;gap:6px;align-content:start;padding:22px 22px 20px;border-right:2px dashed var(--line);position:relative;
+  background:linear-gradient(var(--c),var(--c)) top/100% 5px no-repeat}
+// The two half-circle bites where the stub tears off, cut through to the page
+.sc-face::before,.sc-face::after{content:"";position:absolute;right:calc(var(--notch) / -2 - 1px);width:var(--notch);height:var(--notch);border-radius:50%;background:var(--bg);z-index:1}
+.sc-face::before{top:calc(var(--notch) / -2)}
+.sc-face::after{bottom:calc(var(--notch) / -2)}
+.stat-card .k{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--c);font-weight:600}
+.stat-card b{font-family:var(--display);font-size:clamp(38px,7vw,52px);font-weight:800;line-height:1;text-transform:uppercase;color:var(--ink)}
 .stat-card .line{font-size:14px;color:var(--muted)}
-.stat-card:hover,.stat-card:focus-visible{box-shadow:0 8px 20px rgb(0 0 0 / .18)}
+// The stub: "admit one" up the side, the section number and a barcode
+.sc-stub{display:grid;grid-template-rows:auto 1fr auto;justify-items:center;align-items:center;gap:8px;padding:14px 8px 16px;
+  background:linear-gradient(var(--c),var(--c)) top/100% 5px no-repeat}
+.sc-adm{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);writing-mode:vertical-rl;rotate:180deg}
+.sc-no{font-family:var(--display);font-size:30px;font-weight:800;line-height:1;color:var(--c)}
+.sc-code{display:block;width:44px;height:30px;opacity:.75;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 3px,var(--ink) 3px 4px,transparent 4px 6px,var(--ink) 6px 9px,transparent 9px 10px,var(--ink) 10px 11px,transparent 11px 14px)}
+.stat-card:hover,.stat-card:focus-visible{box-shadow:0 1px 3px rgb(0 0 0 / .08),0 16px 32px -14px rgb(0 0 0 / .45)}
+.stat-card:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+// On hover the card lifts and the stub starts to tear along the perforation, like the log's stubs
 @media (prefers-reduced-motion:no-preference){
   .stat-card{transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+  .sc-stub{transform-origin:left top;transition:transform .25s var(--ease)}
   .stat-card:hover,.stat-card:focus-visible{transform:translateY(-3px)}
+  .stat-card:hover .sc-stub,.stat-card:focus-visible .sc-stub{transform:translateX(3px) rotate(2deg)}
 }
+@media (max-width:400px){.stat-card{grid-template-columns:minmax(0,1fr) 62px}.sc-face{padding:20px 16px 18px}}
 .bucket-more{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
 .bucket-more .mini{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));column-gap:28px}
 .stub-extra{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);align-items:baseline}
