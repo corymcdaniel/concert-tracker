@@ -10,6 +10,7 @@ in a history they can browse and undo.
 | `src/pages/index.astro`, `src/layouts/`, `src/components/` | The page shell: head, header, tabs, filters and empty overlays. |
 | `src/scripts/` | The app, as plain JS modules. `main.js` wires up events and starts it; `state.js` holds what modules share. Nearly all markup is built here at runtime from the API's data. |
 | `src/styles/` | Global SCSS partials, loaded in order by `global.scss`. Global rather than CSS modules because the markup comes from JS template strings, which scoped styles can't reach. |
+| `docs/tracking-guide.md`, `docs/show-log-template.csv` | A guide for people who want to start tracking their own shows in a spreadsheet, in a shape Show Log can import later, and a template to start from. |
 | `netlify/database/migrations/` | Database schema and seed data, applied automatically on deploy. |
 | `netlify/functions/shows.mjs` | `GET /api/shows` (public); add, edit, delete, save a whole bill and bulk replace (editors). |
 | `netlify/functions/info.mjs` | `GET /api/info` (public); save one artist or venue record (editors). |
