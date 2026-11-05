@@ -40,9 +40,9 @@ const imageAlt = `An admission ticket reading Show Log: ${totals.nights} nights 
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<!-- Before the page paints: mark that JavaScript runs (so the pre-rendered summary hides itself), and set the theme,
-     so a light-mode visitor never sees a flash of navy (main.js keeps it in sync) -->
-<script is:inline>document.documentElement.classList.add('js'); try { if (localStorage.getItem('show-log-theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch {}</script>
+<!-- Before the page paints: mark that JavaScript runs (so the pre-rendered summary hides itself), and set the theme
+     and effects, so a light-mode or simple-view visitor never sees a flash of the defaults (main.js keeps them in sync) -->
+<script is:inline>document.documentElement.classList.add('js'); try { if (localStorage.getItem('show-log-theme') === 'light') document.documentElement.dataset.theme = 'light'; if (localStorage.getItem('show-log-effects') === 'off') document.documentElement.dataset.effects = 'off'; } catch {}</script>
 </head>
 <body>
 <!-- A soft light that follows the mouse around the page (main.js) -->

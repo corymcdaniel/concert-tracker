@@ -1,0 +1,60 @@
+/* ---------- Effects off: the simple view (the FX button in the nav, main.js) ----------
+   Animations, colours and layout stay the same; what goes are the showier extras that react to the mouse or glow.
+   Remembered in the browser, and set before the page paints (Base.astro). */
+:root[data-effects="off"]{
+  // The page spotlight and the Goodnight switch
+  .spotlight,.site-foot .light-switch{display:none}
+  // Tickets keep their simple hover lift, without the 3D tilt or the light that follows the cursor
+  .stub::before{display:none}
+  .stub:hover{transform:translateY(-2px)}
+  // Gold tickets keep their tint and edge, without the glow or the foil shimmer
+  .stub.rep{--glow:0 0 0 transparent;box-shadow:none}
+  .stub.rep-5 .body{background-image:none}
+}
+
+/* Effects off also stills the hover effects: nothing lifts, slides, scales, tilts or throws a shadow under the mouse.
+   Hover colour and underline changes stay, since they're how you can tell what's clickable.
+   Each rule puts the element back to how it sits when it isn't hovered. */
+:root[data-effects="off"]{
+  // The log: tickets, the Later rows, photo thumbnails on tickets, the Stamped stamp, the header ticket's stamp
+  .stub:hover{transform:none;box-shadow:none}
+  .stub:hover .body{transform:none}
+  .later li:hover{transform:none;box-shadow:0 1px 3px rgb(0 0 0 / .06)}
+  .sp:hover,.sp:focus-visible{transform:none;box-shadow:0 1px 2px rgb(0 0 0 / .15)}
+  .stamped:hover h2{transform:rotate(-4deg)}
+  .ticket:hover .t-stamp{opacity:.42;transform:translateY(-50%) rotate(-9deg)}
+  // The end of the log: year rail and photo mosaic (captions still appear, without sliding)
+  .ry:not(:disabled):hover .stack,.ry:focus-visible .stack{transform:none;filter:none}
+  .tile:hover img,.tile:focus-visible img{transform:none}
+  // Stats: cards, the artist wall, bucket list, heatmap, same-day cards, Spotify tiles, map pins, chips
+  .stat-card:hover,.stat-card:focus-visible{transform:none;box-shadow:0 1px 3px rgb(0 0 0 / .08)}
+  .wall button:hover,.wall button:focus-visible{transform:none;box-shadow:none}
+  .bucket button:hover,.bucket button:focus-visible{transform:none;box-shadow:none}
+  .wall button:hover img,.bucket button:hover img{transform:none}
+  .heat i:hover{transform:none}
+  .sd-card:hover{transform:none;box-shadow:none}
+  .sd-card li:hover .sd-pic img{transform:none}
+  .spot-tiles div:hover{transform:none}
+  .vpin-wrap:not(.on):hover .vpin,.vpin-wrap:not(.on):focus-visible .vpin{scale:none}
+  .vcluster:hover span{scale:none}
+  .most .chip:hover,.most .chip:focus-visible{transform:none}
+  // Controls: floating buttons, the nav toggles, the section links' underline preview, consent, history, stars, photo viewer
+  .float-btn:hover,.float-btn:focus-visible{transform:none}
+  .fx-btn:hover .fx-label,.theme-btn:hover svg{transform:none}
+  .subnav button:not([aria-current]):hover::after{transform:scaleX(0)}
+  .consent-actions button:hover{transform:none}
+  .history .change:hover{transform:none}
+  .stars label:hover{transform:none}
+  .ip-grid button:hover img,.ip-grid button:focus-visible img{transform:none}
+  .vw-step.prev:hover,.vw-step.next:hover{transform:none}
+}
+
+/* The toggle: an "FX" label, gold when effects are on; dimmed with a slash through it when they're off */
+.fx-btn{position:relative;display:grid;place-items:center;width:36px;height:34px;padding:0;border-radius:999px;transition:background-color .15s,border-color .15s,opacity .2s}
+.fx-label{font-family:var(--display);font-weight:800;font-size:17px;line-height:1;letter-spacing:.04em;padding-top:2px;transition:color .2s,transform .3s var(--ease)}
+.fx-btn:hover{border-color:var(--gold)}
+.fx-btn:hover .fx-label{transform:scale(1.1)}
+.fx-btn::after{content:"";position:absolute;width:24px;height:2px;border-radius:2px;background:currentColor;transform:rotate(-45deg) scaleX(0);transition:transform .25s var(--ease)}
+.fx-btn[aria-pressed="false"]{opacity:.65}
+.fx-btn[aria-pressed="false"]::after{transform:rotate(-45deg) scaleX(1)}
+.fx-btn[aria-pressed="true"] .fx-label{color:var(--stamp)}

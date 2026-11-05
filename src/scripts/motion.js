@@ -2,6 +2,8 @@ import { $ } from './util.js';
 
 /* ---------- motion ---------- */
 export const motionOK = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
+// The FX toggle (main.js): off is the simple view, without the mouse effects, foil shimmer or light switch
+export const effectsOn = () => document.documentElement.dataset.effects !== 'off';
 // open = shown and not on its way out
 export const isOpen = el => !el.hidden && !el.classList.contains('closing');
 export function show(el){ el.classList.remove('closing'); el.hidden = false; }
