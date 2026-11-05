@@ -23,8 +23,11 @@ function reviewStats(year){
   const months = tally(ns, n => n.date.slice(5,7));
   const rated = ns.filter(n => nightVal(n, 'rating')).sort((a, b) => nightVal(b, 'rating') - nightVal(a, 'rating'));
   const biggest = [...ns].sort((a, b) => b.acts.length - a.acts.length)[0];
-  return {year, ns, acts, fresh, biggest,
-    artist: topOf(tally(acts, a => a.artist.trim())),
+  // The year's star: the act seen most. When nobody was seen twice, a "most" would just be the first name
+  // alphabetically, so the star is the headliner of the year's biggest bill instead.
+  let artist = topOf(tally(acts, a => a.artist.trim()));
+  if (artist[1] === 1) artist = [biggest.acts[0].artist.trim(), 1];
+  return {year, ns, acts, fresh, biggest, artist,
     venue: topOf(tally(ns, n => n.venue)),
     city: topOf(tally(ns, n => place(n))),
     month: topOf(months),
@@ -36,7 +39,7 @@ function reviewSlides(s){
   const out = [];
   const nightsWord = plural(s.ns.length, 'night');
   out.push(`<div class="rv-k">Your year in shows</div><div class="rv-big">${s.year}</div><p class="rv-p">Tap to step through it.</p>`);
-  out.push(`<div class="rv-k">You went out</div><div class="rv-big">${counter('rv-nights', s.ns.length)}</div><p class="rv-p">${nightsWord.replace(/^d+ /, '')}, ${plural(s.acts.length,'set')} from ${plural(new Set(s.acts.map(a => artistKey(a.artist))).size,'artist')}.</p>`);
+  out.push(`<div class="rv-k">You went out</div><div class="rv-big">${counter('rv-nights', s.ns.length)}</div><p class="rv-p">${nightsWord.replace(/^\d+ /, '')}, ${plural(s.acts.length,'set')} from ${plural(new Set(s.acts.map(a => artistKey(a.artist))).size,'artist')}.</p>`);
   const [name, times] = s.artist;
   const rec = state.INFO.artists?.[name];
   let photo = '';
@@ -64,7 +67,9 @@ function reviewSlides(s){
   }
   if (s.biggest.acts.length > 1) out.push(`<div class="rv-k">Biggest bill</div><div class="rv-big">${counter('rv-bill', s.biggest.acts.length)}</div><p class="rv-p">acts at ${esc(s.biggest.venue)}, led by ${esc(s.biggest.acts[0].artist)}.</p>`);
   if (s.best) out.push(`<div class="rv-k">Your top-rated night</div><div class="rv-name">${esc(s.best.acts[0].artist)}</div><p class="rv-p">${'★'.repeat(nightVal(s.best, 'rating'))} at ${esc(s.best.venue)}.</p>`);
-  const cards = [[nightsWord, 'Out'], [name, 'Most seen'], [s.venue?.[0] || '—', 'Top room'], [monthName, 'Busiest month'], [plural(s.fresh.length,'new act'), 'Discovered']];
+  let starLabel = 'Most seen';
+  if (times === 1) starLabel = 'Starring';
+  const cards = [[nightsWord, 'Out'], [name, starLabel], [s.venue?.[0] || '—', 'Top room'], [monthName, 'Busiest month'], [plural(s.fresh.length,'new act'), 'Discovered']];
   if (s.comedy) cards.push([plural(s.comedy,'night'), 'Of stand-up']);
   out.push(`<div class="rv-k">${s.year} in one ticket</div><div class="rv-grid">${cards.map(([b, l]) => `<div><span>${esc(l)}</span><b>${esc(b)}</b></div>`).join('')}</div><button type="button" class="rv-share" id="rvShare">Share</button>`);
   return out;
