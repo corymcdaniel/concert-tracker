@@ -164,9 +164,7 @@ script runs, so run it again after a new export. If the log and Spotify spell a 
   screens and with reduced motion.
 - **Year scroller (desktop):** a Google Photos-style timeline down the right edge of the log, on windows 1180px or
   wider with a mouse or trackpad. Years sit where they fall in the log; drag the gold handle to scrub (a bubble shows the
-  year) or click a year to jump. It shows while you scroll or hover the right edge and fades when scrolling stops: a
-  CSS transition delay started by the `scrollend` event, with no timer (Safari has no `scrollend` yet, so there it stays
-  visible after scrolling) (`src/scripts/yearRail.js`).
+  year) or click a year to jump. It stays quietly visible and brightens on hover or drag (`src/scripts/yearRail.js`).
 - **Goodnight:** the little light switch at the left of the footer, before the name, fades the house lights out over the page,
   leaving a follow-spot at the mouse. Flip it again or press Esc to bring them up. It isn't remembered between visits,
   and it's hidden on phones and tablets, which have no cursor to follow (`src/styles/_lights.scss`).

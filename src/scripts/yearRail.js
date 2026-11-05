@@ -3,8 +3,8 @@ import { $ } from './util.js';
 
 /* ---------- the year scroller: a Google Photos-style timeline down the right edge of the log, on desktop ----------
    Each year sits where it falls in the log, so busy years take more room. Drag the handle to scrub through the log
-   (a bubble shows the year under it) or click a year to jump there. It shows while you scroll or hover the right
-   edge and fades once scrolling ends: the fade is a CSS transition delay started by the scrollend event, not a timer.
+   (a bubble shows the year) or click a year to jump there. It stays quietly visible and brightens on hover or drag;
+   nothing about it changes while you scroll except the handle's place.
    Positions are fractions of the scroll from the list's top to the end of the page (past the end-of-log section, so
    the oldest years, which all fit on the last screen of the list, still get their own places). Labels and the handle use the same scale, so the handle is on a year when that year is at the top. */
 const MIN_GAP = 18;   // px between year labels on the track; years closer than this show as dots
@@ -67,7 +67,6 @@ function scrubTo(clientY){
 }
 
 function onScroll(){
-  rail.classList.add('on');
   if (frame) return;
   frame = requestAnimationFrame(() => { frame = 0; placeThumb(); });
 }
@@ -87,8 +86,6 @@ export function initYearRail(){
   if (!rail || !desktop()) return;
   track = $('#yearTrack');
   addEventListener('scroll', onScroll, {passive: true});
-  // When scrolling stops, the CSS fade starts after a short delay (see _yearrail.scss)
-  addEventListener('scrollend', () => { if (!dragging) rail.classList.remove('on'); });
   // The page changes height as the log draws, filters and the end-of-log mosaic builds: re-measure whenever it does
   new ResizeObserver(refreshYearRail).observe(document.body);
   addEventListener('resize', refreshYearRail);
@@ -100,7 +97,7 @@ export function initYearRail(){
   track.addEventListener('pointerdown', e => {
     if (e.target.closest('[data-rail-year]')) return;
     dragging = true;
-    rail.classList.add('on', 'dragging');
+    rail.classList.add('dragging');
     track.setPointerCapture(e.pointerId);
     scrubTo(e.clientY);
   });
