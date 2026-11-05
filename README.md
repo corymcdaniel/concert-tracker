@@ -82,6 +82,15 @@ Ratings are public. Price and companions are left out of `GET /api/shows` unless
 their panels only appear when there's data to show. They're also in `changes`, which only editors can read.
 If a save leaves these fields out, the saved values are kept, so a page loaded before signing in can't blank them.
 
+### Festivals
+A night can be part of a festival ("Dia de los Deftones", "Kilby Block Party"). Set it per night from **Edit bill**;
+the field suggests names already used, so each festival is spelled the same every year. It's never guessed from the
+venue, since a stadium or park hosts plenty of nights that aren't festivals. A festival that runs several days is one
+night per day with the same name, and the days of each year's run are numbered from their dates.
+- **Log:** a gold wristband across the top of the stub, with "Day 2" on a multi-day run. Search finds festivals by name.
+- **Stats → Overview:** a Festivals panel with every festival, the years you went, and each day's headliner.
+- **Artist pop-up:** sightings at a festival are tagged with its name.
+
 ### Photos
 Editors add photos to a night from **Edit bill** (drop them in or pick files) or the ticket's **+ Photos** button, up to 6 a
 night. Before upload the page redraws each photo on a canvas: it's resized to at most 1600px and saved as WebP (JPEG where the

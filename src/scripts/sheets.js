@@ -51,7 +51,11 @@ function extraFields(s){
     if (+s.rating === v) on = 'checked';
     stars += `<input type="radio" name="f-rating" id="f-r${v}" value="${v}" ${on}><label for="f-r${v}" title="${v} of 5" aria-label="${v} of 5">★</label>`;
   }
-  return `<fieldset class="stars"><legend>Your rating</legend><div>${stars}<button type="button" id="f-noRate">Clear</button></div></fieldset>
+  // Festivals you've already named, so each spelling stays the same across years and days
+  const festivals = [...new Set(state.shows.map(x => x.festival).filter(Boolean))].sort();
+  return `<label for="f-festival">Festival<input id="f-festival" list="dl-festival" placeholder="Not a festival" value="${esc(s.festival || '')}"><span class="hint">For a festival that runs several days, use the same name on each day's bill.</span></label>
+    <datalist id="dl-festival">${festivals.map(f => `<option value="${esc(f)}">`).join('')}</datalist>
+    <fieldset class="stars"><legend>Your rating</legend><div>${stars}<button type="button" id="f-noRate">Clear</button></div></fieldset>
     <div class="row2">
       <label for="f-price">Ticket price<input id="f-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Signed-in only" value="${esc(s.price ?? '')}"></label>
       <label for="f-with">Went with<input id="f-with" placeholder="Signed-in only" value="${esc(s.companions || '')}"></label>
@@ -66,7 +70,7 @@ function readExtras(){
   if (on) rating = +on.value;
   let price = null;
   if ($('#f-price').value !== '') price = +$('#f-price').value;
-  return { rating, price, companions: $('#f-with').value.trim() || null };
+  return { rating, price, companions: $('#f-with').value.trim() || null, festival: $('#f-festival').value.trim() || null };
 }
 function readNight(){
   return { venue:$('#f-venue').value.trim(), city:$('#f-city').value.trim(), state:$('#f-state').value.trim(), country:$('#f-country').value.trim()||'US', type:$('#f-type').value, date:$('#f-date').value||null };
@@ -192,7 +196,7 @@ export function openBill(id){
     <ol class="bill" id="billList">${rows()}</ol>
     <div class="foot"><button type="button" id="billAdd">+ Add act</button><button type="button" id="billReverse">Reverse order</button></div>
     ${nightFields({...night, type})}
-    ${extraFields({rating:nightVal(night,'rating'), price:nightVal(night,'price'), companions:nightVal(night,'companions')})}
+    ${extraFields({rating:nightVal(night,'rating'), price:nightVal(night,'price'), companions:nightVal(night,'companions'), festival:nightVal(night,'festival')})}
     ${photoBox()}
     <div class="foot"><button class="primary" type="submit">Save</button><button type="button" data-close>Cancel</button><span class="spacer"></span><button type="button" class="danger" id="del">Delete bill</button></div>
     <div id="confirmBox"></div></form>`);
@@ -253,7 +257,7 @@ export function openData(){
     copy(['Artist,Venue,City,State,Country,Date,Type,Notes',...state.shows.map(s=>[s.artist,s.venue,s.city,s.state||'',s.country||'',s.date||'',s.type,s.notes||''].map(x=>q(String(x))).join(','))].join('\n'),'CSV'); };
   $('#frm').addEventListener('submit', e => { e.preventDefault();
     try { const d = JSON.parse($('#f-json').value); if(!Array.isArray(d)) throw 0;
-      state.shows = d.map(s=>withPlace({id:s.id||newId(),artist:s.artist||'',venue:s.venue||'',city:s.city||'',state:s.state,country:s.country,date:s.date||null,type:s.type||'Music',notes:s.notes||'',rating:s.rating,price:s.price,companions:s.companions}));
+      state.shows = d.map(s=>withPlace({id:s.id||newId(),artist:s.artist||'',venue:s.venue||'',city:s.city||'',state:s.state,country:s.country,date:s.date||null,type:s.type||'Music',notes:s.notes||'',rating:s.rating,price:s.price,companions:s.companions,festival:s.festival}));
       commit(`Loaded ${state.shows.length} entries`, {method:'PUT', url:API, body:state.shows});
     } catch { toast('That isn’t a valid list of shows. Check the JSON and try again.'); } });
   if ($('#reset')) $('#reset').onclick = () => {

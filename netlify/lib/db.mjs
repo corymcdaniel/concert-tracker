@@ -31,10 +31,10 @@ export async function write(user, fn, batch = null) {
 }
 
 // Columns a show can be saved with, in API order
-export const SHOW_FIELDS = ["artist", "venue", "city", "state", "country", "date", "type", "notes", "rating", "price", "companions"];
+export const SHOW_FIELDS = ["artist", "venue", "city", "state", "country", "date", "type", "notes", "rating", "price", "companions", "festival"];
 // Saved as they are when a request leaves them out, so an edit can't blank them by accident
-export const EXTRA_FIELDS = ["rating", "price", "companions"];
-export const PUBLIC_SELECT = `id, artist, venue, city, state, country, to_char(date, 'YYYY-MM-DD') AS date, type, notes, rating`;
+export const EXTRA_FIELDS = ["rating", "price", "companions", "festival"];
+export const PUBLIC_SELECT = `id, artist, venue, city, state, country, to_char(date, 'YYYY-MM-DD') AS date, type, notes, rating, festival`;
 export const SHOW_SELECT = `${PUBLIC_SELECT}, price, companions`;
 
 // Bad input from a request: the functions answer it with a 400
@@ -69,6 +69,7 @@ export function cleanShow(s) {
     if (out.price !== null && !(out.price >= 0)) throw new Invalid("Price must be a positive number");
   }
   if (s.companions !== undefined) out.companions = str(s.companions) || null;
+  if (s.festival !== undefined) out.festival = str(s.festival) || null;
   return out;
 }
 

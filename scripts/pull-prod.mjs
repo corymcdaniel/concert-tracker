@@ -50,9 +50,9 @@ try {
   catch { await client.query("ROLLBACK TO SAVEPOINT quiet"); }
   for (const [i, s] of shows.entries()) {
     await client.query(
-      `INSERT INTO shows (id, artist, venue, city, state, country, date, type, notes, rating, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [s.id, s.artist, s.venue, s.city, s.state, s.country, s.date, s.type, s.notes, s.rating, i + 1]);
+      `INSERT INTO shows (id, artist, venue, city, state, country, date, type, notes, rating, festival, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [s.id, s.artist, s.venue, s.city, s.state, s.country, s.date, s.type, s.notes, s.rating, s.festival ?? null, i + 1]);
   }
   for (const [name, rec] of Object.entries(info.artists)) await client.query("INSERT INTO artists (name, info) VALUES ($1, $2)", [name, rec]);
   for (const [key, rec] of Object.entries(info.venues)) await client.query("INSERT INTO venues (key, info) VALUES ($1, $2)", [key, rec]);

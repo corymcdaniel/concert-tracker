@@ -9,7 +9,7 @@ import { read, write, newBatch } from "../lib/db.mjs";
 
 // Primary key and editable columns per tracked table (also the whitelist for undo's SQL)
 const TABLES = {
-  shows: { pk: "id", cols: ["artist", "venue", "city", "state", "country", "date", "type", "notes", "sort_order", "rating", "price", "companions"] },
+  shows: { pk: "id", cols: ["artist", "venue", "city", "state", "country", "date", "type", "notes", "sort_order", "rating", "price", "companions", "festival"] },
   artists: { pk: "name", cols: ["info"] },
   venues: { pk: "key", cols: ["info"] },
 };

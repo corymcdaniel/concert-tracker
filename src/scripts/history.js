@@ -8,7 +8,7 @@ import { $, esc, place, withPlace } from './util.js';
 import { render } from './view.js';
 
 /* ---------- change history (database mode, editors) ---------- */
-const SHOW_LABELS = {artist:'Artist', venue:'Venue', city:'City', state:'State', country:'Country', date:'Date', type:'Type', notes:'Notes', rating:'Rating', price:'Paid', companions:'Went with'};
+const SHOW_LABELS = {artist:'Artist', venue:'Venue', city:'City', state:'State', country:'Country', date:'Date', type:'Type', notes:'Notes', rating:'Rating', price:'Paid', companions:'Went with', festival:'Festival'};
 const INFO_LABELS = {wiki:'Wikipedia page', desc:'Description', img:'Photo', note:'Note'};
 const fmtVal = v => { if (v === null || v === undefined || v === '') return '—'; if (Array.isArray(v)) return v.join(', '); return String(v); };
 function changeTitle(c){
