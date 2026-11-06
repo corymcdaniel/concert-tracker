@@ -17,21 +17,24 @@ in a history they can browse and undo.
 | `netlify/functions/changes.mjs` | Change history and undo (editors). |
 | `netlify/functions/photos.mjs` | `GET /api/photos` and `/api/photos/:id` (public); upload and delete photos (editors). |
 | `netlify/functions/setlists.mjs` | `GET /api/setlists` (public); look up the next act on setlist.fm (editors). |
+| `netlify/functions/forecast.mjs` | `GET /api/forecast?artist=` (public): an upcoming act's recent setlists from setlist.fm, tallied song by song and kept for a week. |
 | `public/map-land.json`, `public/hometowns.json` | Static data for the Hometowns map. Rebuild with `node scripts/build-map.mjs`. |
 | `public/venue-coords.json` | Coordinates for venues whose info record has no `coord` (no Wikidata match, or a festival). Add a `"Venue|City"` entry when a new venue doesn't show on the map. |
 | `public/listening.json`, `public/listening-songs.json`, `public/listening-artists.json` | Public Spotify summaries for the listening stats and the artist pop-up. Rebuild with `node scripts/build-listening.mjs spotify`. |
 | `netlify/lib/db.mjs` | Database connection, transactions tagged with the editor, show validation. |
 | `netlify/lib/auth.mjs` | Shared editor check. |
+| `netlify/lib/setlistfm.mjs` | Reading setlist.fm answers, shared by the two setlist functions. |
 | `public/shows.json`, `public/info.json` | The data the database was seeded from. Also used in local mode, when there's no API. |
 | `scripts/build-seed.mjs` | Regenerates the seed migration from `shows.json` and `info.json`. |
 
 ## Data
-The data lives in Netlify Database (Postgres). Five tables:
+The data lives in Netlify Database (Postgres). Six tables:
 
 | Table | Holds |
 |---|---|
 | `shows` | One row per act per night: `id, artist, venue, city, state, country, date, type, notes, rating, price, companions, sort_order`, plus `created_at` / `updated_at`. |
 | `setlists` | setlist.fm results per act and date. A cache of outside data, so it isn't in the change log. |
+| `forecasts` | Each upcoming act's recent setlists, tallied for **Stats → Upcoming**. Also a cache, refreshed when a week old. |
 | `artists` | `name` → `info` (jsonb Wikipedia/Wikidata details, or `NULL` when no match was found). |
 | `venues` | `key` (`venue|city`) → `info`, same as artists. |
 | `changes` | Every insert, update and delete on the three tables above. |
@@ -54,7 +57,7 @@ that year), then a mosaic of photos you've uploaded to nights. Click a tile to j
 only appears once there are uploaded photos (`src/scripts/endcap.js`).
 
 **Upcoming shows:** add a show with a future date and it's pinned under **Up next** at the top of the log, soonest first.
-Upcoming shows (including tonight's) are left out of every count: header totals, the Stats tab, the year headers and
+Upcoming shows (including tonight's) are left out of every count: header totals, the Stats tab (except its Recent and Upcoming sections), the year headers and
 the "seen N times" counts in the artist and venue pop-ups. The day after the show, it moves into its year in the log and
 starts counting. There is no separate flag; the date alone decides, so nothing needs updating after the show.
 
@@ -111,8 +114,45 @@ Acts with no result are checked again after 30 days. The key stays on the server
 Set `SETLISTFM_API_KEY` in Netlify, and in a git-ignored `.env.dev` locally (see `.env.example`).
 
 ### Stats sections
-The Stats tab opens on four cards: **Overview**, **Artists**, **Places** and **Listening**. A row of section links under the Log/Stats switch jumps straight to any of them, or back to the cards with **All**. Each section has its own link, like
+The Stats tab opens on four cards: **Overview**, **Artists**, **Places** and **Listening**, with **Recent** and **Upcoming** cards across the top while there's a show in the last 3 months or one booked. A row of section links under the Log/Stats switch jumps straight to any of them, or back to the cards with **All**. Each section has its own link, like
 `#stats/listening`, and the browser's back button returns to the cards. Older `#stats` and `#review-YYYY` links still work.
+
+### Recent stats
+**Stats → Recent** looks back over the last 3 months (today minus 3 months, up to yesterday). It's there while a show falls in it.
+- **Last 3 months:** nights out, your last show and how long ago, and the 3 months on one line.
+- **The recap:** sets and venues, acts seen for the first time, the pace against your usual 3 months (the average since
+  the move, or across the log if the move is recent), whether it's your busiest stretch in over a year, the most-seen act,
+  the biggest bill and the average rating.
+- **Milestones reached:** the same milestones as Upcoming, counted up to each night.
+- **Setlists you heard:** each synced setlist, marking the songs you'd played on Spotify before the show and the ones you
+  first played after it, plus the share you knew across all of them. Acts with no setlist yet are listed, with
+  **Check setlist.fm** for editors.
+- **The show bump:** plays per day in the 30 days before each show against the days after. When the Spotify export ends
+  less than 30 days after a show, the after side counts the days it has.
+- **The lineup** and **Where you went:** as in Upcoming.
+
+The panels Recent and Upcoming share are in `src/scripts/stats/window.js`; their styles are in `_recent-upcoming.scss`, drawn
+in each section's accent (`--recent`, a lavender, and `--upcoming`).
+
+### Upcoming stats
+**Stats → Upcoming** is about the shows you have tickets for, and only those. It's there while at least one is booked.
+- **Next show:** a countdown, and a line from today to the last booked show with a stop for each. Labels stack in up to
+  three rows so shows close together don't overlap.
+- **Coming up:** nights and acts booked, how many acts are new to you, the most-seen act and longest wait to see again,
+  and each year's nights seen plus booked against your other years.
+- **Milestones ahead:** round numbers the shows will reach (25th, 50th, 100th night; every 50th set; every 25th different act),
+  first shows in a new state or country, bucket-list artists, 3rd-and-up sightings, and returns after 5+ years
+  (marked when it's the longest wait in the log).
+- **How ready are you?:** hours on Spotify with each music act, flagged when you haven't played them in six months,
+  and the acts you'll hear cold. From `listening-artists.json`, so rebuild the listening files after adding a show.
+- **Likely setlist:** pick an act to see the songs at their last 10 shows on setlist.fm, how often each came up, the usual
+  opener and closer, which songs you've played on Spotify, and your favorites of theirs they haven't played lately.
+  The act is found first and its own setlists read by MusicBrainz id, since searching by name also turns up tribute acts.
+  Setlists with under half the songs of the longest are left out as partial entries. Needs `SETLISTFM_API_KEY`.
+- **The lineup:** every act on each bill, as a first time or which time, and when you last saw them.
+- **Where you're headed:** each night's venue with New venue / New city tags, the distance from home, and a map with a route
+  from home to each show. Home is the city with the most nights since the move date (Places → Before and after the move).
+  A venue with no coordinates falls back to the middle of the venues you've been to in that city.
 
 ### Venue map
 Under **Stats → Places**, every venue you've been to sits on a street map. Pins grow with the number of nights there,
@@ -188,7 +228,7 @@ Google Analytics 4, only with the visitor's consent (`src/scripts/analytics.js`)
   **Analytics** button reopens the choice. Google signals and ad personalisation are off.
 - **Not counted:** localhost, deploy previews and branch deploys, and anyone signed in as an editor.
 - **Page views:** the site is one page, so each view is sent as its own path: `/` (Log), `/stats`, `/stats/overview`,
-  `/stats/artists`, `/stats/places`, `/stats/listening`.
+  `/stats/artists`, `/stats/places`, `/stats/listening`, `/stats/recent`, `/stats/upcoming`.
 - **Events:** `open_artist` and `open_venue` (name), `search` (term, once it's committed), `filter` (type or city),
   `open_review` (year), `share` (year review), `theme_change` (light or navy), `house_lights` (out or up), `effects_change` (on or off),
   `track_prompt` (open, copy, open_claude, template).

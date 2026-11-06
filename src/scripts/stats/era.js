@@ -4,9 +4,10 @@ import { esc, place, store } from '../util.js';
 
 /* ---------- before / after the move ---------- */
 const METRO = {Tempe:'Phoenix',Scottsdale:'Phoenix',Mesa:'Phoenix',Chandler:'Phoenix',Glendale:'Phoenix',Gilbert:'Phoenix'};
-const metro = n => n.state==='AZ' && METRO[n.city] ? 'Phoenix, AZ' : place(n);
+export const metro = n => n.state==='AZ' && METRO[n.city] ? 'Phoenix, AZ' : place(n);
+export const moveDate = () => store.get('show-log-move') || '2021-06-01';
 export function eraPanel(ns){
-  const move = store.get('show-log-move') || '2021-06-01';
+  const move = moveDate();
   const nd = ns.filter(n=>n.date);
   const side = list => {
     if (!list.length) return null;

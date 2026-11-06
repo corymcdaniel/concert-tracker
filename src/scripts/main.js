@@ -19,6 +19,8 @@ import { renderStatsView } from './stats/index.js';
 import { setRegion, showPin } from './stats/map.js';
 import { fitTo } from './stats/venues.js';
 import { loadSetlists, syncSetlists } from './stats/setlists.js';
+import { pickHeard } from './stats/recent.js';
+import { pickForecast } from './stats/upcoming.js';
 import { showWallTile, updateWall, wallOpts } from './stats/wall.js';
 import { $, store } from './util.js';
 import { followHash, followStatsLink, openStatsSection, opensStats, render, setView, statsHash } from './view.js';
@@ -56,6 +58,8 @@ document.addEventListener('click', e => {
   if (t.dataset.wallSort) { wallOpts.sort = t.dataset.wallSort; updateWall(); return; }
   if ('wallClear' in t.dataset) { wallOpts.genre = ''; wallOpts.decade = ''; $('#wallGenre').value = ''; $('#wallDecade').value = ''; updateWall(); return; }
   if (t.id === 'syncSets') { syncSetlists(t); return; }
+  if (t.dataset.forecast) { pickForecast(t.dataset.forecast); return; }
+  if (t.dataset.heard) { pickHeard(t.dataset.heard); return; }
   if (t.dataset.artist !== undefined) { morphOpen(t, () => openInfo('artists', t.dataset.artist, canEdit() ? t.dataset.id : null)); return; }
   if (t.dataset.venue !== undefined) { morphOpen(t, () => openInfo('venues', t.dataset.venue)); return; }
   if ('closeInfo' in t.dataset) { closeInfo(); return; }

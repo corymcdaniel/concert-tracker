@@ -6,13 +6,13 @@ import { esc, happened } from '../util.js';
    every artist with 5+ plays, keyed by matchKey, with daily play counts so shows logged later still get "around the show". */
 let loading = null;
 
-function loadArtists(){
+export function loadArtists(){
   if (!loading) loading = fetch('listening-artists.json').then(r => { if (!r.ok) throw 0; return r.json(); }).catch(() => null);
   return loading;
 }
 
 const DAY = 864e5;
-const dayOf = date => Date.parse(`${date}T00:00:00Z`) / DAY;
+export const dayOf = date => Date.parse(`${date}T00:00:00Z`) / DAY;
 const monthYear = d => `${MONTHS[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}`;
 const longDate = d => `${MONTHS[+d.slice(5, 7) - 1]} ${+d.slice(8, 10)}, ${d.slice(0, 4)}`;
 const timesLabel = n => { if (n === 1) return 'once'; return `${n.toLocaleString()} times`; };
@@ -22,7 +22,7 @@ function hoursLabel(h){
 }
 
 // d: base-36 gaps between days, each optionally *count
-function decodeDays(d){
+export function decodeDays(d){
   const days = [];
   let day = 0;
   d.split(',').forEach(entry => {

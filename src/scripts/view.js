@@ -5,7 +5,7 @@ import { state } from './state.js';
 import { renderStatsView } from './stats/index.js';
 import { $ } from './util.js';
 
-const SECTIONS = ['overview', 'artists', 'places', 'listening'];
+const SECTIONS = ['recent', 'upcoming', 'overview', 'artists', 'places', 'listening'];
 export const statsHash = () => { if (state.statsSection) return `#stats/${state.statsSection}`; return '#stats'; };
 // undefined: not a stats link. null: the landing cards.
 const sectionFromHash = hash => {
