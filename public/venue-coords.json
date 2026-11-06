@@ -1,11 +1,13 @@
 {
   "Aisle 5|Atlanta": {"coord": [33.7642, -84.3502]},
   "Alphaville|Brooklyn": {"coord": [40.7005, -73.9258]},
+  "GMO Arena|Saitama": {"coord": [35.8949, 139.6308], "note": "Saitama Super Arena, renamed GMO Arena."},
   "Laughing Skull Lounge|Atlanta": {"coord": [33.7788, -84.3845]},
   "Sonoteque|Chicago": {"coord": [41.8963, -87.6643], "note": "Closed. Was at 1444 W Chicago Ave."},
   "Stand Up Live|Phoenix": {"coord": [33.4475, -112.0744]},
   "Terminal West|Atlanta": {"coord": [33.7815, -84.4154]},
   "Shaky Knees Festival|Atlanta": {"coord": [33.7603, -84.3932], "note": "Centennial Olympic Park, where it was held in 2016."},
   "Project Pabst|Atlanta": {"coord": [33.749, -84.388], "approx": true},
+  "Thalia Hall|Chicago": {"coord": [41.8577, -87.6574]},
   "Virgin Music Festival|Toronto": {"coord": [43.6202, -79.3678], "note": "Toronto Island Park."}
 }
