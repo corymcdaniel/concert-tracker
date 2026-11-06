@@ -5,25 +5,17 @@
 // The API key stays here on the server. Comedy isn't looked up: setlist.fm is music only.
 import { requireEditor, json } from "../lib/auth.mjs";
 import { read, write } from "../lib/db.mjs";
+import { SEARCH, norm, songsOf } from "../lib/setlistfm.mjs";
 
-const SEARCH = "https://api.setlist.fm/rest/1.0/search/setlists";
 const ACT_KEY = "lower(s.artist) || '|' || to_char(s.date, 'YYYY-MM-DD')";
 // Acts with no row yet, or that setlist.fm didn't have a month ago (they do get added later)
 const TODO = `FROM shows s LEFT JOIN setlists l ON l.key = ${ACT_KEY}
   WHERE s.date < CURRENT_DATE AND s.type = 'Music'
     AND (l.key IS NULL OR (NOT l.found AND l.fetched_at < now() - interval '30 days'))`;
 
-const norm = (s) => String(s || "").toLowerCase().replace(/^the\s+/, "").replace(/[^a-z0-9]/g, "");
-
 // The search is fuzzy, so only accept the same artist. Prefers a result that has songs.
 export function pickSetlist(results, artist) {
   const same = (results || []).filter((r) => norm(r.artist?.name) === norm(artist));
-  const songsOf = (r) => (r.sets?.set || []).flatMap((set) => set.song || [])
-    .filter((song) => !song.tape && song.name)
-    .map((song) => {
-      if (song.cover?.name) return { name: song.name, cover: song.cover.name };
-      return { name: song.name };
-    });
   const best = same.find((r) => songsOf(r).length);
   if (!best) return { found: false, url: null, songs: [] };
   return { found: true, url: best.url || null, songs: songsOf(best) };
