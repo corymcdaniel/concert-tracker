@@ -66,10 +66,10 @@ export function renderStats(){
 }
 
 /* ---------- up next: how long until a show ---------- */
-const daysUntil = d => Math.round((new Date(d + 'T12:00') - new Date(TODAY + 'T12:00')) / 86400000);
+export const daysUntil = d => Math.round((new Date(d + 'T12:00') - new Date(TODAY + 'T12:00')) / 86400000);
 const plural = (v, word) => { if (v === 1) return `1 ${word}`; return `${v} ${word}s`; };
 // "Tonight", "In 3 days", "In 2 weeks", "In 7 months"
-function countdown(days){
+export function countdown(days){
   if (days <= 0) return 'Tonight';
   if (days === 1) return 'Tomorrow';
   if (days < 14) return `In ${days} days`;
@@ -84,7 +84,7 @@ function shortCountdown(days){
   if (days < 60) return `${Math.round(days / 7)} wk`;
   return `${Math.round(days / 30.44)} mo`;
 }
-const weekday = d => new Date(d + 'T12:00').toLocaleDateString(undefined, {weekday: 'long', month: 'short', day: 'numeric'});
+export const weekday = d => new Date(d + 'T12:00').toLocaleDateString(undefined, {weekday: 'long', month: 'short', day: 'numeric'});
 const shortDate = d => `${MONTHS[+d.slice(5, 7) - 1]} ${+d.slice(8, 10)} '${d.slice(2, 4)}`;
 
 // A later show as one line: date, headliner (+ how many more), venue, how long until it
@@ -239,7 +239,7 @@ export const money = v => {
 // (they're the oldest), then by date, then list order. Upcoming shows continue the count,
 // so an upcoming stub shows the sighting it will be.
 let nthSeen = new Map();
-const ordinal = n => { const s = ['th','st','nd','rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+export const ordinal = n => { const s = ['th','st','nd','rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 function countSightings(){
   const byTime = state.shows.map((s, i) => ({s, i})).sort((a, b) => (a.s.date || '').localeCompare(b.s.date || '') || a.i - b.i);
   const tally = new Map();

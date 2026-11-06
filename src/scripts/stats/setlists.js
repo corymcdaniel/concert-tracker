@@ -13,8 +13,17 @@ let FIRST_PLAYS = null;
 export async function loadSetlists(){
   if (state.mode !== 'netlify') return;
   try { const r = await fetch('/api/setlists', {cache:'no-store'}); if (r.ok) SETS = await r.json(); } catch {}
-  if (!SETS.sets.length || FIRST_PLAYS) return;
-  try { const r = await fetch('listening-songs.json'); if (r.ok) FIRST_PLAYS = await r.json(); } catch {}
+  if (!SETS.sets.length) return;
+  await loadFirstPlays();
+}
+// When you first played each song, by artist: {matchKey: {songKey: date}}
+let firstPlaysLoading = null;
+export function loadFirstPlays(){
+  if (!firstPlaysLoading) firstPlaysLoading = (async () => {
+    try { const r = await fetch('listening-songs.json'); if (r.ok) FIRST_PLAYS = await r.json(); } catch {}
+    return FIRST_PLAYS;
+  })();
+  return firstPlaysLoading;
 }
 export function setlistPanel(rank){
   const sync = `<button type="button" class="edit-only" id="syncSets">Check setlist.fm</button>`;
@@ -77,6 +86,8 @@ export async function syncSetlists(btn){
   await loadSetlists();
   if (state.view === 'stats') renderStatsView();
 }
+// The synced setlist for an act on a date, or null
+export const setlistFor = (artist, date) => SETS.sets.find(s => s.artist === artist && s.date === date) || null;
 export function artistSongs(name){
   const sets = SETS.sets.filter(s => s.artist === name && s.date < TODAY);
   if (!sets.length) return '';

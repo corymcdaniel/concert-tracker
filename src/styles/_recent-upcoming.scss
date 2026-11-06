@@ -1,0 +1,196 @@
+/* ---------- stats: Recent and Upcoming (src/scripts/stats/recent.js, upcoming.js, window.js) ----------
+   Both sections share these panels. Each draws in its own accent, --acc: Upcoming in the upcoming colour, like the
+   log's Up next ticket, and Recent in --recent. index.js puts the open section on #statsView for this. */
+.sv{--acc:var(--upcoming)}
+.sv[data-section=recent]{--acc:var(--recent)}
+.tag.acc{color:var(--acc)}
+
+// The landing page's Upcoming ticket runs across the top
+.stat-card.wide{grid-column:1 / -1}
+
+// The next show, with a countdown, and the line of every show ahead
+.up-hero{background:linear-gradient(var(--acc),var(--acc)) top/100% 5px no-repeat,var(--paper);padding-top:24px}
+.uh-top{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:end}
+.uh-count{display:grid;gap:2px}
+.uh-count .k{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.uh-count b{font-family:var(--display);font-size:clamp(44px,8vw,68px);font-weight:800;line-height:.95;text-transform:uppercase}
+.uh-count>span:last-child{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.uh-what{display:grid;gap:4px;min-width:0;padding-bottom:4px}
+.uh-what p{margin:0}
+.uh-acts button{border:0;background:none;padding:0;font-family:var(--display);font-size:30px;font-weight:800;line-height:1;text-transform:uppercase;text-align:left;transition:color .15s}
+.uh-acts button:hover{color:var(--acc)}
+.uh-more{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.uh-where{font-size:14px;color:var(--muted)}
+.uh-where button{border:0;background:none;padding:0;font-weight:600;color:var(--ink)}
+.uh-where button:hover{color:var(--acc);text-decoration:underline}
+
+// Today on the left, the last show on the right, a stop for each show. Show labels sit above the line
+// (every other one higher, on a stalk), months below it.
+.up-line{--track:4px;position:relative;list-style:none;margin:64px 6px 4px;padding:0;height:28px}
+// Room above the line for as many rows of labels as the stops use (window.js timeline)
+.up-line.rows2{margin-top:108px}
+.up-line.rows3{margin-top:152px}
+.up-line::before{content:"";position:absolute;left:0;right:0;top:0;height:var(--track);translate:0 -50%;border-radius:4px;
+  background:linear-gradient(90deg,var(--acc),color-mix(in oklab,var(--acc) 25%,var(--chip)))}
+.up-line>li{position:absolute;top:0;left:calc(var(--x) * 1%)}
+.ut-end span,.ut-tick span{position:absolute;top:12px;translate:-50% 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.ut-end::before,.ut-tick::before{content:"";position:absolute;width:2px;height:10px;translate:-50% -50%;background:var(--line)}
+.ut-end::before{width:12px;height:12px;border-radius:50%;background:var(--acc)}
+.ut-end span{color:var(--acc);font-weight:600}
+.ut-stop{z-index:1}
+.ut-stop button{position:absolute;bottom:14px;translate:-50% 0;display:grid;justify-items:center;gap:1px;border:0;background:none;padding:0;text-align:center;width:max-content;max-width:150px}
+// Higher rows stand on a stalk down to their stop
+.ut-stop.r1 button{bottom:58px}
+.ut-stop.r2 button{bottom:102px}
+.ut-stop.r1::before,.ut-stop.r2::before{content:"";position:absolute;bottom:8px;width:1px;height:50px;translate:-50% 0;background:color-mix(in oklab,var(--acc) 60%,var(--line))}
+.ut-stop.r2::before{height:94px}
+// The stop itself sits on the line, under the label
+.ut-stop i{position:absolute;bottom:-21px;width:14px;height:14px;border-radius:50%;background:var(--paper);border:3px solid var(--acc);transition:scale .2s var(--ease),background .2s}
+.ut-stop.r1 i{bottom:-65px}
+.ut-stop.r2 i{bottom:-109px}
+.ut-stop b{font-size:13px;font-weight:600;line-height:1.2;overflow-wrap:anywhere}
+.ut-stop small{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
+.ut-stop button:hover b,.ut-stop button:focus-visible b{color:var(--acc)}
+.ut-stop button:hover i,.ut-stop button:focus-visible i{background:var(--acc);scale:1.3}
+// The last stop's label hangs left of it, so it stays inside the panel
+.ut-stop:last-child button{translate:-85% 0}
+.ut-stop.first button{translate:-25% 0}
+@media (prefers-reduced-motion:no-preference){
+  .up-line::before{transform-origin:left;animation:up-draw .9s var(--ease) both}
+  .ut-stop{animation:up-pop .45s var(--ease) both;animation-delay:calc(.25s + var(--x) * .007s)}
+}
+@keyframes up-draw{from{transform:scaleX(0)}}
+@keyframes up-pop{from{opacity:0;translate:0 6px}}
+
+// Tags for "again", next to the accent tag
+.tag.again{color:var(--muted)}
+
+// Milestones: a date, then what it'll be
+.up-miles{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.up-miles li{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:baseline;padding:8px 12px;border-radius:8px;background:var(--bg);font-size:14px;border-top:2px solid transparent;transition:transform .2s var(--ease)}
+.up-miles li:hover{transform:translateX(3px)}
+// A bigger milestone: a soft accent edge along the top
+.up-miles li.big{border-top-color:color-mix(in oklab,var(--acc) 45%,transparent);background:color-mix(in oklab,var(--acc) 10%,var(--bg))}
+.up-miles time{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.up-miles b{font-weight:700}
+.up-miles button,.up-lineup td button,.ut-where button{border:0;background:none;padding:0;font-weight:600;text-align:left}
+.up-miles button:hover,.up-lineup td button:hover,.ut-where button:hover{color:var(--acc);text-decoration:underline}
+
+// The lineup: one block per night
+.up-lineup tr.night th{padding:14px 8px 6px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink);text-transform:uppercase}
+.up-lineup tbody:first-of-type tr.night th{padding-top:8px}
+.up-lineup small{color:var(--muted);font-family:var(--mono);font-size:11px;margin-left:6px}
+.up-lineup tbody tr:not(.night){transition:background .15s}
+.up-lineup tbody tr:not(.night):hover{background:var(--bg)}
+
+// How ready are you: hours on Spotify, as bars
+.up-ready li{grid-template-columns:minmax(0,1fr) 64px minmax(0,190px)}
+.up-ready .lab{--bar:color-mix(in oklab,var(--acc) 40%,var(--paper));display:flex;gap:8px;align-items:center}
+.up-ready .lab button{border:0;background:none;padding:0;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.up-ready .lab button:hover{text-decoration:underline}
+.up-ready .tag{font-size:9.5px;padding:1px 5px;white-space:nowrap}
+.up-meta{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:560px){.up-ready li{grid-template-columns:minmax(0,1fr) 64px}.up-meta{display:none}}
+@media (prefers-reduced-motion:no-preference){
+  .up-ready .lab::before{transform-origin:left;animation:up-draw .7s var(--ease) both}
+}
+.up-cold{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.up-ready .sub{margin-top:16px}
+
+// Likely setlist: pick an act, then what they've been playing
+.up-acts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.up-acts .chip{transition:background .15s,color .15s,transform .15s var(--ease)}
+.up-acts .chip:hover{transform:translateY(-1px)}
+.up-acts .chip[aria-pressed=true]{background:var(--acc);color:var(--on-accent)}
+.up-wait{animation:up-pulse 1.2s ease-in-out infinite alternate}
+@keyframes up-pulse{to{opacity:.45}}
+.sl-ends{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.sl-ends div{display:grid;gap:2px;padding:10px 14px;border-radius:8px;background:var(--bg)}
+.sl-ends span{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sl-ends b{font-size:16px;font-weight:600}
+.sl-ends small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.sl-songs{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 28px;counter-reset:fc}
+.sl-songs li{counter-increment:fc;display:grid;grid-template-columns:22px minmax(0,1fr) 54px 36px 16px;gap:8px;align-items:center;font-size:14px;padding:2px 0}
+.sl-songs li::before{content:counter(fc);font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.sl-name{min-width:0;overflow-wrap:anywhere}
+.sl-name small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.sl-bar{height:6px;border-radius:3px;background:var(--chip);position:relative;overflow:hidden}
+.sl-bar::before{content:"";position:absolute;inset:0;width:var(--w);border-radius:inherit;background:var(--acc)}
+.sl-n{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.sl-k{width:16px;height:16px;border-radius:50%}
+.sl-k.on{background:var(--acc);mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='8'/%3E%3C/svg%3E")}
+.sl-k.on::after{content:"✓";display:grid;place-items:center;height:100%;font-size:11px;font-weight:700;color:var(--on-accent)}
+.sl-k.new{border:2px solid var(--acc)}
+.sl-songs li:hover .sl-name{color:var(--acc)}
+// A setlist you heard has no bars: just number, song and mark
+.sl-songs.heard li{grid-template-columns:22px minmax(0,1fr) 0 0 16px;column-gap:8px}
+.sl-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 10px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.sl-legend span{display:inline-flex;align-items:center;gap:6px}
+.sl-legend .sl-k{display:inline-block;width:12px;height:12px}
+.sl-legend .sl-k.on::after{content:none}
+.up-acts .chip em{font-style:normal;font-family:var(--mono);font-size:11px;opacity:.75;margin-left:4px}
+@media (prefers-reduced-motion:no-preference){
+  .sl-songs li{animation:up-pop .35s var(--ease) both}
+  @for $i from 1 through 30 { .sl-songs li:nth-child(#{$i}){animation-delay:#{$i * 0.025}s} }
+}
+.sl-more{margin-top:14px}
+.sl-more summary{cursor:pointer;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sl-more summary:hover{color:var(--ink)}
+.sl-more .mini{margin-top:10px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));column-gap:28px}
+#upSetlist .sub{margin-top:18px}
+.sl-link{display:inline-block;margin-top:14px;font-size:13px;color:var(--muted)}
+.sl-link:hover{color:var(--ink)}
+
+// The show bump: plays per day before (muted) and after (accent) each show, as two thin bars
+.rc-bump{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.rc-bump li{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr) auto 84px;gap:12px;align-items:center;font-size:14px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.bp-name{display:grid;min-width:0}
+.bp-name button{border:0;background:none;padding:0;font-weight:600;text-align:left;overflow-wrap:anywhere}
+.bp-name button:hover{color:var(--acc);text-decoration:underline}
+.bp-name small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.bp-bars{display:grid;gap:3px}
+.bp-bars i{display:block;height:7px;width:var(--w);min-width:2px;border-radius:3px}
+.bp-bars .b,.bp-key.b{background:color-mix(in oklab,var(--muted) 55%,var(--chip))}
+.bp-bars .a,.bp-key.a{background:var(--acc)}
+.bp-key{display:inline-block;width:12px;height:7px;border-radius:3px}
+.bp-n{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.bp-n small{font-size:inherit;opacity:.8}
+.bp-t{text-align:right}
+@media (max-width:560px){
+  .rc-bump li{grid-template-columns:minmax(0,1fr) auto}
+  .bp-bars{grid-column:1 / -1;grid-row:2}
+  .bp-n{grid-column:1 / -1;grid-row:3}
+}
+@media (prefers-reduced-motion:no-preference){
+  .bp-bars i{transform-origin:left;animation:up-draw .7s var(--ease) both}
+  .bp-bars .a{animation-delay:.15s}
+}
+
+// Where you're headed / where you went: one row per night, then the map
+.up-trips{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:6px}
+.up-trips li{display:grid;grid-template-columns:76px minmax(0,1fr) auto 80px;gap:12px;align-items:center;padding:8px 12px;border-radius:8px;background:var(--bg);font-size:14px}
+.up-trips time{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ut-where{display:grid;min-width:0}
+.ut-where small{color:var(--muted);font-size:12.5px}
+.ut-tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:end}
+.ut-mi{font-family:var(--display);font-size:20px;font-weight:800;text-align:right;white-space:nowrap}
+@media (max-width:560px){
+  .up-trips li{grid-template-columns:62px minmax(0,1fr) auto}
+  .ut-tags{grid-column:2 / -1;justify-content:start;grid-row:2}
+}
+.up-map{height:clamp(260px,40vw,360px)}
+.vpin.up-pin{background:var(--acc);color:var(--on-accent)}
+.vpin.up-home{background:var(--ink);cursor:default}
+.up-route{stroke:var(--acc);stroke-width:2.5;stroke-dasharray:6 6;fill:none;opacity:.9}
+@media (prefers-reduced-motion:no-preference){
+  .up-route{animation:up-dash 1.6s linear infinite}
+}
+@keyframes up-dash{to{stroke-dashoffset:-24}}
+
+// Effects off: nothing slides or lifts under the mouse
+:root[data-effects="off"]{
+  .up-miles li:hover{transform:none}
+  .up-acts .chip:hover{transform:none}
+  .ut-stop button:hover i,.ut-stop button:focus-visible i{scale:none}
+  .up-route{animation:none}
+}

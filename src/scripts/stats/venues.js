@@ -25,7 +25,7 @@ const markers = new Map();
 // and L must not count as ready until the cluster plugin has loaded too, or the second draw finds
 // L.markerClusterGroup missing and stops halfway. A failed load is forgotten, so the next visit tries again.
 let libLoading = null;
-function loadLib(){
+export function loadLib(){
   if (!libLoading) libLoading = (async () => {
     const lib = (await import('leaflet')).default;
     // The cluster plugin extends the global L
@@ -36,11 +36,12 @@ function loadLib(){
       addStylesheet(clusterCss),
     ]);
     L = lib;
+    return lib;
   })().catch(e => { libLoading = null; throw e; });
   return libLoading;
 }
 let fallbackLoading = null;
-function loadFallback(){
+export function loadFallback(){
   if (!fallbackLoading) fallbackLoading = (async () => {
     try {
       const r = await fetch('venue-coords.json');
@@ -50,6 +51,9 @@ function loadFallback(){
   })();
   return fallbackLoading;
 }
+
+// A venue's [lat, lon] from its info record, then venue-coords.json (load it first with loadFallback)
+export const venueCoord = key => state.INFO.venues?.[key]?.coord || FALLBACK?.[key]?.coord || null;
 
 const day = d => { const [y, m, dd] = d.split('-'); return `${MONTHS[+m-1]} ${+dd}, ${y}`; };
 // Pin size steps by nights at the venue
@@ -67,7 +71,7 @@ function venueGroups(){
     const key = `${n.venue}|${n.city}`;
     if (!groups.has(key)) {
       const extra = FALLBACK[key];
-      const coord = state.INFO.venues?.[key]?.coord || extra?.coord;
+      const coord = venueCoord(key);
       if (!coord) { missing.add(key); return; }
       groups.set(key, {key, venue: n.venue, city: n.city, where: place(n), coord, approx: !!extra?.approx && !state.INFO.venues?.[key]?.coord, note: extra?.note, nights: []});
     }

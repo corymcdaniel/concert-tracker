@@ -12,6 +12,8 @@ import { drawVenueMap } from './venues.js';
 import { agePanel, counter, dayPanel, gapPanel, genrePanel, heatPanel, newRepeatPanel, openerPanel, runCounters } from './panels.js';
 import { byYearPanel, clockPanel, favoritesPanel, habitsPanel, summaryPanel, yearTopsPanel } from './listening.js';
 import { knownPanel, setlistPanel } from './setlists.js';
+import { drawRecent, recentCard, recentSection } from './recent.js';
+import { drawUpcoming, upcomingCard, upcomingSection } from './upcoming.js';
 import { arrangeWall, wallPanel } from './wall.js';
 import { $, esc, happened, place } from '../util.js';
 
@@ -95,6 +97,8 @@ export function renderStatsView(){
   }
 
   const sections = {
+    recent: recentSection(),
+    upcoming: upcomingSection(),
     overview: `
       ${reviewPanel(nd)}
       <div class="panel"><h3>Highlights</h3><div class="hl">${hl.map(([b,l,p])=>`<div><span>${l}</span><b>${b}</b><p>${p}</p></div>`).join('')}</div></div>
@@ -140,7 +144,12 @@ export function renderStatsView(){
       ${clockPanel()}`,
   };
   const hasListening = sections.listening.trim();
-  if (state.statsSection && !sections[state.statsSection]?.trim()) state.statsSection = null;
+  // A section with nothing in it (Upcoming once the last booked show has passed, an old link): show the cards,
+  // and put the address back to match
+  if (state.statsSection && !sections[state.statsSection]?.trim()) {
+    state.statsSection = null;
+    try { history.replaceState(null, '', '#stats'); } catch {}
+  }
   // Counted as in the header: a venue name in two cities is one venue there, though the rankings split it
   const venueCount = new Set(past.map(s => s.venue.toLowerCase()).filter(Boolean)).size, cityCount = cityN.size;
   let listeningLine = 'Setlists from the shows you saw';
@@ -155,15 +164,21 @@ export function renderStatsView(){
     ['places', 'Places', `${venueCount} venues`, `${cityCount} cities on a map, where the bands came from, and before and after the move`],
   ];
   if (hasListening) cards.push(['listening', 'Listening', listeningBig, listeningLine]);
+  // The last 3 months and what's booked lead, side by side, when there's something in them
+  const timeCards = [recentCard(), upcomingCard()].filter(Boolean);
+  cards.unshift(...timeCards);
   // Each section is a ticket: the face says what's inside, and the tear-off stub carries its section number and a barcode
   const landing = `<div class="stat-cards">${cards.map(([id, name, big, line], i) => {
     const no = String(i + 1).padStart(2, '0');
-    return `<button type="button" class="stat-card" data-stats-section="${id}">
+    // On its own, Recent or Upcoming runs across the top
+    let wide = '';
+    if (timeCards.length === 1 && i === 0) wide = ' wide';
+    return `<button type="button" class="stat-card${wide}" data-stats-section="${id}">
       <span class="sc-face"><span class="k"><span aria-hidden="true">Sec ${no} · </span>${name}</span><b>${big}</b><span class="line">${esc(line)}</span></span>
       <span class="sc-stub" aria-hidden="true"><span class="sc-adm">Admit one</span><span class="sc-no">${no}</span><i class="sc-code"></i></span>
     </button>`;
   }).join('')}</div>`;
-  // Section links: the same four as the cards, plus a way back to them
+  // Section links: the same as the cards, plus a way back to them
   const links = [['', 'All'], ...cards.map(([id, name]) => [id, name])].map(([id, name]) => {
     let current = '';
     if ((state.statsSection || '') === id) current = ' aria-current="page"';
@@ -176,8 +191,12 @@ export function renderStatsView(){
     body = `<h2 class="sr-only">${title}</h2>${sections[state.statsSection]}`;
   }
   $('#statsView').innerHTML = subnav + body;
+  // Recent and Upcoming take their accent colour from this (_recent-upcoming.scss)
+  $('#statsView').dataset.section = state.statsSection || '';
   runCounters($('#statsView'));
   arrangeWall();
   drawMap();
   drawVenueMap();
+  drawUpcoming();
+  drawRecent();
 }

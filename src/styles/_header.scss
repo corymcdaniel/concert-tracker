@@ -46,10 +46,13 @@
 /* ---------- stats sub-nav: each link underlined in its section's card color ---------- */
 .subnav{display:flex;flex-wrap:wrap;gap:4px 22px;border-bottom:1px solid var(--line);padding-bottom:2px}
 .subnav button{--c:var(--ink);position:relative;border:0;border-radius:0;background:none;padding:6px 0 8px;font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.subnav button:nth-child(2){--c:var(--music)}
-.subnav button:nth-child(3){--c:var(--comedy)}
-.subnav button:nth-child(4){--c:var(--upcoming)}
-.subnav button:nth-child(5){--c:var(--gold)}
+// Each section's colour, as on its card
+.subnav button[data-stats-section=recent]{--c:var(--recent)}
+.subnav button[data-stats-section=upcoming]{--c:var(--upcoming)}
+.subnav button[data-stats-section=overview]{--c:var(--music)}
+.subnav button[data-stats-section=artists]{--c:var(--comedy)}
+.subnav button[data-stats-section=places]{--c:var(--gold)}
+.subnav button[data-stats-section=listening]{--c:var(--spotify)}
 .subnav button::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:3px;border-radius:3px;background:var(--c);transform:scaleX(0);transform-origin:left}
 .subnav button:hover{color:var(--ink);border:0}
 .subnav button:hover::after{transform:scaleX(.35)}

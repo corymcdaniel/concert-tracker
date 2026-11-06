@@ -3,8 +3,9 @@
    comedy and upcoming differ in lightness as well as hue, so they stay apart with colour blindness. */
 :root{
   --bg:#0b1430; --paper:#1b2a5a; --ink:#f2f4fa; --muted:#a9b3cf; --line:#38497f;
-  --music:#93d4ff; --comedy:#f76fa3; --upcoming:#c4f07a; --chip:#24346a; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; --band:#060c20; --band-ink:#c9d1ea;
-  // Text on a fill of music, comedy, upcoming or gold
+  --music:#93d4ff; --comedy:#f76fa3; --upcoming:#c4f07a; --recent:#c7a8ff; --chip:#24346a; --gold:#f2c14e; --gold-ink:#f7d684; --spotify:#1ed760; --spotify-ink:#1ed760; --band:#060c20; --band-ink:#c9d1ea;
+  // Recent (Stats → Recent) is a lavender, apart in hue from music and lighter than comedy
+  // Text on a fill of music, comedy, upcoming, recent or gold
   --on-accent:#0b1430;
   // A gold-tinted surface: gold mixed into navy turns grey, so this is a dark bronze of gold's own hue
   --bronze:oklch(.27 .03 85);
@@ -21,7 +22,7 @@
    Muted, comedy and upcoming are a touch darker than the original so they pass AA on the page. */
 :root[data-theme="light"]{
   --bg:#e9ecf1; --paper:#fbfcfd; --ink:#16192b; --muted:#5a6078; --line:#cdd2dd;
-  --music:#2a46e8; --comedy:#c4176b; --upcoming:#0b7a53; --chip:#dfe3ec; --gold:#c99a06; --gold-ink:#6e5000; --spotify:#1db954; --spotify-ink:#117a37; --band:#16192b; --band-ink:#e7e9f2;
+  --music:#2a46e8; --comedy:#c4176b; --upcoming:#0b7a53; --recent:#6a3fd1; --chip:#dfe3ec; --gold:#c99a06; --gold-ink:#6e5000; --spotify:#1db954; --spotify-ink:#117a37; --band:#16192b; --band-ink:#e7e9f2;
   --on-accent:#fff; --bronze:color-mix(in oklab,var(--gold) 10%,var(--paper)); --stamp:#8a6400;
   --bar:color-mix(in oklab,var(--music) 32%,var(--paper));
   color-scheme:light;
@@ -32,7 +33,7 @@
    The notches still cut through to the navy page, since --bg isn't changed here. */
 @mixin light-ticket{
   --paper:#e8ebf1; --chip:#d6dbe5; --ink:#121526; --muted:#454b62; --line:#c2c8d6;
-  --music:#1f36c4; --comedy:#9c0f4c; --upcoming:#08583c; --gold:#d9a800; --gold-ink:#5a4100; --on-accent:#fff;
+  --music:#1f36c4; --comedy:#9c0f4c; --upcoming:#08583c; --recent:#5129ad; --gold:#d9a800; --gold-ink:#5a4100; --on-accent:#fff;
   color:var(--ink);
 }
 .stub,.ghost,.later li,.ticket,.stat-card{@include light-ticket}

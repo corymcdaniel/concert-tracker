@@ -80,9 +80,13 @@
   background:var(--paper);border:0;border-radius:10px;overflow:hidden;position:relative;
   box-shadow:0 1px 3px rgb(0 0 0 / .08),0 12px 28px -18px rgb(0 0 0 / .35);
 }
-.stat-card:nth-child(2){--c:var(--comedy)}
-.stat-card:nth-child(3){--c:var(--upcoming)}
-.stat-card:nth-child(4){--c:var(--gold-ink)}
+// By section, so the Upcoming card coming and going doesn't recolour the rest. Places was in the upcoming
+// colour before Upcoming had a card; it's gold now, and Listening Spotify's green.
+.stat-card[data-stats-section=recent]{--c:var(--recent)}
+.stat-card[data-stats-section=upcoming]{--c:var(--upcoming)}
+.stat-card[data-stats-section=artists]{--c:var(--comedy)}
+.stat-card[data-stats-section=places]{--c:var(--gold-ink)}
+.stat-card[data-stats-section=listening]{--c:var(--spotify-ink)}
 // The face: a coloured band along the top, the section, its big number and what's inside
 .sc-face{display:grid;gap:6px;align-content:start;padding:22px 22px 20px;border-right:2px dashed var(--line);position:relative;
   background:linear-gradient(var(--c),var(--c)) top/100% 5px no-repeat}
