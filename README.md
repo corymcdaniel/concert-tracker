@@ -15,6 +15,7 @@ in a history they can browse and undo.
 | `netlify/functions/shows.mjs` | `GET /api/shows` (public); add, edit, delete, save a whole bill and bulk replace (editors). |
 | `netlify/functions/info.mjs` | `GET /api/info` (public); save one artist or venue record (editors). |
 | `netlify/functions/changes.mjs` | Change history and undo (editors). |
+| `netlify/functions/pins.mjs` | Which pins have had their "New pin!" pop-up (editors). |
 | `netlify/functions/photos.mjs` | `GET /api/photos` and `/api/photos/:id` (public); upload and delete photos (editors). |
 | `netlify/functions/setlists.mjs` | `GET /api/setlists` (public); look up the next act on setlist.fm (editors). |
 | `netlify/functions/forecast.mjs` | `GET /api/forecast?artist=` (public): an upcoming act's recent setlists from setlist.fm, tallied song by song and kept for a week. |
@@ -112,6 +113,25 @@ The images live in the Netlify Blobs store `photos`, keyed by photo id; `netlify
 **Check setlist.fm** in the Stats tab (editors) looks up each past music act, one request at a time. Comedy is skipped.
 Acts with no result are checked again after 30 days. The key stays on the server.
 Set `SETLISTFM_API_KEY` in Netlify, and in a git-ignored `.env.dev` locally (see `.env.example`).
+
+### Pins
+A third tab, **Pins** (`#pins`), is a lanyard of 18 enamel pins earned from the log: nights out (1, 10, 25, 50, 100),
+venues, cities, countries, seeing an artist 3 times, 3 nights in a month, back-to-back nights, a 3-act bill, comedy,
+a 5-star night, photos on 5 nights and 5 different years. Earned pins sit on a felt board; the rest show how close they
+are. **Stats → Overview** has a Pins panel with the earned ones and the next to chase. When the editor earns a new pin,
+a **New pin!** pop-up drops it in with a burst of sparks, once: celebrated pins are saved in the `pins_seen` table
+(`netlify/functions/pins.mjs`, editors only), so it doesn't replay on another device. Visitors see the lanyard but never
+the pop-up.
+
+The counting is in `src/scripts/pins.js` and has no page code in it. Its pin list and ids match show-log-app's
+`src/lib/pins.js`, so the two sites award the same pins. Drawing is in `src/scripts/pinsView.js`, styles in `_pins.scss`.
+
+### On this day
+Above the log, while it isn't filtered, a strip of cards shows nights on today's date in earlier years, or, when there
+are none, nights within 3 days of it ("This week, years ago"). Each card has your photo from that night, or else the
+headliner's Wikipedia photo, sepia until hovered. The headliner opens the artist pop-up and **See the ticket** scrolls
+to that night's stub. Which nights is worked out in `src/scripts/memories.js` (shared logic with show-log-app); the
+cards are in `src/scripts/onThisDay.js`, styles in `_memories.scss`.
 
 ### Stats sections
 The Stats tab opens on four cards: **Overview**, **Artists**, **Places** and **Listening**, with **Recent** and **Upcoming** cards across the top while there's a show in the last 3 months or one booked. A row of section links under the Log/Stats switch jumps straight to any of them, or back to the cards with **All**. Each section has its own link, like

@@ -1,4 +1,5 @@
 import { nights } from '../log.js';
+import { pinsPanel } from '../pinsView.js';
 import { reviewPanel } from '../review.js';
 import { MONTHS, state } from '../state.js';
 import { aroundPanel } from './around.js';
@@ -102,6 +103,7 @@ export function renderStatsView(){
     overview: `
       ${reviewPanel(nd)}
       <div class="panel"><h3>Highlights</h3><div class="hl">${hl.map(([b,l,p])=>`<div><span>${l}</span><b>${b}</b><p>${p}</p></div>`).join('')}</div></div>
+      ${pinsPanel()}
       <div class="panel"><h3>Nights per year <span class="legend"><span><i style="background:var(--music)"></i>Music</span><span><i style="background:var(--comedy)"></i>Comedy</span></span></h3><div class="bars">${yb}</div></div>
       ${newRepeatPanel(past, y0, y1)}
       ${heatPanel(nd, y0, y1)}
@@ -159,7 +161,7 @@ export function renderStatsView(){
     listeningBig = `${state.LISTEN.summary.hours.toLocaleString()} hours`;
   }
   const cards = [
-    ['overview', 'Overview', `${ns.length} nights`, 'Year in review, highlights, streaks and every month out'],
+    ['overview', 'Overview', `${ns.length} nights`, 'Year in review, highlights, pins, streaks and every month out'],
     ['artists', 'Artists', `${A.length} acts`, 'Everyone you\'ve seen, repeat sightings, genres and openers'],
     ['places', 'Places', `${venueCount} venues`, `${cityCount} cities on a map, where the bands came from, and before and after the move`],
   ];

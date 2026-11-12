@@ -2,6 +2,7 @@ import { persist } from './api.js';
 import { wristband } from './festivals.js';
 import { nightPhotos, photosOn, photoUrl } from './photos.js';
 import { flip, motionOK, toast } from './motion.js';
+import { onThisDay, paintOnThisDay } from './onThisDay.js';
 import { closeSheet } from './sheets.js';
 import { MONTHS, TODAY, filt, state } from './state.js';
 import { $, cityKey, esc, happened, place } from './util.js';
@@ -261,7 +262,9 @@ export function renderList(){
   // upcoming nights are pinned on top, soonest first; the year groups only hold shows that have happened
   const next = all.filter(n=>!happened(n)).sort((a,b)=>a.date.localeCompare(b.date) || a.idx-b.idx);
   const list = all.filter(happened);
-  let html=onThisDay(), yr=null;
+  // Nights from this date in earlier years lead, when the log isn't filtered
+  let html = '', yr = null;
+  if (!filt.q && !filt.type && !filt.city) html = onThisDay(list);
   // The soonest show is a full ticket with a countdown; the rest are one-line rows underneath
   if (next.length) {
     const [soonest, ...later] = next;
@@ -285,6 +288,7 @@ export function renderList(){
   }
   $('#list').innerHTML = html;
   paintStubPhotos();
+  paintOnThisDay();
   watchReveals();
 }
 
@@ -313,18 +317,4 @@ export function paintStubPhotos(){
     if (mine.length > STRIP) more = `<button type="button" class="sp more" data-photos-of="${esc(actId)}" data-at="${STRIP}">+${mine.length - STRIP}</button>`;
     el.querySelector('.body .acts').insertAdjacentHTML('afterend', `<div class="stub-photos">${thumbs}${more}</div>`);
   });
-}
-// Past shows on today's date, above the log when it isn't filtered
-function onThisDay(){
-  if (filt.q || filt.type || filt.city) return '';
-  const day = TODAY.slice(5);
-  const then = nights(state.shows.filter(s => s.date && s.date < TODAY && s.date.slice(5) === day));
-  if (!then.length) return '';
-  const items = then.map(n => {
-    const ago = +TODAY.slice(0,4) - +n.date.slice(0,4);
-    let years = `${ago} years ago`;
-    if (ago === 1) years = 'A year ago';
-    return `<span>${years}: <button class="chip" type="button" data-artist="${esc(n.acts[0].artist)}">${esc(n.acts[0].artist)}</button> at ${esc(n.venue || 'an unknown venue')}</span>`;
-  });
-  return `<div class="otd"><span class="lbl">On this day</span>${items.join('')}</div>`;
 }

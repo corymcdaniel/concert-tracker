@@ -35,6 +35,7 @@ function load(){
 
 // The view you're on, as a path GA can group: / for the log, /stats, /stats/artists, ...
 function currentPage(){
+  if (state.view === 'pins') return {path: '/pins', title: 'Pins'};
   if (state.view !== 'stats') return {path: '/', title: 'Log'};
   if (!state.statsSection) return {path: '/stats', title: 'Stats'};
   const name = state.statsSection[0].toUpperCase() + state.statsSection.slice(1);
