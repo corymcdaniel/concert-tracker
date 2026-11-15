@@ -4,6 +4,7 @@ import { nightPhotos, photosOn, photoUrl } from './photos.js';
 import { flip, motionOK, toast } from './motion.js';
 import { onThisDay, paintOnThisDay } from './onThisDay.js';
 import { closeSheet } from './sheets.js';
+import { paintTally, tally } from './tally.js';
 import { MONTHS, TODAY, filt, state } from './state.js';
 import { $, cityKey, esc, happened, place } from './util.js';
 import { render } from './view.js';
@@ -264,13 +265,16 @@ export function renderList(){
   const list = all.filter(happened);
   // Nights from this date in earlier years lead, when the log isn't filtered
   let html = '', yr = null;
-  if (!filt.q && !filt.type && !filt.city) html = onThisDay(list);
+  const unfiltered = !filt.q && !filt.type && !filt.city;
+  if (unfiltered) html = onThisDay(list);
   // The soonest show is a full ticket with a countdown; the rest are one-line rows underneath
   if (next.length) {
     const [soonest, ...later] = next;
     html += `<div class="year next"><h2>Up next</h2><span>${next.length} show${next.length>1?'s':''}</span></div>` + stub(soonest, true);
     if (later.length) html += `<div class="later"><p class="later-k">Later</p><ol>${later.map(laterRow).join('')}</ol></div>`;
   }
+  // The headline numbers sit between what's coming up and what's been stamped. They're lifetime figures, so a filter hides them
+  if (unfiltered) html += tally(state.shows);
   const counts = {}; list.forEach(n => { const y=n.date?n.date.slice(0,4):'Undated'; counts[y]=(counts[y]||0)+1; });
   // The shows you've been to, under their own heading so they sit apart from what's coming up
   if (list.length) {
@@ -289,6 +293,7 @@ export function renderList(){
   $('#list').innerHTML = html;
   paintStubPhotos();
   paintOnThisDay();
+  paintTally();
   watchReveals();
 }
 

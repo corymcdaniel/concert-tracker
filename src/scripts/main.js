@@ -46,6 +46,14 @@ document.addEventListener('keydown', e => {
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.dataset.statsSection !== undefined) { openStatsSection(t.dataset.statsSection); return; }
+  // A headline number on the log (tally.js) opens its Stats section. It's a real step, so Back returns to the log
+  if (t.dataset.statsGo) {
+    try { history.pushState(null, '', location.href); } catch {}
+    setView('stats', t.dataset.statsGo);
+    const tabs = $('.tabs');
+    if (tabs.getBoundingClientRect().top < 0) tabs.scrollIntoView();
+    return;
+  }
   if (t.id === 'rvClose') { $('#review').close(); return; }
   if (t.id === 'rvShare') { shareReview(t); return; }
   if (t.dataset.review) { openReview(t.dataset.review); return; }

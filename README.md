@@ -57,6 +57,13 @@ into Stats keeps the hand up until Stats can be drawn. With reduced motion on, t
 that year), then a mosaic of photos you've uploaded to nights. Click a tile to jump to that night's ticket. The mosaic
 only appears once there are uploaded photos (`src/scripts/endcap.js`).
 
+**The tally:** between **Up next** and **Stamped**, a scoreboard of headline numbers (`src/scripts/tally.js`, `_tally.scss`). The top row is
+lifetime totals (nights, sets, artists, venues, cities) that count up when they scroll into view; under it are records: this year
+against the same point last year, most-seen artist, top venue, busiest year, biggest bill, longest yearly streak, first show and
+the longest wait to see someone again. Every cell is a button: totals open the matching Stats section, an artist or venue opens its
+pop-up, and a year or night jumps to it in the log. They're lifetime figures, so the strip is hidden while the log is searched or
+filtered. `headlineStats(shows, today)` is a pure function, kept apart from the markup so it can be reused.
+
 **Upcoming shows:** add a show with a future date and it's pinned under **Up next** at the top of the log, soonest first.
 Upcoming shows (including tonight's) are left out of every count: header totals, the Stats tab (except its Recent and Upcoming sections), the year headers and
 the "seen N times" counts in the artist and venue pop-ups. The day after the show, it moves into its year in the log and

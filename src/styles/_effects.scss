@@ -22,6 +22,7 @@
   .later li:hover{transform:none;box-shadow:0 1px 3px rgb(0 0 0 / .06)}
   .sp:hover,.sp:focus-visible{transform:none;box-shadow:0 1px 2px rgb(0 0 0 / .15)}
   .stamped:hover h2{transform:rotate(-4deg)}
+  .tally-n:hover b::after,.tally-n:focus-visible b::after{transform:scaleX(0)}
   .ticket:hover .t-stamp{opacity:.42;transform:translateY(-50%) rotate(-9deg)}
   // The end of the log: year rail and photo mosaic (captions still appear, without sliding)
   .ry:not(:disabled):hover .stack,.ry:focus-visible .stack{transform:none;filter:none}
