@@ -41,6 +41,9 @@
 .tabs button[aria-selected=true]{color:var(--paper)}
 .tab-ink{position:absolute;top:4px;bottom:4px;left:4px;width:var(--tab);border-radius:999px;background:var(--ink);box-shadow:0 2px 8px rgb(0 0 0 / .2)}
 .tabs:has([data-view=stats][aria-selected=true]) .tab-ink{transform:translateX(var(--tab))}
+.tabs:has([data-view=pins][aria-selected=true]) .tab-ink{transform:translateX(calc(var(--tab) * 2))}
+// Three tabs still fit beside the gutters on a small phone
+@media (max-width:420px){.tabs{--tab:92px}}
 @supports not selector(:has(*)){.tab-ink{display:none}.tabs button[aria-selected=true]{background:var(--ink)}}
 
 /* ---------- stats sub-nav: each link underlined in its section's card color ---------- */

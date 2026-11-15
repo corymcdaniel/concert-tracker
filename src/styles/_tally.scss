@@ -1,0 +1,70 @@
+/* ---------- The tally (tally.js): headline numbers on the log, between Up next and Stamped ----------
+   A scoreboard: a row of big totals over a grid of records, split by hairlines. It sits straight on the page,
+   without a card, so the tickets around it stay the loudest thing. */
+.tally{display:grid;gap:10px}
+// Room around it: under Up next (or On this day), and above the Stamped stamp
+.later+.tally,.stub+.tally{margin-top:54px}
+.otd+.tally{margin-top:34px}
+.list>.tally:first-child{margin-top:18px}
+.tally+.stamped{margin-top:44px}
+
+.tally-k{margin:0;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+// Every cell draws a rule on its top and left, pulled 1px outward; the board clips the ones on its outer edge,
+// so the rules only show between cells however many there are
+.tally-board{overflow:hidden;border-block:1px solid var(--line)}
+.tally ul{display:grid;margin:0;padding:0;list-style:none}
+.tally li{min-width:0;margin:-1px 0 0 -1px;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.tally-totals{grid-template-columns:repeat(5,minmax(0,1fr))}
+.tally-records{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:720px){.tally-records{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.tally button{
+  display:grid;grid-template-columns:minmax(0,1fr);width:100%;height:100%;
+  border:0;border-radius:0;background:none;color:inherit;
+  // Inside the cell, since the board clips anything outside it
+  outline-offset:-3px;
+}
+
+// Totals: a big number over a small label. On hover the number turns gold and is underlined.
+.tally-n{
+  justify-items:center;gap:8px;padding:20px 4px 16px;text-align:center;
+  b{
+    position:relative;font-family:var(--display);font-weight:800;font-size:clamp(30px,7.4vw,60px);line-height:.9;
+    font-variant-numeric:tabular-nums;transition:color .2s;
+  }
+  b::after{
+    content:"";position:absolute;inset:auto 0 -5px;height:3px;border-radius:2px;background:var(--gold);
+    transform:scaleX(0);transition:transform .25s var(--ease);
+  }
+  span{font-family:var(--mono);font-size:clamp(9px,2.3vw,11px);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+  &:hover,&:focus-visible{
+    b{color:var(--gold-ink)}
+    b::after{transform:scaleX(1)}
+    span{color:var(--ink)}
+  }
+}
+
+// Records: label, value, a line of detail. On hover the cell warms and an arrow shows where it leads.
+.tally-f{
+  align-content:start;gap:3px;padding:12px 14px 13px;text-align:left;transition:background-color .2s;
+  .tf-k{
+    display:flex;justify-content:space-between;gap:8px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+    i{font-style:normal;color:var(--gold-ink);opacity:0;transition:opacity .2s}
+  }
+  b{
+    overflow:hidden;font-family:var(--display);font-size:24px;font-weight:800;line-height:1.1;text-transform:uppercase;
+    text-overflow:ellipsis;white-space:nowrap;transition:color .2s;
+  }
+  .tf-note{overflow:hidden;font-size:13px;color:var(--muted);text-overflow:ellipsis;white-space:nowrap}
+  &:hover,&:focus-visible{
+    background-color:color-mix(in oklab,var(--gold) 9%,transparent);
+    b{color:var(--gold-ink)}
+    .tf-k i{opacity:1}
+  }
+}
+@media (max-width:560px){
+  .tally-f{padding:10px 10px 11px}
+  .tally-f b{font-size:21px}
+}

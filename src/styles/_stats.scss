@@ -118,8 +118,6 @@
 .bucket-more .mini{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));column-gap:28px}
 .stub-extra{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);align-items:baseline}
 .stub-extra .rated{color:var(--gold-ink);letter-spacing:.08em}
-.otd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;border:1px dashed var(--gold);border-radius:8px;padding:8px 12px;font-size:14px;background:var(--bronze)}
-.otd .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-ink)}
 .rv-cta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .rv-cta button{padding:4px 12px}
 .rv-cta button:first-child{background:var(--ink);color:var(--paper);border-color:var(--ink)}

@@ -1,0 +1,161 @@
+/* ---------- pins (pinsView.js): enamel pins, the lanyard, the Stats panel and the "New pin!" pop-up ----------
+   Drawn the same as show-log-app's pins. The rim and the enamel share one clip-path per shape, so the gold edge
+   follows the outline. Pin colours are fixed (gold and navy enamel) so they look the same in either scheme. */
+$shapes: (
+  round: circle(50%),
+  shield: polygon(50% 0, 100% 13%, 100% 56%, 50% 100%, 0 56%, 0 13%),
+  hex: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%),
+);
+
+.pin{
+  --size:84px;
+  position:relative;display:inline-grid;place-items:center;flex:none;width:var(--size);height:var(--size);
+  filter:drop-shadow(0 6px 10px rgb(0 0 0 / .45));
+  transition:transform .3s var(--ease),filter .3s,opacity .3s;
+  &[data-size="small"]{--size:44px}
+  &[data-size="large"]{--size:132px}
+  &:hover{transform:translateY(-3px) rotate(-6deg)}
+  &[data-earned="false"]{
+    filter:grayscale(1) drop-shadow(0 3px 6px rgb(0 0 0 / .35));opacity:.55;
+    &:hover{opacity:.8}
+  }
+}
+.pin-rim{
+  display:grid;place-items:center;width:100%;height:100%;
+  // Brushed gold: a conic sweep of light and dark gold
+  background:conic-gradient(from 210deg,#b8862a,#ffe7a3,#d9a43c,#fff2c6,#a87420,#f2c14e,#b8862a);
+  [data-earned="false"]>&{background:conic-gradient(from 210deg,#6d7690,#c6ccdb,#858ea8,#dfe3ec,#626a84,#9aa3bb,#6d7690)}
+}
+.pin-enamel{
+  position:relative;display:grid;place-items:center;width:84%;height:84%;overflow:hidden;
+  background:radial-gradient(70% 55% at 35% 25%,rgb(255 255 255 / .22),transparent 60%),linear-gradient(160deg,#24346a,#0b1430 75%);
+  // The shine: a bright band parked off to the left, swept across on hover
+  &::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(115deg,transparent 35%,rgb(255 255 255 / .6) 50%,transparent 65%);
+    transform:translateX(-120%);
+  }
+  .pin:hover &::after{transform:translateX(120%);transition:transform .7s var(--ease)}
+}
+@each $name, $clip in $shapes {
+  [data-shape="#{$name}"] .pin-rim,[data-shape="#{$name}"] .pin-enamel{clip-path:$clip}
+}
+.pin-glyph{
+  position:relative;z-index:1;font-family:var(--display);font-size:calc(var(--size) * .42);font-weight:800;line-height:1;color:#f7d684;
+  // Stamped in: a dark edge below, a light one above
+  text-shadow:0 2px 0 #5a4100,0 -1px 0 rgb(255 255 255 / .4);
+  &.long{font-size:calc(var(--size) * .32)}
+  [data-shape="shield"] &{translate:0 -6%}
+}
+
+// Unlocking: the pin drops in, then the shine sweeps once and a ring of sparks flies out
+.pin[data-celebrate="true"]{
+  animation:pin-drop .7s var(--ease) both;
+  .pin-enamel::after{animation:pin-sweep .9s .55s var(--ease) both}
+  @for $i from 0 through 5 {
+    &[data-delay="#{$i}"]{
+      animation-delay:#{$i * .15}s;
+      .pin-enamel::after{animation-delay:#{.55 + $i * .15}s}
+      .pin-burst,.pin-spark{animation-delay:#{.35 + $i * .15}s}
+    }
+  }
+}
+.pin-burst{position:absolute;inset:-20%;border:3px solid var(--gold);border-radius:50%;pointer-events:none;animation:pin-ring .8s .35s ease-out both}
+.pin-spark{
+  position:absolute;top:50%;left:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#f7d684;
+  animation:pin-fly .8s .35s ease-out both;
+  @for $i from 0 through 7 { &[data-i="#{$i}"]{rotate:#{$i * 45}deg} }
+  &:nth-child(even){background:var(--music)}
+}
+@keyframes pin-drop{
+  0%{opacity:0;transform:translateY(-40px) scale(.4) rotate(-30deg)}
+  60%{opacity:1;transform:translateY(0) scale(1.2) rotate(8deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+@keyframes pin-sweep{from{transform:translateX(-120%)}to{transform:translateX(120%)}}
+@keyframes pin-ring{from{opacity:1;transform:scale(.5)}to{opacity:0;transform:scale(1.3)}}
+@keyframes pin-fly{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(calc(var(--size) * -.95)) scale(.3)}}
+
+/* ---------- the Pins tab ---------- */
+.pins-view{display:grid;gap:28px}
+.pins-head{
+  display:grid;gap:6px;
+  h2{font-family:var(--display);font-weight:800;font-size:clamp(40px,8vw,64px);line-height:.9;text-transform:uppercase;margin:0}
+  p{margin:0;font-family:var(--mono);font-size:13px;color:var(--muted)}
+}
+.pins-k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink)}
+// Earned pins sit on a felt board
+.pin-board{
+  padding:22px;border-radius:16px;
+  background:radial-gradient(rgb(255 255 255 / .05) 1px,transparent 1.5px) 0 0 / 6px 6px,linear-gradient(160deg,#182553,#0e1838);
+  box-shadow:inset 0 2px 18px rgb(0 0 0 / .5);
+}
+.pin-rest{
+  display:grid;gap:14px;
+  h2{font-family:var(--display);font-weight:800;font-size:32px;line-height:1;text-transform:uppercase;margin:0}
+}
+.pin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:0;padding:0;list-style:none}
+.pin-card{
+  display:flex;align-items:center;gap:16px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);
+  transition:border-color .2s,transform .2s var(--ease);
+  &:hover{border-color:var(--gold);transform:translateY(-2px)}
+  &[data-earned="true"]{background:color-mix(in oklab,var(--gold) 10%,var(--paper));border-color:color-mix(in oklab,var(--gold) 45%,var(--line))}
+}
+.pin-text{
+  display:grid;gap:4px;min-width:0;
+  h3{font-family:var(--display);font-weight:800;font-size:22px;line-height:1;text-transform:uppercase;margin:0}
+  p{margin:0;font-size:14px;color:var(--muted)}
+}
+.pin-progress{
+  display:flex;align-items:center;gap:8px;margin-top:4px;font-family:var(--mono);font-size:12px;color:var(--muted);
+  progress{
+    flex:1;height:6px;border:0;border-radius:999px;background:var(--bg);overflow:hidden;appearance:none;
+    &::-webkit-progress-bar{background:var(--bg)}
+    &::-webkit-progress-value{background:var(--gold);border-radius:999px}
+    &::-moz-progress-bar{background:var(--gold);border-radius:999px}
+  }
+}
+
+/* ---------- Stats → Overview: Pins panel ---------- */
+.pp-row{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px;padding:0;list-style:none}
+.pp-next{margin:0 0 12px;font-size:14px;color:var(--muted);
+  b{color:var(--ink)}
+  span{font-family:var(--mono);font-size:12px}
+}
+.pp-all{
+  border:0;padding:0;background:none;font-weight:600;color:var(--gold-ink);
+  span{display:inline-block;transition:transform .2s var(--ease)}
+  &:hover{border:0;text-decoration:underline;text-underline-offset:3px}
+  &:hover span{transform:translateX(4px)}
+}
+
+/* ---------- "New pin!" ---------- */
+.pin-unlock{
+  width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:28px 24px 22px;border:0;border-radius:16px;
+  background:radial-gradient(90% 60% at 50% 0%,rgb(242 193 78 / .25),transparent 70%),var(--paper);color:var(--ink);text-align:center;
+  box-shadow:0 30px 80px rgb(0 0 0 / .55);
+  &::backdrop{background:rgb(6 12 32 / .75);backdrop-filter:blur(4px)}
+}
+.pu-title{font-family:var(--display);font-weight:800;font-size:clamp(36px,7vw,52px);line-height:1;text-transform:uppercase;color:var(--gold-ink);margin:0}
+.pu-pins{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:22px 18px;margin:26px 0 8px;padding:0;list-style:none;
+  li{display:grid;justify-items:center;gap:6px;width:160px}
+  // Several at once: smaller pins so they fit
+  &:not([data-count="1"]) li{width:130px}
+  strong{margin-top:8px;font-family:var(--display);font-size:22px;line-height:1;text-transform:uppercase}
+  li>span:last-child{font-size:13px;color:var(--muted)}
+}
+.pu-more{margin:8px 0 0;color:var(--muted)}
+.pu-actions{display:flex;justify-content:center;gap:10px;margin-top:22px}
+
+@media (prefers-reduced-motion:no-preference){
+  .pin-card{animation:pin-rise .45s var(--ease) both}
+  @for $i from 0 through 11 { .pin-card[data-order="#{$i}"]{animation-delay:#{$i * .04}s} }
+  .pin-unlock[open]{animation:pin-rise .35s var(--ease)}
+  .pu-title{animation:pin-rise .4s .1s var(--ease) both}
+}
+@keyframes pin-rise{from{opacity:0;transform:translateY(12px)}}
+@media (prefers-reduced-motion:reduce){
+  .pin,.pin[data-celebrate="true"],.pin[data-celebrate="true"] .pin-enamel::after,.pin-spark{animation:none;transition:none}
+  .pin-burst{display:none}
+}

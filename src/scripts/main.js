@@ -8,6 +8,8 @@ import { jumpToNight, jumpToYear, renderEnd } from './endcap.js';
 import { openHistory, undoChange } from './history.js';
 import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit, openInfoPhoto } from './info.js';
 import { dealIn, filterList, fullNight, paintStubPhotos } from './log.js';
+import { paintOnThisDay } from './onThisDay.js';
+import { checkNewPins, initPinUnlock } from './pinsView.js';
 import { loadPhotos, nightPhotos, prefetchPhotos, uploadPhotos } from './photos.js';
 import { openViewer, stepViewer } from './viewer.js';
 import { effectsOn, isOpen, motionOK, toast } from './motion.js';
@@ -28,7 +30,8 @@ import { followHash, followStatsLink, openStatsSection, opensStats, render, setV
 /* ---------- events ---------- */
 // The night a ticket's + Photos button is uploading to
 let photoFor = null;
-const photosChanged = () => { paintStubPhotos(); renderEnd(); };
+// A new photo can earn Shutterbug
+const photosChanged = () => { paintStubPhotos(); renderEnd(); checkNewPins(); };
 $('#photoPick').addEventListener('change', e => {
   if (photoFor) uploadPhotos(photoFor, e.target.files, photosChanged);
   e.target.value = '';
@@ -43,6 +46,14 @@ document.addEventListener('keydown', e => {
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.dataset.statsSection !== undefined) { openStatsSection(t.dataset.statsSection); return; }
+  // A headline number on the log (tally.js) opens its Stats section. It's a real step, so Back returns to the log
+  if (t.dataset.statsGo) {
+    try { history.pushState(null, '', location.href); } catch {}
+    setView('stats', t.dataset.statsGo);
+    const tabs = $('.tabs');
+    if (tabs.getBoundingClientRect().top < 0) tabs.scrollIntoView();
+    return;
+  }
   if (t.id === 'rvClose') { $('#review').close(); return; }
   if (t.id === 'rvShare') { shareReview(t); return; }
   if (t.dataset.review) { openReview(t.dataset.review); return; }
@@ -73,7 +84,12 @@ document.addEventListener('click', e => {
   else if (t.dataset.bill) openBill(t.dataset.bill);
   else if ('close' in t.dataset) closeSheet();
   else if (t.dataset.q !== undefined){ closeInfo(); $('#q').value = t.dataset.q; filt.q = t.dataset.q; setView('log'); filterList(); window.scrollTo({top:0}); }
-  else if (t.dataset.view){ setView(t.dataset.view); }
+  else if (t.dataset.view){
+    setView(t.dataset.view);
+    // From further down the page (the Stats pins panel), start the new view at its top
+    const tabs = $('.tabs');
+    if (tabs.getBoundingClientRect().top < 0) tabs.scrollIntoView();
+  }
   else if (t.id==='moreBtn'){ state.showAllMost=!state.showAllMost; renderStatsView(); }
   else if (t.dataset.type !== undefined){ track('filter', {filter: 'type', value: t.dataset.type || 'all'}); filt.type = t.dataset.type; document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', b===t)); filterList(); }
 });
@@ -98,6 +114,7 @@ $('#btnData').onclick = openData;
 $('#btnTrack').onclick = openTrackPrompt;
 initYearRail();
 initAnalytics();
+initPinUnlock();
 
 // Map pins aren't buttons, so they get their own click and keyboard handling
 $('#statsView').addEventListener('click', e => { const p = e.target.closest('[data-pin]'); if (p) showPin(p.dataset.pin); });
@@ -248,6 +265,7 @@ if (motionOK() && matchMedia('(any-hover:hover)').matches) {
 // once the section links have scrolled off. Filters and tabs move things without scrolling, so watch size too.
 let upFrame = 0;
 function floatNavShown(){
+  if (state.view === 'pins') return $('#pinsView .pins-head')?.getBoundingClientRect().bottom <= 0;
   if (state.view === 'stats') {
     const links = $('#statsView .subnav');
     if (!links) return false;
@@ -277,10 +295,10 @@ function backToTop(){
   $('.tabs button[aria-selected=true]').focus({preventScroll: true});
 }
 $('#toTop').onclick = backToTop;
-// Jumps to the other view (Stats from the log, Log from stats) and starts it at the top
+// Jumps to the other view (Stats from the log, the log from anywhere else) and starts it at the top
 $('#toView').onclick = () => {
-  let next = 'stats';
-  if (state.view === 'stats') next = 'log';
+  let next = 'log';
+  if (state.view === 'log') next = 'stats';
   setView(next);
   backToTop();
 };
@@ -301,6 +319,8 @@ load().then(async () => {
   await Promise.all([loadInfo(), loadSetlists(), loadListening()]);
   // Photos were loaded before the log was dealt, so only a link straight into stats needs drawing now
   if (toStats) render();
+  // Artist photos on the On this day cards need the artist info
+  paintOnThisDay();
   applyAuth();
   startAutoInfo();
   followStatsLink();
