@@ -118,6 +118,16 @@
 .bucket-more .mini{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));column-gap:28px}
 .stub-extra{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);align-items:baseline}
 .stub-extra .rated{color:var(--gold-ink);letter-spacing:.08em}
+// A night marked as a bucket list show (Edit bill)
+.stub-extra .bucketed{padding:1px 8px;border:1px solid var(--gold);border-radius:999px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
+// Its toggle on the sheet: the real checkbox is hidden and the star box beside it shows its state
+.sheet .bucket-check{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-family:var(--body);font-size:15px;letter-spacing:0;text-transform:none;color:var(--ink);transition:border-color .15s,background-color .15s}
+.sheet .bucket-check:hover,.sheet .bucket-check:has(input:checked){border-color:var(--gold)}
+.sheet .bucket-check:has(input:focus-visible){outline:2px solid var(--music);outline-offset:2px}
+.bucket-check input{position:absolute;opacity:0;width:0;height:0}
+.bucket-check .hint{display:block}
+.bucket-box{display:grid;place-items:center;flex:none;width:28px;height:28px;border:1px solid var(--line);border-radius:6px;font-size:17px;line-height:1;color:transparent;transition:background-color .15s,border-color .15s,color .15s,transform .25s}
+.bucket-check input:checked+.bucket-box{border-color:var(--gold);background:var(--gold);color:var(--bg);transform:rotate(72deg)}
 .rv-cta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .rv-cta button{padding:4px 12px}
 .rv-cta button:first-child{background:var(--ink);color:var(--paper);border-color:var(--ink)}

@@ -222,6 +222,7 @@ function stubExtra(n){
   const bits = [];
   const rating = nightVal(n, 'rating');
   if (rating) bits.push(`<span class="rated" aria-label="${rating} out of 5">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</span>`);
+  if (nightVal(n, 'bucket_list')) bits.push('<span class="bucketed">★ Bucket list</span>');
   const price = nightVal(n, 'price');
   if (price !== undefined) bits.push(`<span>${money(price)}</span>`);
   const withWho = nightVal(n, 'companions');
@@ -229,7 +230,7 @@ function stubExtra(n){
   if (!bits.length) return '';
   return `<div class="stub-extra">${bits.join('')}</div>`;
 }
-// A night's rating, price or companions: written to every act, so the first act that has one will do
+// A night's rating, price, companions or bucket list mark: written to every act, so the first act that has one will do
 export const nightVal = (n, f) => n.acts.find(a => a[f] !== null && a[f] !== undefined && a[f] !== '')?.[f];
 export const money = v => {
   let digits = 2;

@@ -159,8 +159,7 @@ export function tally(shows){
     records.push(record('Longest wait', `${s.wait.years.toFixed(1)} yrs`, note, `data-artist="${esc(s.wait.name)}"`, TO_POPUP));
   }
 
-  return `<section class="tally" aria-labelledby="tallyHead">
-    <h2 class="tally-k" id="tallyHead">The tally so far</h2>
+  return `<section class="tally" aria-label="Tally">
     <div class="tally-board">
       <ul class="tally-totals">${totals}</ul>
       <ul class="tally-records">${records.join('')}</ul>
