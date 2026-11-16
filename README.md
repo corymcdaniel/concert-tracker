@@ -107,6 +107,11 @@ A night can be marked as a bucket list show: one you had always wanted to see. T
 or **Edit bill**; it is saved on every act of the night (`shows.bucket_list`, true or NULL), is public, and shows as a gold
 badge on the stub. This is separate from the **Bucket list** stats panel, which lists most-played artists you have not seen.
 
+### Export for the Show Log app
+**Data → Download CSV** (and **Copy CSV**) gives every act, one row each in billing order, in the columns the multi-user
+Show Log app reads on its **Import CSV** page: `Artist, Venue, City, State, Country, Date, Type, Notes, Rating, Price, With,
+Bucket list, Festival`. Price and With are only filled in when an editor is signed in. Photos are not in the file.
+
 ### Photos
 Editors add photos to a night from **Edit bill** (drop them in or pick files) or the ticket's **+ Photos** button, up to 6 a
 night. Before upload the page redraws each photo on a canvas: it's resized to at most 1600px and saved as WebP (JPEG where the

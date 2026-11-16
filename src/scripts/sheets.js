@@ -243,6 +243,24 @@ export function openBill(id){
     commit('Saved bill', {method:'POST', url:`${API}/bill`, body:{was, acts}});
   });
 }
+// The log as a CSV in the shape show-log-app's Import page reads, one row per act in billing order.
+// Price and With are only filled in for a signed-in editor, since nobody else is sent them.
+const CSV_HEADER = 'Artist,Venue,City,State,Country,Date,Type,Notes,Rating,Price,With,Bucket list,Festival';
+function showsCsv(){
+  const cell = v => { const s = String(v ?? ''); if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`; return s; };
+  const bucket = s => { if (s.bucket_list) return 'yes'; return ''; };
+  const rows = state.shows.map(s => [s.artist, s.venue, s.city, s.state, s.country, s.date, s.type, s.notes, s.rating, s.price, s.companions, bucket(s), s.festival].map(cell).join(','));
+  return [CSV_HEADER, ...rows].join('\r\n') + '\r\n';
+}
+function downloadCsv(){
+  const url = URL.createObjectURL(new Blob([showsCsv()], {type: 'text/csv'}));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `show-log-${TODAY}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`Downloaded ${state.shows.length} acts`);
+}
 export function openData(){
   const json = JSON.stringify(state.shows, null, 1);
   // With the database, History replaces "reset" (which would drop everything added since the seed)
@@ -251,13 +269,14 @@ export function openData(){
   openSheet(`<h3>Data</h3><form id="frm">
     <p class="hint" style="font-size:14px">${state.mode==='netlify'?(state.user?'Edits save to your Netlify site.':'Sign in to edit. You can still copy the data.'):'Edits are kept in this browser. Copy the JSON to back it up or move it to shows.json.'}</p>
     <textarea id="f-json" class="json" spellcheck="false">${esc(json)}</textarea>
-    <div class="foot"><button type="button" class="primary" id="copy">Copy JSON</button><button type="button" id="copyCsv">Copy CSV</button><button type="submit" class="edit-only">Replace with pasted JSON</button><span class="spacer"></span><button type="button" data-close>Close</button></div>
+    <p class="hint"><b>Download CSV</b> saves every act in the format the Show Log app imports: open its <b>Import CSV</b> page and choose the file. ${state.user?'Prices and who you went with are included.':'Sign in first to include prices and who you went with.'} Photos aren't in the file.</p>
+    <div class="foot"><button type="button" class="primary" id="copy">Copy JSON</button><button type="button" id="copyCsv">Copy CSV</button><button type="button" id="downloadCsv">Download CSV</button><button type="submit" class="edit-only">Replace with pasted JSON</button><span class="spacer"></span><button type="button" data-close>Close</button></div>
     <div id="confirmBox"></div>
     ${resetBtn}</form>`);
   const copy = (txt,label) => { navigator.clipboard?.writeText(txt).then(()=>toast(label+' copied'), ()=>{ $('#f-json').value=txt; $('#f-json').select(); toast('Selected. Press Ctrl/⌘+C'); }) ?? ($('#f-json').select()); };
   $('#copy').onclick = () => copy(JSON.stringify(state.shows,null,1),'JSON');
-  $('#copyCsv').onclick = () => { const q=v=>/[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
-    copy(['Artist,Venue,City,State,Country,Date,Type,Notes',...state.shows.map(s=>[s.artist,s.venue,s.city,s.state||'',s.country||'',s.date||'',s.type,s.notes||''].map(x=>q(String(x))).join(','))].join('\n'),'CSV'); };
+  $('#copyCsv').onclick = () => copy(showsCsv(), 'CSV');
+  $('#downloadCsv').onclick = downloadCsv;
   $('#frm').addEventListener('submit', e => { e.preventDefault();
     try { const d = JSON.parse($('#f-json').value); if(!Array.isArray(d)) throw 0;
       state.shows = d.map(s=>withPlace({id:s.id||newId(),artist:s.artist||'',venue:s.venue||'',city:s.city||'',state:s.state,country:s.country,date:s.date||null,type:s.type||'Music',notes:s.notes||'',rating:s.rating,price:s.price,companions:s.companions,festival:s.festival,bucket_list:s.bucket_list}));
