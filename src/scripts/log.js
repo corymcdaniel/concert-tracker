@@ -1,5 +1,6 @@
 import { persist } from './api.js';
 import { wristband } from './festivals.js';
+import { imgUrl } from './info.js';
 import { nightPhotos, photosOn, photoUrl } from './photos.js';
 import { flip, motionOK, toast } from './motion.js';
 import { onThisDay, paintOnThisDay } from './onThisDay.js';
@@ -101,6 +102,26 @@ function laterRow(n){
     <button class="add-act edit-only" type="button" data-bill="${n.acts[0].id}">Edit</button></li>`;
 }
 
+/* ---------- the headliner's portrait on a ticket ----------
+   A round frame with the artist's initials, and their Wikipedia photo over them once artist info has loaded.
+   The log is drawn before that arrives, so paintPortraits() fills in the frames already on the page. */
+const initials = name => name.replace(/^the\s+/i, '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+function portraitImg(name){
+  const img = state.INFO?.artists?.[name]?.img;
+  if (!img) return '';
+  return `<img src="${imgUrl(img, 160)}" alt="" loading="lazy" decoding="async" onload="this.parentNode.classList.add('loaded')" onerror="this.remove()">`;
+}
+function portrait(a){
+  return `<button type="button" class="portrait" data-artist="${esc(a.artist)}" data-id="${a.id}" aria-label="About ${esc(a.artist)}"><span class="pframe" data-portrait="${esc(a.artist)}" aria-hidden="true"><i>${esc(initials(a.artist))}</i>${portraitImg(a.artist)}</span></button>`;
+}
+export function paintPortraits(){
+  document.querySelectorAll('.pframe[data-portrait]').forEach(el => {
+    if (el.querySelector('img')) return;
+    const html = portraitImg(el.dataset.portrait);
+    if (html) el.insertAdjacentHTML('beforeend', html);
+  });
+}
+
 function stub(n, hero = false){
   const up = !happened(n), isToday = n.date === TODAY;
   const [Y,M,D] = n.date ? n.date.split('-') : [];
@@ -125,13 +146,17 @@ function stub(n, hero = false){
     heroClass = 'hero';
     countdownBand = `<div class="countdown"><b>${countdown(daysUntil(n.date))}</b><span>${weekday(n.date)}</span></div>`;
   }
-  return `<article class="stub ${up?'is-up':''} ${heroClass} ${seen} ${glow} ${stamped}" data-k="${esc(k)}">
+  // The stub end is coloured by the night's kind: comedy only when no act is music
+  let kind = 'k-comedy';
+  if (types.includes('Music')) kind = 'k-music';
+  return `<article class="stub ${kind} ${up?'is-up':''} ${heroClass} ${seen} ${glow} ${stamped}" data-k="${esc(k)}">
       <div class="date">${n.date ? `<span class="m">${MONTHS[+M-1]}</span><span class="d">${+D}</span><span class="y">${Y}</span>` : `<span class="m">Date</span><span class="d">?</span>`}</div>
       <div class="body">${wristband(state.shows, n)}${countdownBand}
-        <div class="where"><strong>${n.venue?`<button type="button" class="vbtn" data-venue="${esc(n.venue+'|'+n.city)}">${esc(n.venue)}</button>`:'Unknown venue'}</strong><span>${esc(place(n))}</span>
-          ${types.map(t=>`<span class="tag ${t.toLowerCase()}">${esc(t)}</span>`).join('')}
+        <div class="stub-top">${types.map(t=>`<span class="tag ${t.toLowerCase()}">${esc(t)}</span>`).join('')}
           ${isToday?'<span class="tag up">Tonight</span>':up?'<span class="tag up">Upcoming</span>':''}</div>
-        <ul class="acts">${n.acts.map((a,i)=>`<li class="${i===0?'first':''}"><button type="button" data-artist="${esc(a.artist)}" data-id="${a.id}" title="About ${esc(a.artist)}">${esc(a.artist)}</button>${act(a)}</li>`).join('')}</ul>
+        <div class="headline">${portrait(n.acts[0])}
+          <ul class="acts">${n.acts.map((a,i)=>`<li class="${i===0?'first':''}"><button type="button" data-artist="${esc(a.artist)}" data-id="${a.id}" title="About ${esc(a.artist)}">${esc(a.artist)}</button>${act(a)}</li>`).join('')}</ul></div>
+        <div class="where"><strong>${n.venue?`<button type="button" class="vbtn" data-venue="${esc(n.venue+'|'+n.city)}">${esc(n.venue)}</button>`:'Unknown venue'}</strong><span>${esc(place(n))}</span></div>
         ${notes.length?`<div class="notes">${notes.map(esc).join(' · ')}</div>`:''}
         ${stubExtra(n)}
         <div class="tools edit-only"><button class="add-act" type="button" data-addto="${n.acts[0].id}">+ act on this bill</button><button class="add-act" type="button" data-bill="${n.acts[0].id}">Edit bill</button>${snapButton(n)}</div>
