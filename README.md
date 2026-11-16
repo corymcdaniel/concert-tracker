@@ -87,6 +87,13 @@ artist with no page is saved as `null` so it isn't retried; fix those, or a wron
 photo, its credit and the Wikipedia summary live from Wikipedia. Editors can fix any match from the pop-up with
 **Edit info → Look up**.
 
+### Tickets
+Each night is a ticket in the look shared with the Show Log app: the stub end is coloured by the kind of night (music or
+comedy), the headliner is large beside their portrait, the rest of the bill follows on a "with" line, and the venue sits
+under them. The portrait is the artist info photo from Wikimedia Commons in a gold ring, duotone until the ticket is hovered;
+an artist with no photo gets their initials. The log is drawn before artist info arrives, so `paintPortraits()` in
+`src/scripts/log.js` fills the frames in afterwards. Styles are in `_portraits.scss`.
+
 ### Ratings, prices and companions
 Set per night from **Edit bill** or when adding a show. Only editors can set them, and the API refuses anyone else.
 Ratings are public. Price and companions are left out of `GET /api/shows` unless the request comes from an editor, and

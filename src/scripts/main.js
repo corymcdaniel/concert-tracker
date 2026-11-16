@@ -7,7 +7,7 @@ import { startAutoInfo } from './autoinfo.js';
 import { jumpToNight, jumpToYear, renderEnd } from './endcap.js';
 import { openHistory, undoChange } from './history.js';
 import { closeInfo, loadInfo, morphOpen, openInfo, openInfoEdit, openInfoPhoto } from './info.js';
-import { dealIn, filterList, fullNight, paintStubPhotos } from './log.js';
+import { dealIn, filterList, fullNight, paintPortraits, paintStubPhotos } from './log.js';
 import { paintOnThisDay } from './onThisDay.js';
 import { checkNewPins, initPinUnlock } from './pinsView.js';
 import { loadPhotos, nightPhotos, prefetchPhotos, uploadPhotos } from './photos.js';
@@ -321,6 +321,8 @@ load().then(async () => {
   if (toStats) render();
   // Artist photos on the On this day cards need the artist info
   paintOnThisDay();
+  // So do the portraits on the tickets, which were drawn before it arrived
+  paintPortraits();
   applyAuth();
   startAutoInfo();
   followStatsLink();
