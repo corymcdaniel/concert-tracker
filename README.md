@@ -102,6 +102,11 @@ night per day with the same name, and the days of each year's run are numbered f
 - **Stats → Overview:** a Festivals panel with every festival, the years you went, and each day's headliner.
 - **Artist pop-up:** sightings at a festival are tagged with its name.
 
+### Bucket list shows
+A night can be marked as a bucket list show: one you had always wanted to see. Tick **Bucket list show** on **Add show**
+or **Edit bill**; it is saved on every act of the night (`shows.bucket_list`, true or NULL), is public, and shows as a gold
+badge on the stub. This is separate from the **Bucket list** stats panel, which lists most-played artists you have not seen.
+
 ### Photos
 Editors add photos to a night from **Edit bill** (drop them in or pick files) or the ticket's **+ Photos** button, up to 6 a
 night. Before upload the page redraws each photo on a canvas: it's resized to at most 1600px and saved as WebP (JPEG where the

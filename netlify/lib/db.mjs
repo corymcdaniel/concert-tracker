@@ -31,10 +31,10 @@ export async function write(user, fn, batch = null) {
 }
 
 // Columns a show can be saved with, in API order
-export const SHOW_FIELDS = ["artist", "venue", "city", "state", "country", "date", "type", "notes", "rating", "price", "companions", "festival"];
+export const SHOW_FIELDS = ["artist", "venue", "city", "state", "country", "date", "type", "notes", "rating", "price", "companions", "festival", "bucket_list"];
 // Saved as they are when a request leaves them out, so an edit can't blank them by accident
-export const EXTRA_FIELDS = ["rating", "price", "companions", "festival"];
-export const PUBLIC_SELECT = `id, artist, venue, city, state, country, to_char(date, 'YYYY-MM-DD') AS date, type, notes, rating, festival`;
+export const EXTRA_FIELDS = ["rating", "price", "companions", "festival", "bucket_list"];
+export const PUBLIC_SELECT = `id, artist, venue, city, state, country, to_char(date, 'YYYY-MM-DD') AS date, type, notes, rating, festival, bucket_list`;
 export const SHOW_SELECT = `${PUBLIC_SELECT}, price, companions`;
 
 // Bad input from a request: the functions answer it with a 400
@@ -70,6 +70,8 @@ export function cleanShow(s) {
   }
   if (s.companions !== undefined) out.companions = str(s.companions) || null;
   if (s.festival !== undefined) out.festival = str(s.festival) || null;
+  // true or NULL: an unmarked night is saved as NULL, like the other extras
+  if (s.bucket_list !== undefined) out.bucket_list = s.bucket_list === true || null;
   return out;
 }
 

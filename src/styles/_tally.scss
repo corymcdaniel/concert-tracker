@@ -8,8 +8,6 @@
 .list>.tally:first-child{margin-top:18px}
 .tally+.stamped{margin-top:44px}
 
-.tally-k{margin:0;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-
 // Every cell draws a rule on its top and left, pulled 1px outward; the board clips the ones on its outer edge,
 // so the rules only show between cells however many there are
 .tally-board{overflow:hidden;border-block:1px solid var(--line)}
